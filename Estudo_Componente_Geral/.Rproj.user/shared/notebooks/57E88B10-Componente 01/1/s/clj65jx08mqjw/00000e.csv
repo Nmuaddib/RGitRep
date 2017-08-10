@@ -1,3 +1,0 @@
-"0","#### Linha de referência ------------------------------------"
-"0","smt = smooth.spline(fit_r, std_r, spar=1)"
-"0","lines(smt, col='red', lwd=1)"

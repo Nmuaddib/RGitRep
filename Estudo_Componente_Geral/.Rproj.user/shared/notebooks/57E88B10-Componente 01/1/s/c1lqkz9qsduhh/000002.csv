@@ -1,3 +1,0 @@
-"0","#### Importação de dados e inclusão de coluna ---------------"
-"0","rec_des <- read_excel('Gráfico e Previsão 2017 2.xlsx')"
-"0","rec_des <- rec_des %>% add_column(Diff = rec_des$Despesa - rec_des$Receita);as.tibble(rec_des)"

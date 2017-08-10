@@ -1,6 +1,0 @@
-"0","## Gráficos"
-"0","## (1) (2)"
-"0","## (3) (4)"
-"0","par(mfrow = c(2,2), oma = c(0, 0, 1.1, 0))"
-"0","#### Validando modelo pelos gráficos padrão -----------------"
-"0","plot(lmT_hil.SCc)"

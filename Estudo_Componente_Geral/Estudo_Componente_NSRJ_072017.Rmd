@@ -58,22 +58,22 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 options(scipen=999)
 #### --------------------------------------------------------
-library("reshape2", lib.loc="~/R/win-library/3.4")
-library("readxl", lib.loc="~/R/win-library/3.4")
-library("qcc", lib.loc="~/R/win-library/3.4")
-library("modelr", lib.loc="~/R/win-library/3.4")
+library("stringr", lib.loc="~/R/win-library/3.4")
 library("dplyr", lib.loc="~/R/win-library/3.4")
 library("ggplot2", lib.loc="~/R/win-library/3.4")
 library("readr", lib.loc="~/R/win-library/3.4")
 library("tibble", lib.loc="~/R/win-library/3.4")
 library("tidyr", lib.loc="~/R/win-library/3.4")
+library("reshape2", lib.loc="~/R/win-library/3.4")
+library("magrittr", lib.loc="~/R/win-library/3.4")
+library("readxl", lib.loc="~/R/win-library/3.4")
+library("modelr", lib.loc="~/R/win-library/3.4")
 library("purrr", lib.loc="~/R/win-library/3.4")
 library("forcats", lib.loc="~/R/win-library/3.4")
 library("plotrix", lib.loc="~/R/win-library/3.4")
-library("stringr", lib.loc="~/R/win-library/3.4")
-
+library("qcc", lib.loc="~/R/win-library/3.4")
 ## ** Pacotes básicos que compõe o Tidyverse poderiam ser ativados com uma unica linha:
-#library("tidyverse", lib.loc="~/R/win-library/3.4")
+#library("tidyverse", lib.loc="~/R/win-library/3.4"")
 #Loading tidyverse: ggplot2
 #Loading tidyverse: tibble
 #Loading tidyverse: tidyr
@@ -262,8 +262,8 @@ depara_componente <- depara_componente %>%
   select(componente = "Componente assistencial", comp = "componente")
 
 #### Importações (Geradas pelo Power BI com um click) -------
-`dataset` = read.csv('C:/Users/nelson.junior/Documents/R/REditorWrapper_e74c054e-473b-47b7-b164-7b93f69f36af/input_df_0ab2289d-603e-43e7-9cef-461c578edbbb.csv', check.names = FALSE, encoding = "UTF-8", blank.lines.skip = FALSE);
-`dataset2` = read.csv('C:/Users/nelson.junior/Documents/R/REditorWrapper_6b9a785a-59bf-48ad-abdd-04471637f315/input_df_26cec917-4b9e-45bf-9a31-7a50e9d1f2d7.csv', check.names = FALSE, encoding = "UTF-8", blank.lines.skip = FALSE);
+`dataset` = read.csv('~/REditorWrapper_e74c054e-473b-47b7-b164-7b93f69f36af/input_df_0ab2289d-603e-43e7-9cef-461c578edbbb.csv', check.names = FALSE, encoding = "UTF-8", blank.lines.skip = FALSE);
+`dataset2` = read.csv('~/REditorWrapper_6b9a785a-59bf-48ad-abdd-04471637f315/input_df_26cec917-4b9e-45bf-9a31-7a50e9d1f2d7.csv', check.names = FALSE, encoding = "UTF-8", blank.lines.skip = FALSE);
 
 #### Criação de resumos, por indicador de internação --------
 

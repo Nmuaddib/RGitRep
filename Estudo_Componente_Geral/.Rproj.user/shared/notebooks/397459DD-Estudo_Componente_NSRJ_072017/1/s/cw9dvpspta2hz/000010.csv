@@ -1,7 +1,0 @@
-"0","#### Valores previstos --------------------------------------"
-"0","fit_r <- fitted(lmT.SCc)"
-"0","#### Gráfico padrão (1) Linearidade -------------------------"
-"0","plot(fit_r, resid(lmT.SCc),"
-"0","     ylab = ""Resíduos/Erros"", "
-"0","     xlab = ""Valores Previstos"","
-"0","     main = ""Linearidade e Variância"")"

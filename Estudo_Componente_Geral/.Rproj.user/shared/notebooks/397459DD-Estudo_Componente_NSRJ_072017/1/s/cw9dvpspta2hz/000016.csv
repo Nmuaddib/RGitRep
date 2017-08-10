@@ -1,5 +1,0 @@
-"0","#### Resíduos padronizados ----------------------------------"
-"0","std_r <- resid(lmT.SCc)/sd(resid(lmT.SCc))"
-"0","# ou std_r <- scale(resid(lmT.SCc), center = FALSE, scale = TRUE)"
-"0","#### Gráfico padrão (2) Normalidade -------------------------"
-"0","qqnorm(std_r)"
