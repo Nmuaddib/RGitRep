@@ -145,8 +145,10 @@ for (i in seq_along(siz)) {
   lenV[i] <- siz[[i]]
 }
 
-
-
+siz
+  
+siz[] 
+siz[[ ]]
 lenV
 max(lenV)
 
