@@ -1,0 +1,2 @@
+"0","#### Retornando à configurção de plotagem com Gráfico Único -"
+"0","par(mfrow = c(1,1), oma = c(0, 0, 0, 0))"

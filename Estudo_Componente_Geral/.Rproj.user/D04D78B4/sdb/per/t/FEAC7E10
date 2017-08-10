@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "qqnorm()\n\nqqnorm(cai_df$sadt ~ cai_df$consulta)\n\nqqnorm(resid(lm.cai_SCc))\nqqline(resid(lm.cai_SCc), lty = 2)\n\nplot(lm.cai_SCc, which = 2)\n\nstrs <- resid(lm.cai_SCc)/sd(resid(lm.cai_SCc))\n\nqqnorm(strs)\nqqline(strs, lty = 2)\n\n     ",
+    "created" : 1500729240171.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3661750325",
+    "id" : "FEAC7E10",
+    "lastKnownWriteTime" : 1500734500,
+    "last_content_update" : 1500734500363,
+    "path" : "~/Estudo_Componente_Geral/qq.R",
+    "project_path" : "qq.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

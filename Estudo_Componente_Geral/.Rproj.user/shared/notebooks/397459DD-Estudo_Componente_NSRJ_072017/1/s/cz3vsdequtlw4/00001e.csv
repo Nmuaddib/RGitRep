@@ -1,0 +1,7 @@
+"0","#### Preparação/Gráfico de intervalos do modelo original ----"
+"0","#rm(SCc.CI)"
+"0","SCc.CI <- as.tibble(predict.lm(lm.cai_SCc, level=0.95, interval = 'confidence')) %>% "
+"0","  add_column(., rn = as.numeric(row.names(.)))"
+"0","cai_SCc <- add_column(cai_SCc, rn = as.numeric(row.names(SCc.CI)))"
+"0","#### Intervalos pelo pacote plotrix -------------------------"
+"0","plotCI(SCc.CI$fit[1:6], ui = SCc.CI$upr[1:6], li = SCc.CI$lwr[1:6], ylab = NULL, xlab = NULL)"

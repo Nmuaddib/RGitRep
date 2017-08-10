@@ -1,0 +1,5 @@
+"0","cai_g <- cai_SCc %>% "
+"0","  select(consulta, sadt_t = sadt) %>% "
+"0","  add_column(sadt_n = cai_SCn$sadt) %>% "
+"0","  add_column(sadt_s = cai_SCs$sadt)"
+"0","plot(cai_g)"

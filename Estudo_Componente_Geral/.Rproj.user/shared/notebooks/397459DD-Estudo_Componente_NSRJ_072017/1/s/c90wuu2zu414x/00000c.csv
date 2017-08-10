@@ -1,0 +1,6 @@
+"0","cat('^^ Internação ^^')"
+"1","^^ Internação ^^"
+"0","topcorN_W <- topcorN %>% "
+"0","  add_column(Var1_prct = resumo_valor_N[match(topcorN$Var1, resumo_valor_N$componente),4]) %>% "
+"0","  add_column(Var2_prct = resumo_valor_N[match(topcorN$Var2, resumo_valor_N$componente),4]) %>% "
+"0","  select(""Var1"",""Var1_prct"",""Var2"",""Var2_prct"",Corr = ""value"");topcorN_W"

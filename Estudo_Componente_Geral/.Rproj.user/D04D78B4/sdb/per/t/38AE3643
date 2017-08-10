@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "options(repos = 'http://vps.fmvz.usp.br/CRAN/')\ninstall.packages(\"HoRM\")\ninstall.packages(\"plotrix\")\ninstall.packages(\"tidyverse\")\ninstall.packages(\"lmtest\")\ninstall.packages(\"orcutt\")\ninstall.packages(\"reshape2\")\ninstall.packages(\"qcc\")\ninstall.packages(\"knitr\")\ninstall.packages(\"rmarkdown\")\ninstall.packages(\"formatR\")\ninstall.packages(\"car\")\n\nlibrary(\"tidyverse\", lib.loc=\"C:/Program Files/R/R-3.4.1/library\")\n\nlibrary(\"reshape2\", lib.loc=\"C:/Program Files/R/R-3.4.1/library\")\nlibrary(\"readxl\", lib.loc=\"C:/Program Files/R/R-3.4.1/library\")\nlibrary(\"qcc\", lib.loc=\"C:/Program Files/R/R-3.4.1/library\")\nlibrary(\"modelr\", lib.loc=\"C:/Program Files/R/R-3.4.1/library\")\nlibrary(\"dplyr\", lib.loc=\"C:/Program Files/R/R-3.4.1/library\")\nlibrary(\"ggplot2\", lib.loc=\"C:/Program Files/R/R-3.4.1/library\")\nlibrary(\"readr\", lib.loc=\"C:/Program Files/R/R-3.4.1/library\")\nlibrary(\"tibble\", lib.loc=\"C:/Program Files/R/R-3.4.1/library\")\nlibrary(\"tidyr\", lib.loc=\"C:/Program Files/R/R-3.4.1/library\")\nlibrary(\"purrr\", lib.loc=\"C:/Program Files/R/R-3.4.1/library\")\nlibrary(\"forcats\", lib.loc=\"C:/Program Files/R/R-3.4.1/library\")\nlibrary(\"plotrix\", lib.loc=\"C:/Program Files/R/R-3.4.1/library\")\n\nC:/Users/nelson.junior/Documents/R\nC:/Users/xurus/Documents/\n\nlib.loc=\"C:/Program Files/R/R-3.4.1/library\"\nlib.loc=\"~/R/win-library/3.4\"\n\n#Diverging\n#BrBG, PiYG, PRGn, PuOr, RdBu, RdGy, RdYlBu, RdYlGn, Spectral\n\n#Qualitative\n#Accent, Dark2, Paired, Pastel1, Pastel2, Set1, Set2, Set3\n\n#Sequential\n#Blues, BuGn, BuPu, GnBu, Greens, Greys, Oranges, \n#OrRd, PuBu, PuBuGn, PuRd, Purples, RdPu, Reds, YlGn, YlGnBu, YlOrBr, YlOrRd\n\ntitle: \"Avaliação da plataforma estatística \\\"R\\\" com estudo linear entre Consultas e Exames\"\nauthor: 'Autoria: Nelson Simões - CTI/Planserv'\ndate: \"Estudo inciado em Junho de 2017, relatório redigido em 12 de julho de 2017\"\n\n\n",
+    "created" : 1500077274105.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1264799223",
+    "id" : "38AE3643",
+    "lastKnownWriteTime" : 1500746788,
+    "last_content_update" : 1500746788531,
+    "path" : "~/Estudo_Componente_Geral/setup.R",
+    "project_path" : "setup.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
