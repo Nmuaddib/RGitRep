@@ -144,16 +144,10 @@ lenV <- vector()
 for (i in seq_along(siz)) {
   lenV[i] <- siz[[i]]
 }
+usiz <- unlist(siz)
 
-siz
-  
-siz[] 
-siz[[ ]]
 lenV
 max(lenV)
 
-seq_along(siz)
+siz[which(siz == 0)]
 
-map(siz, '[[', 1)
-
-funs['[[']
