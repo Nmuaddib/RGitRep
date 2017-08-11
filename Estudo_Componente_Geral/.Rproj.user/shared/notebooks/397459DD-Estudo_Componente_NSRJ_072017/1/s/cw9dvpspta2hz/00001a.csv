@@ -1,7 +1,0 @@
-"0","#### Raiz de resíduos padronizados --------------------------"
-"0","std_r <- sqrt(abs(std_r))"
-"0","#### Gráfico padrão (3) Igualdade ---------------------------"
-"0","plot(fit_r, std_r, "
-"0","     ylab = expression(sqrt(""Resíduos Padrão"")), "
-"0","     xlab = ""Valores Previstos"","
-"0","     main = ""Escala e Localização de Resíduos"")"

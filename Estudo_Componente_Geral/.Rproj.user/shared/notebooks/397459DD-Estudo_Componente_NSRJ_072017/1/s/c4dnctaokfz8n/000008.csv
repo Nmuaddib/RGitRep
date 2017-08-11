@@ -1,4 +1,0 @@
-"0","#### Formato original, trabalhado no MS Excel ---------------"
-"0","cat(""Formato original, trabalhado no MS Excel"")"
-"1","Formato original, trabalhado no MS Excel"
-"0","org <- read_excel('CAIv2.xlsx');org;"
