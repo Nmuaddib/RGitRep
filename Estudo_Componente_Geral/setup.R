@@ -11,11 +11,6 @@ install.packages("rmarkdown")
 install.packages("formatR")
 install.packages("car")
 
-.libPaths()
-getwd()
-
-.libPaths(c("~/R/win-library/3.4"))
-
 library("tidyverse", lib.loc="C:/Program Files/R/R-3.4.1/library")
 library("reshape2", lib.loc="C:/Program Files/R/R-3.4.1/library")
 library("readxl", lib.loc="C:/Program Files/R/R-3.4.1/library")
@@ -30,17 +25,13 @@ library("purrr", lib.loc="C:/Program Files/R/R-3.4.1/library")
 library("forcats", lib.loc="C:/Program Files/R/R-3.4.1/library")
 library("plotrix", lib.loc="C:/Program Files/R/R-3.4.1/library")
 
-C:/Users/nelson.junior/Documents/R
-C:/Users/xurus/Documents/
-
 lib.loc="C:/Program Files/R/R-3.4.1/library"
 lib.loc="~/R/win-library/3.4"
 
-"C:/Program Files/R/R-3.4.1/library"
-
 .Library <- "~/R/win-library/3.4"
-
 .Library
+.libPaths(c("~/R/win-library/3.4"))
+.libPaths()
 
 #Diverging
 #BrBG, PiYG, PRGn, PuOr, RdBu, RdGy, RdYlBu, RdYlGn, Spectral
