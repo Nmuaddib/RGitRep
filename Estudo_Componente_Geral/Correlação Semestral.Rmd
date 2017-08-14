@@ -177,3 +177,10 @@ f.cor_cmpar(caiS.corP,smstS.corP,'taxa','material')
 f.cor_cmpar(caiS.corP,smstS.corP,'honorario','medicamento')
 f.cor_cmpar(caiS.corP,smstS.corP,'sadt','medicamento')
 ```
+
+---
+
+```{python}
+print('Hello!')
+```
+
