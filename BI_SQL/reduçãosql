@@ -1,0 +1,28 @@
+select  dt.ANO,
+        di.NOME_ESPECIALIDADE ESPEC,
+        di.ITEM_MEDICO,
+        di.NOME_ITEM ITEM,
+        di.DESC_CLASSIFICACAO_DESPESA,
+        fc.IND_INTERNACAO,
+        sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) QTA,
+        sum(nvl(fc.VAL_APROVADO_ITEM,0)) VA
+from    TS.FAT_ITEM_CONTA fc,
+        TS.DIM_ITEM di,
+        TS.DIM_TEMPO dt
+where   fc.ITEM_MEDICO(+) = di.ITEM_MEDICO
+and     fc.ID_TEMPO_MES_ANO_REF = dt.ID_TEMPO
+----
+and     dt.ANO = '2016'
+--and     substr(di.ITEM_MEDICO,1,4) = '8541'
+--and     substr(di.ITEM_MEDICO,8,1) = '7'
+and     di.ITEM_MEDICO in (
+--and     substr(di.ITEM_MEDICO,1,7) in (
+)
+--and     substr(di.ITEM_MEDICO,8,1) in ('1','2','3','4','5','6')
+group by
+        dt.ANO,
+        di.NOME_ESPECIALIDADE,
+        di.ITEM_MEDICO,
+        di.NOME_ITEM,
+        di.DESC_CLASSIFICACAO_DESPESA,
+        fc.IND_INTERNACAO
