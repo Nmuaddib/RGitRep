@@ -15,27 +15,22 @@ library("ggplot2", lib.loc="~/R/win-library/3.4")
 library("readr", lib.loc="~/R/win-library/3.4")
 library("tibble", lib.loc="~/R/win-library/3.4")
 library("tidyr", lib.loc="~/R/win-library/3.4")
-library("reshape2", lib.loc="~/R/win-library/3.4")
 library("magrittr", lib.loc="~/R/win-library/3.4")
 library("readxl", lib.loc="~/R/win-library/3.4")
-library("modelr", lib.loc="~/R/win-library/3.4")
 library("purrr", lib.loc="~/R/win-library/3.4")
-library("forcats", lib.loc="~/R/win-library/3.4")
-library("plotrix", lib.loc="~/R/win-library/3.4")
-library("qcc", lib.loc="~/R/win-library/3.4")
 ```
 
 ```{r processo}
 x_fat_ate <- read_excel('Geral2014_17_prestadores_t.xls')
 as.tibble(x_fat_ate)
 
-f.get_last_scale <- function(mtx, idx = 0) {
-  l <- dim(mtx)[1]
-  if (idx > 0) idx <- idx - 1
-  if (idx >= l) idx <- 1
-  i <- l - idx
-  mtx[i:l,1]
-}
+#f.get_last_scale <- function(mtx, idx = 0) {
+#  l <- dim(mtx)[1]
+#  if (idx > 0) idx <- idx - 1
+#  if (idx >= l) idx <- 1
+#  i <- l - idx
+#  mtx[i:l,1]
+#}
 
 f.name_scale <- function(lt) {
   prest <- names(lt)
@@ -48,30 +43,97 @@ f.name_scale <- function(lt) {
   return(anomes_vec)
 }
 
-FA.scale <- x_fat_ate %>% 
-  mutate(DIF = VA_FT - VA_AT) %>% 
+x_fat_ate %<>% mutate(DIF = VA_FT-VA_AT)
+
+FA.lst_scale <- x_fat_ate %>%
   split(.$PRESTADOR, drop = T) %>%
-  map("DIF") %>% 
-  map(scale, F, T) %>% 
-  map(f.get_last_scale, 2)
+  map("DIF") %>%
+  map(scale, F, T)
 
-for (i in seq_along(FA.scale)) names(FA.scale[[i]]) <- f.name_scale(FA.scale[i])
+#%>% 
+#  map(f.get_last_scale, 2)
 
-FA.flat_scale <- unlist(FA.scale)
+for (i in seq_along(FA.lst_scale)) names(FA.lst_scale[[i]]) <- f.name_scale(FA.lst_scale[i])
 
-FA.df_scale <- as.data.frame(FA.flat_scale)
-
-FA.df_scale <- cbind(FA.df_scale[,1],
-                       str_sub(row.names(FA.df_scale), 
-                               str_locate(row.names(FA.df_scale), ".2")[,1]+1), 
-                       str_sub(row.names(FA.df_scale), 
-                               1, str_locate(row.names(FA.df_scale), ".2")[,1]-1)) %>%
+FA.df_scale <- unlist(FA.lst_scale) %>% 
+  as.data.frame() %>% 
+  cbind(prestador = str_sub(row.names(.), 
+                1, str_locate(row.names(.), ".2")[,1]-1),
+        anomes = str_sub(row.names(.), 
+                str_locate(row.names(.), ".2")[,1]+1)) %>%
   as.tibble() %>% 
-  select(prestador = V3, anomes = V2, escala = V1) %>% 
-  mutate(escala = as.double(escala))
+  mutate(escala = as.double(.)) %>% 
+  select(-.)
 
 FA.df_scale
+```
 
-write.csv2(FA.df_scale, "resultado.csv")
+```{r geral}
+x_geral <- read_excel('Geral2014_17.xls')
+as.tibble(x_geral)
+
+x_geral %<>% mutate(DIF = VA_FT-VA_AT)
+
+FA.scale_geral <- cbind(anomes = x_geral$ANOMES, 
+                        escala = scale(x_geral$DIF, 
+                                       center = F, 
+                                       scale = T)[1:dim(x_geral)[1],1])
+
+#colnames(FA.scale_geral) <- c('anomes','escala')
+
+FA.scale_geral %<>% as.tibble()
+
+FA.scale_geral
+```
+```{r lookups}
+x_fat_ate <- x_fat_ate %>%
+  add_column(., escala = FA.df_scale[match(paste(.$PRESTADOR,
+                                                 .$ANOMES),
+                                           paste(FA.df_scale$prestador, 
+                                                 FA.df_scale$anomes)), 3][[1]]) %>%
+  add_column(., escala_geral = FA.scale_geral[match(.$ANOMES, FA.scale_geral$anomes), 2][[1]])
+
+x_fat_ate
+```
+
+```{r gráficos}
+x_fat_ate %<>% mutate(ANOMES = factor(.$ANOMES, levels = x_geral$ANOMES),
+                      escala_geral = as.double(escala_geral))
+
+FA.lst_prestador <- x_fat_ate %>% 
+  split(.$PRESTADOR)
+
+f.gg_param <- function(nm) {
+
+  ggplot(data = FA.lst_prestador[[nm]], aes(x = ANOMES, y = escala_geral)) +
+    #geom_line(color = 'blue', size = 0.9, alpha = 0.6, group = 1) +
+    #geom_line(aes(y = escala), color = 'black', 
+    #          size = 0.5, alpha = 0.6, group = 1) +
+    geom_linerange(aes(ymax = ifelse(escala > escala_geral, escala, escala_geral),
+                       ymin = ifelse(escala <= escala_geral, escala, escala_geral),
+                       col = (escala_geral-escala)),
+                   size = 1.2, alpha = 0.7) + #, col = 'black'
+    geom_hline(yintercept = 0, col = 'black', alpha = 0.4) + 
+    geom_point(aes(y = escala, col = (escala_geral-escala)), 
+               size = 4, alpha = 1) + #  
+    geom_point(col = 'red', size = 1.7, alpha = 0.9, shape = 15) +  
+    scale_colour_gradient2(name='Delta para\nEscala Geral', 
+                           high = 'dark green', 
+                           mid = 'light blue',
+                           low = 'red',
+                           midpoint = 0) +
+    labs(title = paste0('Proporção do Delta Faturamento x Atendimento Padronizada\n',
+                        names(FA.lst_prestador[nm])),
+         x = 'Ano e Mês', 
+         y = 'Desvios Padrão') +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, 
+                                     vjust = 1, 
+                                     size = 9, 
+                                     hjust = 1))
+}
+
+names(FA.lst_prestador) %>% 
+  map(f.gg_param)
 ```
 
