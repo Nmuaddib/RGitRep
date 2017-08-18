@@ -123,7 +123,7 @@ x_fat_ate
 
 Para dados padronizados Planserv x Prestador.
 
-```{r gráficos, fig.height=7, fig.width=10}
+```{r gráficos}
 x_fat_ate %<>% mutate(ANOMES = factor(.$ANOMES, levels = x_geral$ANOMES),
                       escala_geral = as.double(escala_geral))
 
@@ -132,7 +132,7 @@ FA.lst_prestador <- x_fat_ate %>%
 
 f.gg_param <- function(nm) {
 
-  ggplot(data = FA.lst_prestador[[nm]], aes(x = ANOMES, y = escala_geral)) +
+  ggp <- ggplot(data = FA.lst_prestador[[nm]], aes(x = ANOMES, y = escala_geral)) +
     #geom_line(color = 'blue', size = 0.9, alpha = 0.6, group = 1) +
     #geom_line(aes(y = escala), color = 'black', 
     #          size = 0.5, alpha = 0.6, group = 1) +
@@ -158,9 +158,48 @@ f.gg_param <- function(nm) {
                                      vjust = 1, 
                                      size = 9, 
                                      hjust = 1))
+  
+  plot(ggp)
+  
+  tbp <- FA.lst_prestador[[nm]] %>% select ('Ano e mês' = ANOMES,
+                                            'Valor Faturado' = VA_FT,
+                                            'Valor Atendido' = VA_AT,
+                                            'Qt. Faturada' = QTA_FT,
+                                            'Qt. Atendida' = QTA_AT) %>% 
+    as.data.frame()
 }
 
+f.tb_param <- function(nm) {
+  tbp <- FA.lst_prestador[[nm]] %>% select ('Ano e mês' = ANOMES,
+                                            'Valor Faturado' = VA_FT,
+                                            'Valor Atendido' = VA_AT,
+                                            'Qt. Faturada' = QTA_FT,
+                                            'Qt. Atendida' = QTA_AT) %>% 
+    as.data.frame()
+  
+  #print(tbp)
+}
+
+f.result_p <- function(nm) {
+  f.gg_param(nm)
+  #f.tb_param(nm)
+}
+
+```
+
+### Como ler este gráfico?
+
+- Esferas são a diferença entre Valor de Faturamento e Valor de Atendimento, transformada em número de desvios padrão, do prestador para cada referência.
+- Quadrados vermelhos são a diferença padronizada para o Planserv como um todo para cada referência.
+- Desvios positivos definem Faturamento maior que Atendimento para a Referência, desvios negativos definem Atendimento maior que faturamento, zero define que o valor faturado foi idêntico ao atendido.
+- Linhas verticais mostram a diferença em desvios padrão entre o prestador e o Planserv consolidado para cada referência.
+- A cor das linhas e esferas reflete se a diferença entre prestador e planserv é positiva (escala de vermelho, o prestador apresentou proporção de faturamento maior em comparação com a métrica do Planserv) ou negativa (escala de verde, o prestador apresentou proporção de atendimento maior (ou faturamento menor) em comparação com a métrica do Planserv).
+- A diferença entre Planserv e prestador independe da proporção entre faturamento e atendimento, podendo ambas estarem acima de zero (ambos possuem proporção de faturamento maior que atendimento) ou abaixo de zero (ambos posuem proporção de atendimento maior que faturamento).
+- Um comportamento ideal para a gestão de contas do prestador é indicado quando seus valores permanecem constantemente próximos de zero, ou pelo menos mais próximos de zero em relação ao valor geral do Planserv, e a avaliação dos pontos adjacentes no tempo é importante para verificar se houve descontrole (ex: valores extremos de atendimento maior que faturamento em um mês compensados com a proporção inversa nos meses seguintes, também de modo extremo).
+
+```{r plotagem, fig.height=7, fig.width=10}
 names(FA.lst_prestador) %>% 
-  map(f.gg_param)
+  map(f.result_p)
+#  map(f.result_p)
 ```
 
