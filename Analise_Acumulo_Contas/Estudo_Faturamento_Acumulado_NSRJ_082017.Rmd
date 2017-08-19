@@ -27,13 +27,7 @@ library("tidyr", lib.loc="~/R/win-library/3.4")
 library("magrittr", lib.loc="~/R/win-library/3.4")
 library("readxl", lib.loc="~/R/win-library/3.4")
 library("purrr", lib.loc="~/R/win-library/3.4")
-```
-
-## Processo de cálculo de dados padronizados por prestador
-```{r processo}
-x_fat_ate <- read_excel('Geral2014_17_prestadores_t.xls')
-as.tibble(x_fat_ate)
-
+#### --------------------------------------------------------
 #f.get_last_scale <- function(mtx, idx = 0) {
 #  l <- dim(mtx)[1]
 #  if (idx > 0) idx <- idx - 1
@@ -41,6 +35,12 @@ as.tibble(x_fat_ate)
 #  i <- l - idx
 #  mtx[i:l,1]
 #}
+```
+
+## Processo de cálculo de dados padronizados por prestador
+```{r processo}
+x_fat_ate <- read_excel('Geral2014_17_prestadores_t.xls')
+as.tibble(x_fat_ate)
 
 f.name_scale <- function(lt) {
   prest <- names(lt)
@@ -58,35 +58,25 @@ x_fat_ate %<>% mutate(DIF = VA_FT-VA_AT)
 FA.lst_scale <- x_fat_ate %>%
   split(.$PRESTADOR, drop = T) %>%
   map("DIF") %>%
-  map(scale, F, T)
-
-#%>% 
+  map(scale, F, T) #%>% 
 #  map(f.get_last_scale, 2)
 
 for (i in seq_along(FA.lst_scale)) names(FA.lst_scale[[i]]) <- f.name_scale(FA.lst_scale[i])
 
-unlist(FA.lst_scale)
-names(FA.df_scale)
+idx <- unlist(FA.lst_scale)
 
-
+FA.df_scale <- tibble(prestador = character(), anomes = character(), escala = double())
 
 for (i in seq_along(unlist(FA.lst_scale))) {
-  idx <- unlist(FA.lst_scale)
-  
+  FA.df_scale[i,] <- c(str_sub(names(idx)[i], 1, str_locate(names(idx)[i], ".2")[1]-1),
+                       str_sub(names(idx)[i], str_locate(names(idx)[i], ".2")[1]+1),
+                       idx[i])
 }
 
-FA.df_scale <- unlist(FA.lst_scale) #%>% 
-#  as.tibble()
-#  as.data.frame(stringsAsFactors = F) #%>% 
-#  cbind(prestador = str_sub(row.names(.), 
-#                                      1, str_locate(row.names(.), ".2")[,1]-1),
-#        anomes = str_sub(row.names(.), 
-#                                   str_locate(row.names(.), ".2")[,1]+1)) %>%
-  #as.tibble() %>% 
-#  mutate(escala = as.double(.)) %>% 
-#  select(-.)
+FA.df_scale %<>% mutate(escala = as.double(escala))
 
 FA.df_scale
+
 ```
 
 
@@ -139,16 +129,13 @@ FA.lst_prestador <- x_fat_ate %>%
 f.gg_param <- function(nm) {
 
   ggp <- ggplot(data = FA.lst_prestador[[nm]], aes(x = ANOMES, y = escala_geral)) +
-    #geom_line(color = 'blue', size = 0.9, alpha = 0.6, group = 1) +
-    #geom_line(aes(y = escala), color = 'black', 
-    #          size = 0.5, alpha = 0.6, group = 1) +
     geom_linerange(aes(ymax = ifelse(escala > escala_geral, escala, escala_geral),
                        ymin = ifelse(escala <= escala_geral, escala, escala_geral),
                        col = (escala_geral-escala)),
-                   size = 1.2, alpha = 0.7) + #, col = 'black'
+                   size = 1.2, alpha = 0.7) +
     geom_hline(yintercept = 0, col = 'black', alpha = 0.4) + 
     geom_point(aes(y = escala, col = (escala_geral-escala)), 
-               size = 4, alpha = 1) + #  
+               size = 4, alpha = 1) + 
     geom_point(col = 'red', size = 1.7, alpha = 0.9, shape = 15) +  
     scale_colour_gradient2(name='Delta para\nEscala Geral', 
                            high = 'dark green', 
@@ -164,6 +151,8 @@ f.gg_param <- function(nm) {
                                      vjust = 1, 
                                      size = 9, 
                                      hjust = 1))
+    #geom_line(color = 'blue', size = 0.9, alpha = 0.6, group = 1) +
+    #geom_line(aes(y = escala), color = 'black', size = 0.5, alpha = 0.6, group = 1)  
   
   plot(ggp)
   
@@ -192,9 +181,9 @@ f.tb_param <- function(nm) {
 
 ### Como ler o gráfico a seguir?
 
-- Esferas são a diferença entre Valor de Faturamento e Valor de Atendimento, transformada em número de desvios padrão, do prestador para cada referência.
-- Quadrados vermelhos são a diferença padronizada para o Planserv como um todo para cada referência.
-- Desvios positivos definem Faturamento maior que Atendimento para a Referência, desvios negativos definem Atendimento maior que faturamento, zero define que o valor faturado foi idêntico ao atendido.
+- Esferas são a diferença entre Valor de Faturamento e Valor de Atendimento, transformada em número de desvios padrão, para o prestador, em cada referência.
+- Quadrados vermelhos são a diferença padronizada para o Planserv como um todo, para cada referência.
+- Desvios positivos definem Faturamento maior que Atendimento para a Referência, desvios negativos definem Atendimento maior que Faturamento, zero define que o valor faturado foi idêntico ao atendido.
 - Linhas verticais mostram a diferença em desvios padrão entre o prestador e o Planserv consolidado para cada referência.
 - A cor das linhas e esferas reflete se a diferença entre prestador e planserv é positiva (escala de vermelho, o prestador apresentou proporção de faturamento maior em comparação com a métrica do Planserv) ou negativa (escala de verde, o prestador apresentou proporção de atendimento maior (ou faturamento menor) em comparação com a métrica do Planserv).
 - A diferença entre Planserv e prestador independe da proporção entre faturamento e atendimento, podendo ambas estarem acima de zero (ambos possuem proporção de faturamento maior que atendimento) ou abaixo de zero (ambos possuem proporção de atendimento maior que faturamento).

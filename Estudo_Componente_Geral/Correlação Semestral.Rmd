@@ -179,8 +179,3 @@ f.cor_cmpar(caiS.corP,smstS.corP,'sadt','medicamento')
 ```
 
 ---
-
-```{python}
-print('Hello!')
-```
-
