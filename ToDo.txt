@@ -1,0 +1,14 @@
+- Analise de Beneficiários Totais x Atendidos (map/ano)
+	.SQL
+	Resgate de Classificação Macro de Componentes, Status-CTI
+- Extração com, para Prestadores e Planserv, .SQL->R, sem excel
+	Fatur Total 		FT->mr, 
+	Atend Total 		sum(AT)->mr, 
+	Fatur Corrente 		AT=FT->mr, 
+	Fatur Acumulado Total 	AT<>FT->mr, 
+	Acumulado Anterior 	AT=FT-1->mr, 
+	N de Atend em Fatur 	count(AT->mr),
+- Slides Consulta x SADT
+- Slides para Corr Semestral
+- Shiny em Fatur x Atend
+- Despesa x Receita
