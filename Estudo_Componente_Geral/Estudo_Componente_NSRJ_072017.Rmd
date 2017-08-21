@@ -12,49 +12,49 @@ output:
 
 ## Objetivo
   
-<p align="justify">**Apresentar estudo inicial realizado para dom√≠nio da plataforma de computa√ß√£o estat√≠stica "R". Os dados utilizados foram extra√≠dos a partir de BI (Banco de Intelig√™ncia de Neg√≥cio) criado pela CTI em Fevereiro de 2017, sobre contas m√©dicas e suas dimens√µes, com uma s√©rie temporal entre 2014 at√© a √∫ltima refer√™ncia fechada e atualizada, em mar√ßo de 2017.**</p>
+<p align="justify">**Apresentar estudo inicial realizado para domÌnio da plataforma de computaÁ„o estatÌstica "R". Os dados utilizados foram extraÌdos a partir de BI (Banco de InteligÍncia de NegÛcio) criado pela CTI em Fevereiro de 2017, sobre contas mÈdicas e suas dimensıes, com uma sÈrie temporal entre 2014 atÈ a ˙ltima referÍncia fechada e atualizada, em marÁo de 2017.**</p>
 
 ***
-`ATEN√á√ÉO`
-<p align="justify">*O conte√∫do deste documento √© de natureza confidencial e n√£o dever√° ser circulado sem expressa autoriza√ß√£o da Coordena√ß√£o Geral do Planserv.*</p>
+`ATEN«√O`
+<p align="justify">*O conte˙do deste documento È de natureza confidencial e n„o dever· ser circulado sem expressa autorizaÁ„o da CoordenaÁ„o Geral do Planserv.*</p>
 
-<p align="justify">*N√£o ser√° objetivo deste relat√≥rio tratar em detalhes as t√©cnicas estat√≠sticas utilizadas, com exce√ß√£o de pontos relevantes para demonstrar a flexibilidade da ferramenta, como por exemplo a abordagem para verificar problemas de autocorrela√ß√£o em s√©ries temporais. A teoria estat√≠stica envolvida, embora interessante para alguns p√∫blicos, tonaria o relato demasiado extenso.*</p>
+<p align="justify">*N„o ser· objetivo deste relatÛrio tratar em detalhes as tÈcnicas estatÌsticas utilizadas, com exceÁ„o de pontos relevantes para demonstrar a flexibilidade da ferramenta, como por exemplo a abordagem para verificar problemas de autocorrelaÁ„o em sÈries temporais. A teoria estatÌstica envolvida, embora interessante para alguns p˙blicos, tonaria o relato demasiado extenso.*</p>
 ***
 
-##Conte√∫do
+##Conte˙do
 
-1. [Descri√ß√£o da Tecnologia](#descricao-da-tecnologia)  
-2. [Introdu√ß√£o ao Estudo Proposto](#introducao-ao-estudo-proposto)  
-3. [An√°lise de Correla√ß√£o](#analise-de-correlacao)  
-4. [Gr√°ficos para Comunica√ß√£o](#graficos-para-comunicacao)  
+1. [DescriÁ„o da Tecnologia](#descricao-da-tecnologia)  
+2. [IntroduÁ„o ao Estudo Proposto](#introducao-ao-estudo-proposto)  
+3. [An·lise de CorrelaÁ„o](#analise-de-correlacao)  
+4. [Gr·ficos para ComunicaÁ„o](#graficos-para-comunicacao)  
 5. [Direcionamento no Estudo](#direcionamento-no-estudo)  
-6. [An√°lise Detalhada sobre Consulta e Exames](#analise-detalhada-sobre-consulta-e-exames)  
-6.1 [Prepara√ß√£o](#preparacao)  
-6.2 [Sele√ß√£o de Escopo pelo Indicador de Interna√ß√£o](#selecao-de-escopo-pelo-indicador-de-internacao)  
-7. [Regress√£o Linear](#regressao-linear)  
+6. [An·lise Detalhada sobre Consulta e Exames](#analise-detalhada-sobre-consulta-e-exames)  
+6.1 [PreparaÁ„o](#preparacao)  
+6.2 [SeleÁ„o de Escopo pelo Indicador de InternaÁ„o](#selecao-de-escopo-pelo-indicador-de-internacao)  
+7. [Regress„o Linear](#regressao-linear)  
 7.1 [Modelo Inicial](#modelo-inicial)  
-7.2 [Aspectos e Avalia√ß√£o da Regress√£o](#aspectos-e-avaliacao-da-regressao)  
-7.3 [Considera√ß√µes sobre S√©ries Temporais](#consideracoes-sobre-series-temporais)  
-7.4 [Avalia√ß√£o Espec√≠fica para Objetos do Pacote "Orcutt"](#avaliacao-especifica-para-objetos-do-pacote-orcutt)  
-7.5 [Alternativa de Transforma√ß√£o](#alternativa-de-transformacao)  
+7.2 [Aspectos e AvaliaÁ„o da Regress„o](#aspectos-e-avaliacao-da-regressao)  
+7.3 [ConsideraÁıes sobre SÈries Temporais](#consideracoes-sobre-series-temporais)  
+7.4 [AvaliaÁ„o EspecÌfica para Objetos do Pacote "Orcutt"](#avaliacao-especifica-para-objetos-do-pacote-orcutt)  
+7.5 [Alternativa de TransformaÁ„o](#alternativa-de-transformacao)  
 8. [Outros Experimentos](#outros-experimentos)  
-9. [Visualiza√ß√µes de Dados](#visualizacoes-de-dados)  
-10. [Conclus√£o](#conclusao)  
+9. [VisualizaÁıes de Dados](#visualizacoes-de-dados)  
+10. [Conclus„o](#conclusao)  
 
 ***
-## Descri√ß√£o da Tecnologia
-[Retorno para Conte√∫do](#conteudo)
+## DescriÁ„o da Tecnologia
+[Retorno para Conte˙do](#conteudo)
 
-<p align="justify">A ferramenta foi criada em 1992, por Ross Ihaka e Robert Gentleman, professores de estat√≠stica na Universidade de Auckland, Nova Zel√¢ndia, como um desenvolvimento comunit√°rio de fonte livre (gratuito) sobre a linguagem "S", n√∫cleo fundamental da plataforma estat√≠stica S-Plus, comercializada.</p> 
+<p align="justify">A ferramenta foi criada em 1992, por Ross Ihaka e Robert Gentleman, professores de estatÌstica na Universidade de Auckland, Nova Zel‚ndia, como um desenvolvimento comunit·rio de fonte livre (gratuito) sobre a linguagem "S", n˙cleo fundamental da plataforma estatÌstica S-Plus, comercializada.</p> 
 
-<p align="justify">"R" pode ser descrita como uma linguagem de programa√ß√£o interpretativa (n√£o √© necess√°rio compilar seus scripts), possui integra√ß√£o com sistemas de gerenciamento de bancos de dados, outras linguagens (como Python), outras plataformas estat√≠sticas (importa√ß√µes de SPSS, SAS, Stata, Minitab), MSExcel e arquivos planos.</p>
+<p align="justify">"R" pode ser descrita como uma linguagem de programaÁ„o interpretativa (n„o È necess·rio compilar seus scripts), possui integraÁ„o com sistemas de gerenciamento de bancos de dados, outras linguagens (como Python), outras plataformas estatÌsticas (importaÁıes de SPSS, SAS, Stata, Minitab), MSExcel e arquivos planos.</p>
 
-<p align="justify">Desde sua cria√ß√£o, seu conte√∫do b√°sico foi extensamente ampliado pela comunidade por meio da constru√ß√£o de pacotes que podem facilmente ser anexados ao ambiente b√°sico, e que ampliam as funcionalidades da ferramenta contemplando a maioria das pr√°ticas estat√≠sticas conhecidas, estilos e ferramentas para apresenta√ß√µes gr√°ficas, manipula√ß√£o de dados, controles de qualidade, fun√ß√µes para facilitar e simplificar o desenvolvimento de seu c√≥digo, entre outras.</p>
+<p align="justify">Desde sua criaÁ„o, seu conte˙do b·sico foi extensamente ampliado pela comunidade por meio da construÁ„o de pacotes que podem facilmente ser anexados ao ambiente b·sico, e que ampliam as funcionalidades da ferramenta contemplando a maioria das pr·ticas estatÌsticas conhecidas, estilos e ferramentas para apresentaÁıes gr·ficas, manipulaÁ„o de dados, controles de qualidade, funÁıes para facilitar e simplificar o desenvolvimento de seu cÛdigo, entre outras.</p>
 
-<p align="justify">Como exemplo do funcionamento desta estrutura modular, abaixo est√£o os pacotes que foram utilizados no estudo, contendo cada um v√°rias das fun√ß√µes aplicadas na gera√ß√£o dos resultados demonstrados abaixo:</p>
+<p align="justify">Como exemplo do funcionamento desta estrutura modular, abaixo est„o os pacotes que foram utilizados no estudo, contendo cada um v·rias das funÁıes aplicadas na geraÁ„o dos resultados demonstrados abaixo:</p>
 
 ```{r setup, message = FALSE, warning = FALSE}
-## Op√ß√µes iniciais de configura√ß√£o do ambiente --------------
+## OpÁıes iniciais de configuraÁ„o do ambiente --------------
 knitr::opts_chunk$set(echo = TRUE)
 options(scipen=999)
 #### --------------------------------------------------------
@@ -72,7 +72,7 @@ library("purrr", lib.loc="~/R/win-library/3.4")
 library("forcats", lib.loc="~/R/win-library/3.4")
 library("plotrix", lib.loc="~/R/win-library/3.4")
 library("qcc", lib.loc="~/R/win-library/3.4")
-## ** Pacotes b√°sicos que comp√µe o Tidyverse poderiam ser ativados com uma unica linha:
+## ** Pacotes b·sicos que compıe o Tidyverse poderiam ser ativados com uma unica linha:
 #library("tidyverse", lib.loc="~/R/win-library/3.4"")
 #Loading tidyverse: ggplot2
 #Loading tidyverse: tibble
@@ -82,54 +82,54 @@ library("qcc", lib.loc="~/R/win-library/3.4")
 #Loading tidyverse: dplyr
 ```
 
-Vers√£o da plataforma "R": 3.4.1 (2017-06-30) "Single Candle"<br>
+Vers„o da plataforma "R": 3.4.1 (2017-06-30) "Single Candle"<br>
 <https://www.r-project.org/><br>
-Vers√£o do ambiente de programa√ß√£o "RStudio": 1.0.143<br>
+Vers„o do ambiente de programaÁ„o "RStudio": 1.0.143<br>
 <https://www.rstudio.com/><br>
-Pacotes principais nesta apresenta√ß√£o: Tidyverse 1.1.1<br>
+Pacotes principais nesta apresentaÁ„o: Tidyverse 1.1.1<br>
 <http://tidyverse.org/><br>
 
-<p align="justify">A apresenta√ß√£o deste relat√≥rio foi integralmente concebida com a utiliza√ß√£o do ambiente de programa√ß√£o RStudio, com a funcionalidade R-Markdown. <http://rmarkdown.rstudio.com/index.html></p>
+<p align="justify">A apresentaÁ„o deste relatÛrio foi integralmente concebida com a utilizaÁ„o do ambiente de programaÁ„o RStudio, com a funcionalidade R-Markdown. <http://rmarkdown.rstudio.com/index.html></p>
 
 ![](rstudio.png)
 <br><br>
 <p align="right">*Ambiente de desenvolvimento integrado, RStutdio*</p>
 ***
 
-<p align="justify">Para efeito demonstrativo, a maior parte dos comandos e fun√ß√µes utilizados para gera√ß√£o de resultados na ferramenta foi mantido √† vista, por√©m a supress√£o destes itens, mantendo apenas tabelas, coment√°rios e gr√°ficos √© facilmente executada dentro da estrutura RStudio + R-Markdown.</p>
+<p align="justify">Para efeito demonstrativo, a maior parte dos comandos e funÁıes utilizados para geraÁ„o de resultados na ferramenta foi mantido ‡ vista, porÈm a supress„o destes itens, mantendo apenas tabelas, coment·rios e gr·ficos È facilmente executada dentro da estrutura RStudio + R-Markdown.</p>
 ***
-## Introdu√ß√£o ao Estudo Proposto
-[Retorno para Conte√∫do](#conteudo)
+## IntroduÁ„o ao Estudo Proposto
+[Retorno para Conte˙do](#conteudo)
 
-<p align="justify">O trabalho teve in√≠cio com dados gerados a partir da ferramenta Power BI e exportados para Excel, tratados e importados para o "R" de maneira n√£o transformada (arquivo plano), e posteriormente tamb√©m importados com transforma√ß√µes para processamento estat√≠stico (onde colunas = vari√°veis). Os dados inclu√≠dos seguem as seguintes caracter√≠sticas:</p>
+<p align="justify">O trabalho teve inÌcio com dados gerados a partir da ferramenta Power BI e exportados para Excel, tratados e importados para o "R" de maneira n„o transformada (arquivo plano), e posteriormente tambÈm importados com transformaÁıes para processamento estatÌstico (onde colunas = vari·veis). Os dados incluÌdos seguem as seguintes caracterÌsticas:</p>
 
-- S√©rie temporal pela data de atendimento do componente assistencial;
-- Duas consolida√ß√µes de quantidade por m√™s de refer√™ncia, uma entre dias 1 a 15 e outra entre 16 a 31, para aumento da efic√°cia dos testes relacionados;
-- Na transforma√ß√£o, foram filtrados dados de maior relev√¢ncia, a partir de janeiro de 2014, gerando 78 observa√ß√µes por componente;
-- Dados de Componente, Ano/m√™s/Quinzena e Indicador de Interna√ß√£o (CAI);
+- SÈrie temporal pela data de atendimento do componente assistencial;
+- Duas consolidaÁıes de quantidade por mÍs de referÍncia, uma entre dias 1 a 15 e outra entre 16 a 31, para aumento da efic·cia dos testes relacionados;
+- Na transformaÁ„o, foram filtrados dados de maior relev‚ncia, a partir de janeiro de 2014, gerando 78 observaÁıes por componente;
+- Dados de Componente, Ano/mÍs/Quinzena e Indicador de InternaÁ„o (CAI);
 
 ```{r dados originais}
 #### Formato original, trabalhado no MS Excel ---------------
 cat("Formato original, trabalhado no MS Excel")
 org <- read_excel('CAIv2.xlsx');org;
-#### Formato para processamento estat√≠stico -----------------
-cat("Formato para processamento estat√≠stico")
-cai <- read_excel('CAIv2.xlsx') %>% # readxl: importa√ß√£o
+#### Formato para processamento estatÌstico -----------------
+cat("Formato para processamento estatÌstico")
+cai <- read_excel('CAIv2.xlsx') %>% # readxl: importaÁ„o
   group_by(componente,internacao,amq) %>% # dplyr: agrupamento
-  summarise(valor = sum(valor), qt = sum(quantidade)) %>% # dplyr: sumariza√ß√£o
+  summarise(valor = sum(valor), qt = sum(quantidade)) %>% # dplyr: sumarizaÁ„o
   select(-valor) %>% # dplyr: retirada de uma coluna
-  spread(componente,qt) %>% # tidyr: mudan√ßa de formato, de chave-valor para colunas
-  arrange(amq, internacao) %>%  # dplyr: reordena√ß√£o
-  filter(amq>="20140101"); cai; # dplyr: sele√ß√£o;
+  spread(componente,qt) %>% # tidyr: mudanÁa de formato, de chave-valor para colunas
+  arrange(amq, internacao) %>%  # dplyr: reordenaÁ„o
+  filter(amq>="20140101"); cai; # dplyr: seleÁ„o;
 ```
 ***
-## An√°lise de Correla√ß√£o
-[Retorno para Conte√∫do](#conteudo)
+## An·lise de CorrelaÁ„o
+[Retorno para Conte˙do](#conteudo)
 
-<p align="justify">A partir da tabela transformada acima, foi criada uma matriz de correla√ß√£o entre os componentes, para verifica√ß√£o de quais pares apresentavam influ√™ncia sobre os demais. De modo a avaliar todas os relacionamentos, foram criadas tr√™s vers√µes: completo (C), sem interna√ß√£o(N) e com interna√ß√£o (S):</p>
+<p align="justify">A partir da tabela transformada acima, foi criada uma matriz de correlaÁ„o entre os componentes, para verificaÁ„o de quais pares apresentavam influÍncia sobre os demais. De modo a avaliar todas os relacionamentos, foram criadas trÍs versıes: completo (C), sem internaÁ„o(N) e com internaÁ„o (S):</p>
 
-```{r correla√ß√£o, warning=FALSE}
-#### Transforma√ß√µes sobre dados da "CAI" com uma fun√ß√£o -----
+```{r correlaÁ„o, warning=FALSE}
+#### TransformaÁıes sobre dados da "CAI" com uma funÁ„o -----
 f.tab_cor <-  function(caidf,mtd) {
   corP <- caidf %>%  
     group_by(amq) %>% 
@@ -150,12 +150,12 @@ f.tab_cor <-  function(caidf,mtd) {
     cor(., method = mtd)
 }
 
-#### Filtragem e calculo com fun√ß√£o criada acima ------------
+#### Filtragem e calculo com funÁ„o criada acima ------------
 caiC.corP <- cai %>%
   arrange(amq, internacao) %>% 
   f.tab_cor(.,'pearson');as.tibble(caiC.corP)
 
-#### Apenas a primeira tabela (^) ser√° demonstrada ----------
+#### Apenas a primeira tabela (^) ser· demonstrada ----------
 caiN.corP <- cai %>%
   filter(internacao == 'n') %>% 
   arrange(amq) %>%
@@ -166,30 +166,30 @@ caiS.corP <- cai %>%
   arrange(amq) %>% 
   f.tab_cor(.,'pearson')
 
-#### Limpeza de objetos, caso necess√°rio para recria√ß√£o -----
+#### Limpeza de objetos, caso necess·rio para recriaÁ„o -----
 rm(caiC.cor,caiS.cor,caiN.cor)
 
-#### Representa√ß√£o por simbolos -----------------------------
+#### RepresentaÁ„o por simbolos -----------------------------
 Ccorgrid <- symnum(caiC.corP);Ccorgrid
 
-#### Apenas a primeira tabela (^) ser√° demonstrada ----------
+#### Apenas a primeira tabela (^) ser· demonstrada ----------
 Ncorgrid <- symnum(caiN.corP);#Ncorgrid
 Scorgrid <- symnum(caiS.corP);#Scorgrid
 
-#### Tratamento para apresenta√ß√£o gr√°fica -------------------
+#### Tratamento para apresentaÁ„o gr·fica -------------------
 caiC.corP[lower.tri(caiC.corP)] <- NA
 caiN.corP[lower.tri(caiN.corP)] <- NA
 caiS.corP[lower.tri(caiS.corP)] <- NA
 ```
 ***
-## Gr√°ficos para Comunica√ß√£o
-[Retorno para Conte√∫do](#conteudo)
+## Gr·ficos para ComunicaÁ„o
+[Retorno para Conte˙do](#conteudo)
 
-<p align="justify">Embora suficientes para avalia√ß√£o estat√≠stica de profissionais, os instrumentos apresentados at√© ent√£o n√£o s√£o adequados para demonstra√ß√£o de resultados  e aprecia√ß√£o de p√∫blicos em geral (outras capacidades sobre visualiza√ß√£o ser√£o tratadas ao final deste estudo, no t√≥pico anterior √† conclus√£o).</p>
-<p align="justify">Com objetivo de evoluir da an√°lise para comunica√ß√£o, os dados de correla√ß√£o foram submetidos a manipula√ß√£o por um dos pacotes especialistas do "R" para apresenta√ß√µes gr√°ficas (GGPlot2), foram ent√£o gerados os mapas de correla√ß√£o com est√©tica mais adequada:</p>
+<p align="justify">Embora suficientes para avaliaÁ„o estatÌstica de profissionais, os instrumentos apresentados atÈ ent„o n„o s„o adequados para demonstraÁ„o de resultados  e apreciaÁ„o de p˙blicos em geral (outras capacidades sobre visualizaÁ„o ser„o tratadas ao final deste estudo, no tÛpico anterior ‡ conclus„o).</p>
+<p align="justify">Com objetivo de evoluir da an·lise para comunicaÁ„o, os dados de correlaÁ„o foram submetidos a manipulaÁ„o por um dos pacotes especialistas do "R" para apresentaÁıes gr·ficas (GGPlot2), foram ent„o gerados os mapas de correlaÁ„o com estÈtica mais adequada:</p>
 
-```{r plot correla√ß√£o 01, fig.height=7, fig.width=10}
-#### Gr√°fico gerado a partir do comando abaixo (exemplo) ----
+```{r plot correlaÁ„o 01, fig.height=7, fig.width=10}
+#### Gr·fico gerado a partir do comando abaixo (exemplo) ----
 GGcorC <- ggplot(data = melt(caiC.corP, na.rm = TRUE), aes(Var2, Var1, fill = value)) +
   geom_tile(color = "white") +
   theme_minimal()+ 
@@ -204,7 +204,7 @@ GGcorC <- ggplot(data = melt(caiC.corP, na.rm = TRUE), aes(Var2, Var1, fill = va
                                title.position = "bottom")) +
   coord_fixed();GGcorC
 
-#### Camada adicionada ao gr√°fico original ------------------
+#### Camada adicionada ao gr·fico original ------------------
 GGcorC + 
   geom_text(aes(Var2, Var1, label = format(value, digits = 1, nsmall= 3)), 
             color = "black", 
@@ -212,13 +212,13 @@ GGcorC +
   scale_fill_distiller(palette = "Spectral", 
                        #trans = "reverse",
                        #space = "Lab", 
-                       name="Correla√ß√£o de\nPearson\n|Total|")
+                       name="CorrelaÁ„o de\nPearson\n|Total|")
 
 ```
 
-Demais gr√°ficos (Correla√ß√£o de componentes com Interna√ß√£o = N,S), comandos do "R" para gera√ß√£o foram ocultados:
+Demais gr·ficos (CorrelaÁ„o de componentes com InternaÁ„o = N,S), comandos do "R" para geraÁ„o foram ocultados:
 
-```{r plot correla√ß√£o 02, fig.height=7, fig.width=10}
+```{r plot correlaÁ„o 02, fig.height=7, fig.width=10}
 f.cor_plot <- function(ds, plt, dirc, lab_leg, dig) {
   GGcor <- ggplot(data = melt(ds, na.rm = TRUE), aes(Var2, Var1, fill = value)) +
     geom_tile(color = "white") +
@@ -242,34 +242,34 @@ f.cor_plot <- function(ds, plt, dirc, lab_leg, dig) {
               size = 3)
 }
 
-f.cor_plot(caiN.corP,"RdYlGn", 1,"Correla√ß√£o de\nPearson\n|Ambulat√≥rio|",1)
+f.cor_plot(caiN.corP,"RdYlGn", 1,"CorrelaÁ„o de\nPearson\n|AmbulatÛrio|",1)
 
-f.cor_plot(caiS.corP,"Set2", -1,"Correla√ß√£o de\nPearson\n|Interna√ß√£o|",2)
+f.cor_plot(caiS.corP,"Set2", -1,"CorrelaÁ„o de\nPearson\n|InternaÁ„o|",2)
 ```
 
 ***
 ## Direcionamento no Estudo
-[Retorno para Conte√∫do](#conteudo)
+[Retorno para Conte˙do](#conteudo)
 
-<p align="justify">Ap√≥s verificadas as influ√™ncias, se fez necess√°ria uma sele√ß√£o para detalhamento investigativo, al√©m de um entendimento sobre o sentido da correla√ß√£o. Deste modo foi realizada uma consulta pelo BI de Contas para verifica√ß√£o de quais componentes correlacionados se mostravam relevantes, por valor e percentual no faturamento acumulado entre 2014 e 2017:</p>
+<p align="justify">ApÛs verificadas as influÍncias, se fez necess·ria uma seleÁ„o para detalhamento investigativo, alÈm de um entendimento sobre o sentido da correlaÁ„o. Deste modo foi realizada uma consulta pelo BI de Contas para verificaÁ„o de quais componentes correlacionados se mostravam relevantes, por valor e percentual no faturamento acumulado entre 2014 e 2017:</p>
 
-```{r avalia√ß√£o de relev√¢ncia}
-#### Tabela criada manualmente para simplifica√ß√£o de nomes --
+```{r avaliaÁ„o de relev‚ncia}
+#### Tabela criada manualmente para simplificaÁ„o de nomes --
 (depara_componente <- read_excel('depara_componente.xlsx'))
 
-#### Renomea√ß√£o/substitui√ß√£o/exclus√£o de colunas (estudo) ---
+#### RenomeaÁ„o/substituiÁ„o/exclus„o de colunas (estudo) ---
 depara_componente <- depara_componente %>% 
   select(componente = "Componente assistencial", comp = "componente")
 
-#### Importa√ß√µes (Geradas pelo Power BI com um click) -------
+#### ImportaÁıes (Geradas pelo Power BI com um click) -------
 `dataset` = read.csv('~/REditorWrapper_e74c054e-473b-47b7-b164-7b93f69f36af/input_df_0ab2289d-603e-43e7-9cef-461c578edbbb.csv', check.names = FALSE, encoding = "UTF-8", blank.lines.skip = FALSE);
 `dataset2` = read.csv('~/REditorWrapper_6b9a785a-59bf-48ad-abdd-04471637f315/input_df_26cec917-4b9e-45bf-9a31-7a50e9d1f2d7.csv', check.names = FALSE, encoding = "UTF-8", blank.lines.skip = FALSE);
 
-#### Cria√ß√£o de resumos, por indicador de interna√ß√£o --------
+#### CriaÁ„o de resumos, por indicador de internaÁ„o --------
 
 f.resumo_valor <- function(ds) {
   dsR <- ds %>% 
-  select(internacao = "Indicador de Interna√ß√£o", 
+  select(internacao = "Indicador de InternaÁ„o", 
          componente = "Componente assistencial",
          valor = "Valor Total",
          percentual =  "Valor Total.1",
@@ -284,16 +284,16 @@ resumo_valor_N <- f.resumo_valor(dataset)
 
 resumo_valor_S <- f.resumo_valor(dataset2)
 
-#### Unifica√ß√£o de Tabelas-----------------------------------
+#### UnificaÁ„o de Tabelas-----------------------------------
 resumo_valor <- rbind(resumo_valor_N,resumo_valor_S) %>% 
   arrange(internacao, desc(percentual)) %>% 
   select(-valor); resumo_valor
 ```
 
-<p align="justify">Foram ent√£o filtradas as maiores Correla√ß√µes, e agregado o valor como uma nova coluna, para correla√ß√µes com interna√ß√£o, e sem interna√ß√£o. Aten√ß√£o especial foi dada ao relacionamento de pacotes para interna√ß√£o = "S":</p>
+<p align="justify">Foram ent„o filtradas as maiores CorrelaÁıes, e agregado o valor como uma nova coluna, para correlaÁıes com internaÁ„o, e sem internaÁ„o. AtenÁ„o especial foi dada ao relacionamento de pacotes para internaÁ„o = "S":</p>
 
-```{r maiores correla√ß√µes}
-#### Transforma√ß√£o de tabela de correla√ß√£o e filtro ---------
+```{r maiores correlaÁıes}
+#### TransformaÁ„o de tabela de correlaÁ„o e filtro ---------
 topcorS <- melt(caiS.corP, na.rm = TRUE) %>% 
   filter((value >= 0.85 | ((Var1 == "pacote" | Var2 == "pacote" |
                             Var1 == "medicamento" | Var2 == "medicamento" |
@@ -305,32 +305,32 @@ topcorN <- melt(caiN.corP, na.rm = TRUE) %>%
   filter(value >= 0.85 & value != 1) %>% 
   arrange(desc(value))
 
-#### Lookup de Tabelas e reordena√ß√£o de colunas -------------
+#### Lookup de Tabelas e reordenaÁ„o de colunas -------------
 topcorS_W <- topcorS %>% 
   add_column(Var1_prct = resumo_valor_S[match(topcorS$Var1, resumo_valor_S$componente),4]) %>% 
   add_column(Var2_prct = resumo_valor_S[match(topcorS$Var2, resumo_valor_S$componente),4]) %>% 
   select("Var1","Var1_prct","Var2","Var2_prct",Corr = "value");topcorS_W
-cat('^^ Interna√ß√£o ^^')
+cat('^^ InternaÁ„o ^^')
 
 topcorN_W <- topcorN %>% 
   add_column(Var1_prct = resumo_valor_N[match(topcorN$Var1, resumo_valor_N$componente),4]) %>% 
   add_column(Var2_prct = resumo_valor_N[match(topcorN$Var2, resumo_valor_N$componente),4]) %>% 
   select("Var1","Var1_prct","Var2","Var2_prct",Corr = "value");topcorN_W
-cat('^^ Ambulat√≥rio ^^')
+cat('^^ AmbulatÛrio ^^')
 ```
 
-<p align="justify">Devido √† relev√¢ncia de Taxas e Pacotes em interna√ß√£o, foram averiguadas as correla√ß√µes cruzadas (presumidamente altas) a partir de consultas e emerg√™ncia, que s√£o considerados como ambulatoriais.</p>
+<p align="justify">Devido ‡ relev‚ncia de Taxas e Pacotes em internaÁ„o, foram averiguadas as correlaÁıes cruzadas (presumidamente altas) a partir de consultas e emergÍncia, que s„o considerados como ambulatoriais.</p>
 
-<p align="justify">Para fins de estudo, foram criadas tabelas separadas e individualizadas para a an√°lise, por√©m uma abordagem similar √†s tabelas de correla√ß√£o geral poderia ter sido utilizada, com menos processos intermedi√°rios na ferramenta, e diminui√ß√£o de passos:</p>
+<p align="justify">Para fins de estudo, foram criadas tabelas separadas e individualizadas para a an·lise, porÈm uma abordagem similar ‡s tabelas de correlaÁ„o geral poderia ter sido utilizada, com menos processos intermedi·rios na ferramenta, e diminuiÁ„o de passos:</p>
 
 ```{r correlacao cruzada}
-#### Prepara√ß√£o: Transforma√ß√£o de tabela agrupada em plana --
+#### PreparaÁ„o: TransformaÁ„o de tabela agrupada em plana --
 cai_df <- cai %>% 
   as.data.frame() %>% 
   mutate(semestre = paste0(str_sub(amq,1,4),ifelse(str_sub(amq,5,6) > '06','02','01'))) %>% 
   as.tibble()
 
-#### Fun√ß√£o customizada para redu√ß√£o de passos --------------
+#### FunÁ„o customizada para reduÁ„o de passos --------------
 f.sel_cai_var <- function(var_n, ind_int) {
   cai_df %>%
     filter(internacao == ind_int) %>% 
@@ -339,34 +339,34 @@ f.sel_cai_var <- function(var_n, ind_int) {
     as.tibble()  
 }
 
-#### Cor. Emergencia, Consulta > Taxas, Pacotes em Interna√ß√£o
+#### Cor. Emergencia, Consulta > Taxas, Pacotes em InternaÁ„o
 cai_ECn_PTs.corP <- cbind(f.sel_cai_var(c('emergencia', 'consulta'), 'n'),
                           f.sel_cai_var(c('taxa', 'pacote'), 's')) %>% 
   .[1:77,] %>% 
   cor(., method = 'pearson');cai_ECn_PTs.corP
 ```
 ![](mapa.png)<br>
-<p align="right">*\* Mapeamento sujeito √† mudan√ßas*</p>
+<p align="right">*\* Mapeamento sujeito ‡ mudanÁas*</p>
 
 ***
-## An√°lise Detalhada sobre Consulta e Exames
-[Retorno para Conte√∫do](#conteudo)
+## An·lise Detalhada sobre Consulta e Exames
+[Retorno para Conte˙do](#conteudo)
 
-### Prepara√ß√£o
-[Retorno para Conte√∫do](#conteudo)
+### PreparaÁ„o
+[Retorno para Conte˙do](#conteudo)
 
-<p align="justify">Com base nas descobertas apontadas pela correla√ß√£o, e considerando o sentido de influ√™ncia conhecido de consultas sobre exames, foi ent√£o realizada uma investiga√ß√£o de cunho estat√≠stico inferencial, com t√©cnicas mais relevantes para determina√ß√£o de um modelo preditivo, onde a vari√°vel independente √© a quantidade de consultas, e a resposta √© a quantidade de exames. Tais analises dever√£o ser realizadas sobre outros conte√∫dos e elementos, com diversos e adequados modelos de regress√£o, e com maior detalhamento para efetividade e precis√£o, como por exemplo, a quebra de consultas e exames de uma determinada especialidade m√©dica.</p>
+<p align="justify">Com base nas descobertas apontadas pela correlaÁ„o, e considerando o sentido de influÍncia conhecido de consultas sobre exames, foi ent„o realizada uma investigaÁ„o de cunho estatÌstico inferencial, com tÈcnicas mais relevantes para determinaÁ„o de um modelo preditivo, onde a vari·vel independente È a quantidade de consultas, e a resposta È a quantidade de exames. Tais analises dever„o ser realizadas sobre outros conte˙dos e elementos, com diversos e adequados modelos de regress„o, e com maior detalhamento para efetividade e precis„o, como por exemplo, a quebra de consultas e exames de uma determinada especialidade mÈdica.</p>
 
-```{r prepara√ß√£o para SC}
-#### Prepara√ß√£o: Consulta sobre exames em Interna√ß√£o --------
+```{r preparaÁ„o para SC}
+#### PreparaÁ„o: Consulta sobre exames em InternaÁ„o --------
 
 cai_SCs <- cbind(f.sel_cai_var('sadt','s'), f.sel_cai_var('consulta','n'))
 
-#### Prepara√ß√£o: Consulta sobre exames sem Interna√ß√£o -------
+#### PreparaÁ„o: Consulta sobre exames sem InternaÁ„o -------
 
 cai_SCn <- cbind(f.sel_cai_var('sadt','n'), f.sel_cai_var('consulta','n'))
 
-#### Prepara√ß√£o: Consulta sobre exames totais ---------------
+#### PreparaÁ„o: Consulta sobre exames totais ---------------
 
 cai_SCc <- cai_df %>% 
   select(amq,sadt) %>% 
@@ -377,15 +377,15 @@ cai_SCc <- cai_df %>%
   as.tibble() %>% 
   add_column(consulta = f.sel_cai_var('consulta','n')$consulta)
 
-## Inclus√£o de coluna "z", an√°lise de varia√ß√£o por desvios padr√£o, outliers acima de 3 
+## Inclus„o de coluna "z", an·lise de variaÁ„o por desvios padr„o, outliers acima de 3 
 zSc <- scale(cai_SCc$sadt, center = TRUE, scale = TRUE)
 cai_SCc <- cai_SCc %>% add_column(z = zSc[1:dim(cai_SCc)[1]])
 ```
 
-### Sele√ß√£o de Escopo pelo Indicador de Interna√ß√£o
-[Retorno para Conte√∫do](#conteudo)
+### SeleÁ„o de Escopo pelo Indicador de InternaÁ„o
+[Retorno para Conte˙do](#conteudo)
 
-<p align="justify">Tamb√©m foi criada uma tabela para avalia√ß√£o de relev√¢ncia de SADT total, com e sem interna√ß√£o:</p>
+<p align="justify">TambÈm foi criada uma tabela para avaliaÁ„o de relev‚ncia de SADT total, com e sem internaÁ„o:</p>
 
 ```{r sadt total, N, S, fig.height=7, fig.width=10}
 cai_g <- cai_SCc %>% 
@@ -396,17 +396,17 @@ cai_g <- cai_SCc %>%
 plot(cai_g)
 ```
 
-<p align="justify">A matriz de gr√°ficos de dispers√£o indicou uma forte semelhan√ßa de comportamento entre **Consulta Eletiva sobre SADT total**, e **Consulta Eletiva sobre SADT sem interna√ß√£o (ambulatorial)**. Tamb√©m pode ser verificado que **Consulta Eletiva sobre SADT com interna√ß√£o (hospitalar)** apresenta uma rela√ß√£o mais difusa, pois exames restritos ao ambiente hospitalar geralmente s√£o disparados por outros componentes, fato que poderia ser comprovado com uma analise de correla√ß√£o espec√≠fica, caso a resposta gr√°fica n√£o fosse suficiente. Com base nos resultados, o estudo foi ent√£o direcionado para modelo entre **Consulta e SADT total**.</p>
+<p align="justify">A matriz de gr·ficos de dispers„o indicou uma forte semelhanÁa de comportamento entre **Consulta Eletiva sobre SADT total**, e **Consulta Eletiva sobre SADT sem internaÁ„o (ambulatorial)**. TambÈm pode ser verificado que **Consulta Eletiva sobre SADT com internaÁ„o (hospitalar)** apresenta uma relaÁ„o mais difusa, pois exames restritos ao ambiente hospitalar geralmente s„o disparados por outros componentes, fato que poderia ser comprovado com uma analise de correlaÁ„o especÌfica, caso a resposta gr·fica n„o fosse suficiente. Com base nos resultados, o estudo foi ent„o direcionado para modelo entre **Consulta e SADT total**.</p>
 ***
-## Regress√£o Linear
-[Retorno para Conte√∫do](#conteudo)
+## Regress„o Linear
+[Retorno para Conte˙do](#conteudo)
 
 ### Modelo Inicial
-[Retorno para Conte√∫do](#conteudo)
+[Retorno para Conte˙do](#conteudo)
 
-<p align="justify">Ap√≥s determina√ß√£o das vari√°veis de estudo, a cria√ß√£o do modelo √© bastante simplificada pela ferramenta, atrav√©s da fun√ß√£o lm (Linear Model), onde "sadt ~ consulta" representa uma equa√ß√£o de previs√£o de quantidades de sadt por meio da informa√ß√£o de quantidades de consulta:</p>
+<p align="justify">ApÛs determinaÁ„o das vari·veis de estudo, a criaÁ„o do modelo È bastante simplificada pela ferramenta, atravÈs da funÁ„o lm (Linear Model), onde "sadt ~ consulta" representa uma equaÁ„o de previs„o de quantidades de sadt por meio da informaÁ„o de quantidades de consulta:</p>
 
-```{r regress√£o, fig.height=7, fig.width=10}
+```{r regress„o, fig.height=7, fig.width=10}
 #### Gerar objeto com modelo --------------------------------
 f.lm_checkin <- function(ds, modl) {
   lm.x <- lm(modl, data = ds)
@@ -417,32 +417,32 @@ f.lm_checkin <- function(ds, modl) {
   }
   return(lm.x)
 }
-## Gr√°ficos
+## Gr·ficos
 ## (1) (2)
 ## (3) (4)
 par(mfrow = c(2,2), oma = c(0, 0, 1.1, 0))
 lm.cai_SCc <- f.lm_checkin(cai_SCc, 'sadt ~ consulta')
-#### Retornando √† configur√ß√£o de plotagem com Gr√°fico √önico -
+#### Retornando ‡ configurÁ„o de plotagem com Gr·fico ⁄nico -
 par(mfrow = c(1,1), oma = c(0, 0, 0, 0))
 ```
 Formula:
 
-<p align="left"><font size="3" color="brown">$y = \beta_0 + \beta_1x$</font>, onde $\beta_0$ = intercepto e $\beta_1$ = inclina√ß√£o</p>
+<p align="left"><font size="3" color="brown">$y = \beta_0 + \beta_1x$</font>, onde $\beta_0$ = intercepto e $\beta_1$ = inclinaÁ„o</p>
 <p align="left"><font size="3" color="brown">$_{qt}sadt = \beta_0 + (\beta_1 * _{qt}consulta)$</font></p>
 <p align="left"><font size="3" color="brown">$_{qt}sadt =   72791.6402 +  (11.6330 * _{qt}consulta)$</font></p>
 
-<p align="justify">Apresentando valores de $p$ inferiores a **0,01** para ambos os coeficientes da equa√ß√£o e tamb√©m para a estat√≠stica de varia√ß√£o $F$, a regress√£o simples pode ser considerada de boa qualidade e suficiente, comprovando as tend√™ncias previamente apontadas na correla√ß√£o. Caso necess√°rio, modelos de outras naturezas poderiam ser aplicados na ferramenta (lineares m√∫ltiplos, quadr√°ticos e n√£o lineares, como polinomiais e exponenciais).</p>
+<p align="justify">Apresentando valores de $p$ inferiores a **0,01** para ambos os coeficientes da equaÁ„o e tambÈm para a estatÌstica de variaÁ„o $F$, a regress„o simples pode ser considerada de boa qualidade e suficiente, comprovando as tendÍncias previamente apontadas na correlaÁ„o. Caso necess·rio, modelos de outras naturezas poderiam ser aplicados na ferramenta (lineares m˙ltiplos, quadr·ticos e n„o lineares, como polinomiais e exponenciais).</p>
 
-<p align="justify">O valor do coeficiente de determina√ß√£o $r^2$ de **0.8948** significa que a quantidade de consultas explica **89,48%** da varia√ß√£o de quantidade de exames, e portanto o valor do modelo como instrumento preditivo aparenta ser relevante, inicialmente.</p>
+<p align="justify">O valor do coeficiente de determinaÁ„o $r^2$ de **0.8948** significa que a quantidade de consultas explica **89,48%** da variaÁ„o de quantidade de exames, e portanto o valor do modelo como instrumento preditivo aparenta ser relevante, inicialmente.</p>
 
-<p align="justify">A fun√ß√£o padr√£o de plotagem de gr√°fico aplicada ao objeto do modelo na ferramenta, √© excelente para verifica√ß√£o r√°pida de Linearidade (gr√°fico 1, superior esquerdo), normalidade (gr√°fico 2, superior direito) e Igualdade (gr√°fico 3, inferior esquerdo), al√©m de oferecer tamb√©m um teste de alavancagem (gr√°fico 4, inferior direito), que verifica se alguma observa√ß√£o extrema tem influ√™ncia forte sobre todo o modelo.</p>
+<p align="justify">A funÁ„o padr„o de plotagem de gr·fico aplicada ao objeto do modelo na ferramenta, È excelente para verificaÁ„o r·pida de Linearidade (gr·fico 1, superior esquerdo), normalidade (gr·fico 2, superior direito) e Igualdade (gr·fico 3, inferior esquerdo), alÈm de oferecer tambÈm um teste de alavancagem (gr·fico 4, inferior direito), que verifica se alguma observaÁ„o extrema tem influÍncia forte sobre todo o modelo.</p>
 
-O modelo pode ser visualizado no gr√°fico abaixo:
+O modelo pode ser visualizado no gr·fico abaixo:
 
 ```{r, modelos inicial, fig.height=7, fig.width=10}
 #### Incluir conluna com valores previstos ------------------
 cai_SCc <- cai_SCc %>% add_predictions(lm.cai_SCc) #modelr
-#### Gr√°fico do modelo --------------------------------------
+#### Gr·fico do modelo --------------------------------------
 ggplot(cai_SCc, aes(y = consulta)) +
   geom_point(aes(x = sadt), color = "blue", alpha = 0.5, size = 3) +
   geom_line(aes(x = pred),color = "red", size = 1.2) +
@@ -450,42 +450,42 @@ ggplot(cai_SCc, aes(y = consulta)) +
        x = 'SADT', y = 'Consulta')
 ```
 
-### Aspectos e Avalia√ß√£o da Regress√£o
-[Retorno para Conte√∫do](#conteudo)
+### Aspectos e AvaliaÁ„o da Regress„o
+[Retorno para Conte˙do](#conteudo)
 
-<p align="justify">Embora as evid√™ncias apontem para um modelo bem constru√≠do, existe ainda a necessidade de verificar todas as quatro premissas da regress√£o: Linearidade (que pode ser verificada acima); Independ√™ncia de vari√°veis (de suma import√¢ncia no uso de s√©ries temporais, devido √† possibilidade de Autocorrela√ß√£o: a ocorr√™ncia de depend√™ncia entre observa√ß√µes adjacentes no tempo), normalidade e Igualdade de vari√¢ncias para valores previstos (de SADT) ao longo de todos os valores de previs√£o (consulta).</p>
+<p align="justify">Embora as evidÍncias apontem para um modelo bem construÌdo, existe ainda a necessidade de verificar todas as quatro premissas da regress„o: Linearidade (que pode ser verificada acima); IndependÍncia de vari·veis (de suma import‚ncia no uso de sÈries temporais, devido ‡ possibilidade de AutocorrelaÁ„o: a ocorrÍncia de dependÍncia entre observaÁıes adjacentes no tempo), normalidade e Igualdade de vari‚ncias para valores previstos (de SADT) ao longo de todos os valores de previs„o (consulta).</p>
 
-### Considera√ß√µes sobre S√©ries Temporais
-[Retorno para Conte√∫do](#conteudo)
+### ConsideraÁıes sobre SÈries Temporais
+[Retorno para Conte˙do](#conteudo)
 
-<p align="justify">No aspecto de independ√™ncia das vari√°veis, se faz necess√°ria a utiliza√ß√£o de t√©cnicas como os testes de **Durbin-Watson** ou **Breusch-Godfrey**, para verificar autocorrela√ß√£o. Uma vez identificada a t√©cnica estat√≠stica desejada, uma consulta em sites de busca geralmente √© suficiente para apontar a fun√ß√£o e pacote correspondentes, estes podem ser adicionados de maneira simples por meio do ambiente RStudio, tornam-se dispon√≠veis para uso nos scripts.</p>
+<p align="justify">No aspecto de independÍncia das vari·veis, se faz necess·ria a utilizaÁ„o de tÈcnicas como os testes de **Durbin-Watson** ou **Breusch-Godfrey**, para verificar autocorrelaÁ„o. Uma vez identificada a tÈcnica estatÌstica desejada, uma consulta em sites de busca geralmente È suficiente para apontar a funÁ„o e pacote correspondentes, estes podem ser adicionados de maneira simples por meio do ambiente RStudio, tornam-se disponÌveis para uso nos scripts.</p>
 
-```{r teste de autocorrela√ß√£o, message=FALSE, warning=FALSE}
-#### Defini√ß√£o do reposit√≥rio para download -----------------
+```{r teste de autocorrelaÁ„o, message=FALSE, warning=FALSE}
+#### DefiniÁ„o do repositÛrio para download -----------------
 
 ## options(repos = 'http://vps.fmvz.usp.br/CRAN/')
 
-#### Instala√ß√£o do novo pacote ------------------------------
+#### InstalaÁ„o do novo pacote ------------------------------
 
 ## install.packages("lmtest")
 
-#### Ativa√ß√£o do pacote com o teste estat√≠stico -------------
+#### AtivaÁ„o do pacote com o teste estatÌstico -------------
 library("lmtest", lib.loc="~/R/win-library/3.4")
-#### Testes de autocorrela√ß√£o -------------------------------
+#### Testes de autocorrelaÁ„o -------------------------------
 dwtest(lm.cai_SCc)
 bgtest(lm.cai_SCc, order = 2)
 ```
 
-<p align="justify">Ambos os testes apontam valor $p$ tendendo a zero, o que indica a rejei√ß√£o da hip√≥tese nula (que assume a Autocorrela√ß√£o = 0), e portanto uma transforma√ß√£o √© necess√°ria, para enquadramento do princ√≠pio de independ√™ncia de vari√°veis. Novamente, uma vez identificada a t√©cnica estat√≠stica (neste caso, transforma√ß√£o de **Cochrane Orcutt**), uma pesquisa √© feita, a fun√ß√£o e pacote s√£o identificados, importados na ferramenta, e utilizados ap√≥s ativa√ß√£o. Em seguida encontra-se o gr√°fico com ambos os modelos, original com autocorrela√ß√£o (em vermelho) e transformado, sem ru√≠dos ($rho$) de autocorrela√ß√£o (em verde):</p>
+<p align="justify">Ambos os testes apontam valor $p$ tendendo a zero, o que indica a rejeiÁ„o da hipÛtese nula (que assume a AutocorrelaÁ„o = 0), e portanto uma transformaÁ„o È necess·ria, para enquadramento do princÌpio de independÍncia de vari·veis. Novamente, uma vez identificada a tÈcnica estatÌstica (neste caso, transformaÁ„o de **Cochrane Orcutt**), uma pesquisa È feita, a funÁ„o e pacote s„o identificados, importados na ferramenta, e utilizados apÛs ativaÁ„o. Em seguida encontra-se o gr·fico com ambos os modelos, original com autocorrelaÁ„o (em vermelho) e transformado, sem ruÌdos ($rho$) de autocorrelaÁ„o (em verde):</p>
 
-```{r transforma√ß√£o e gr√°ficos, fig.height=7, fig.width=10}
-#### Ativa√ß√£o do pacote com transforma√ß√£o para Autocorrela√ß√£o
+```{r transformaÁ„o e gr·ficos, fig.height=7, fig.width=10}
+#### AtivaÁ„o do pacote com transformaÁ„o para AutocorrelaÁ„o
 library("orcutt", lib.loc="~/R/win-library/3.4")
-#### Transforma√ß√£o dos modelo para elimina√ß√£o do ru√≠do ------
+#### TransformaÁ„o dos modelo para eliminaÁ„o do ruÌdo ------
 lmT.SCc <- cochrane.orcutt(lm.cai_SCc)
-#### Inclus√£o de coluna com valores previstos ajustados -----
+#### Inclus„o de coluna com valores previstos ajustados -----
 cai_SCc <- cai_SCc %>% add_column(predT = as.vector(fitted(lmT.SCc))) #modelr
-#### Novo gr√°fico, com ambos modelos ------------------------
+#### Novo gr·fico, com ambos modelos ------------------------
 ggplot(cai_SCc, aes(y = consulta)) +
   geom_point(aes(x = sadt), color = "blue", alpha = 0.5, size = 3) +
   geom_line(aes(x = pred),color = "red", size = 1.2) +
@@ -494,82 +494,82 @@ ggplot(cai_SCc, aes(y = consulta)) +
        x = 'SADT', y = 'Consulta')
 ```
 
-<p align="justify">Al√©m da an√°lise gr√°fica, uma revis√£o do sum√°rio do novo modelo pode ser realizado com uma fun√ß√£o espec√≠fica do novo pacote:</p>
+<p align="justify">AlÈm da an·lise gr·fica, uma revis„o do sum·rio do novo modelo pode ser realizado com uma funÁ„o especÌfica do novo pacote:</p>
 
-```{r an√°lise ap√≥s transforma√ß√£o}
+```{r an·lise apÛs transformaÁ„o}
 summary.orcutt(lmT.SCc)
 ```
 
 Formula:
 
-<p align="left"><font size="3" color="brown">$y = \beta_0 + \beta_1x$</font>, onde $\beta_0$ = intercepto e $\beta_1$ = inclina√ß√£o</p>
+<p align="left"><font size="3" color="brown">$y = \beta_0 + \beta_1x$</font>, onde $\beta_0$ = intercepto e $\beta_1$ = inclinaÁ„o</p>
 <p align="left"><font size="3" color="brown">$_{qt}sadt = \beta_0 + (\beta_1 * _{qt}consulta)$</font></p>
 <p align="left"><font size="3" color="brown">$_{qt}sadt =  131162.26639 + (10.31995 * _{qt}consulta)$</font></p>
 
-<p align="justify">Primeiramente, √© importante avaliar o resultado do teste de **Durbin Watson** para o modelo transformado, com valor pr√≥ximo √† **2**, e $p$ = **0.6253**, o que significa que n√£o h√° evid√™ncias suficientes para rejeitar $h_0$ (*hip√≥tese nula*), onde a autocorrela√ß√£o √© igual a *zero*. O modelo ajustado revela as mesmas boas caracter√≠sticas, com valor $p$ para o teste $t$ dos coeficientes aproximadamente zero, assim como $p$ para a estat√≠stica de varia√ß√£o ($F$). O valor de $r^2$ dos novos resultados mostram que a vari√°vel quantidade de consultas explica **94,55%** da varia√ß√£o de SADT, demonstrando a validade do novo modelo para predi√ß√£o.</p>
+<p align="justify">Primeiramente, È importante avaliar o resultado do teste de **Durbin Watson** para o modelo transformado, com valor prÛximo ‡ **2**, e $p$ = **0.6253**, o que significa que n„o h· evidÍncias suficientes para rejeitar $h_0$ (*hipÛtese nula*), onde a autocorrelaÁ„o È igual a *zero*. O modelo ajustado revela as mesmas boas caracterÌsticas, com valor $p$ para o teste $t$ dos coeficientes aproximadamente zero, assim como $p$ para a estatÌstica de variaÁ„o ($F$). O valor de $r^2$ dos novos resultados mostram que a vari·vel quantidade de consultas explica **94,55%** da variaÁ„o de SADT, demonstrando a validade do novo modelo para prediÁ„o.</p>
 
-### Avalia√ß√£o Espec√≠fica para Objetos do Pacote "Orcutt"
-[Retorno para Conte√∫do](#conteudo)
+### AvaliaÁ„o EspecÌfica para Objetos do Pacote "Orcutt"
+[Retorno para Conte˙do](#conteudo)
 
-<p align="justify">Devido √† particularidade do pacote utilizado para a transforma√ß√£o (com objetos de modelo linear propriet√°rios), uma an√°lise dos aspectos da regress√£o por fun√ß√µes padr√£o da ferramenta √© limitada. Se faz necess√°ria programa√ß√£o espec√≠fica para diagn√≥stico de linearidade, normalidade e igualdade de vari√¢ncias:</p>
+<p align="justify">Devido ‡ particularidade do pacote utilizado para a transformaÁ„o (com objetos de modelo linear propriet·rios), uma an·lise dos aspectos da regress„o por funÁıes padr„o da ferramenta È limitada. Se faz necess·ria programaÁ„o especÌfica para diagnÛstico de linearidade, normalidade e igualdade de vari‚ncias:</p>
 
-Padroniza√ß√£o de res√≠duos:<font size="4" color="brown">$_{Std.}e = (\frac{e_i}{\sigma_e})_{1\leqslant i\leqslant n}$</font>,
+PadronizaÁ„o de resÌduos:<font size="4" color="brown">$_{Std.}e = (\frac{e_i}{\sigma_e})_{1\leqslant i\leqslant n}$</font>,
 onde <font size="3" color="brown">$\sigma = \sqrt\frac{\sum_{i=1}^n(X_i-\bar X)^2}{n-1}$</font>
 
-```{r diagn√≥sticos constru√≠dos, fig.height=7, fig.width=10}
+```{r diagnÛsticos construÌdos, fig.height=7, fig.width=10}
 #### Valores previstos --------------------------------------
 fit_r <- fitted(lmT.SCc)
-#### Gr√°fico padr√£o (1) Linearidade -------------------------
+#### Gr·fico padr„o (1) Linearidade -------------------------
 plot(fit_r, resid(lmT.SCc),
-     ylab = "Res√≠duos/Erros", 
+     ylab = "ResÌduos/Erros", 
      xlab = "Valores Previstos",
-     main = "Linearidade e Vari√¢ncia")
-#### Linha de refer√™ncia ------------------------------------
+     main = "Linearidade e Vari‚ncia")
+#### Linha de referÍncia ------------------------------------
 smt = smooth.spline(fit_r, resid(lmT.SCc), spar=1)
 abline(h = 0, lty = 2)
 lines(smt, col='red', lwd=1)
 
-#### Res√≠duos padronizados ----------------------------------
+#### ResÌduos padronizados ----------------------------------
 std_r <- resid(lmT.SCc)/sd(resid(lmT.SCc))
 # ou std_r <- scale(resid(lmT.SCc), center = FALSE, scale = TRUE)
 
-#### Gr√°fico padr√£o (2) Normalidade -------------------------
+#### Gr·fico padr„o (2) Normalidade -------------------------
 qqnorm(std_r)
-#### Linha de refer√™ncia ------------------------------------
+#### Linha de referÍncia ------------------------------------
 qqline(std_r, lty = 2)
 
-#### Raiz de res√≠duos padronizados --------------------------
+#### Raiz de resÌduos padronizados --------------------------
 std_r <- sqrt(abs(std_r))
-#### Gr√°fico padr√£o (3) Igualdade ---------------------------
+#### Gr·fico padr„o (3) Igualdade ---------------------------
 plot(fit_r, std_r, 
-     ylab = expression(sqrt("Res√≠duos Padr√£o")), 
+     ylab = expression(sqrt("ResÌduos Padr„o")), 
      xlab = "Valores Previstos",
-     main = "Escala e Localiza√ß√£o de Res√≠duos")
-#### Linha de refer√™ncia ------------------------------------
+     main = "Escala e LocalizaÁ„o de ResÌduos")
+#### Linha de referÍncia ------------------------------------
 smt = smooth.spline(fit_r, std_r, spar=1)
 lines(smt, col='red', lwd=1)
 ```
 
-### Alternativa de Transforma√ß√£o
-[Retorno para Conte√∫do](#conteudo)
+### Alternativa de TransformaÁ„o
+[Retorno para Conte˙do](#conteudo)
 
-<p align="justify">Uma alternativa de elimina√ß√£o dos ru√≠dos da autocorrela√ß√£o √© o procedimento de **Hildreth-Lu**, por√©m esta abordagem exige aplica√ß√£o da transforma√ß√£o para todas as novas predi√ß√µes, pois existe uma altera√ß√£o da escala dos dados:</p>
+<p align="justify">Uma alternativa de eliminaÁ„o dos ruÌdos da autocorrelaÁ„o È o procedimento de **Hildreth-Lu**, porÈm esta abordagem exige aplicaÁ„o da transformaÁ„o para todas as novas prediÁıes, pois existe uma alteraÁ„o da escala dos dados:</p>
 
-```{r segunda transforma√ß√£o, fig.height=7, fig.width=10}
-#### Ativa√ß√£o do pacote com a segunda forma de transforma√ß√£o
+```{r segunda transformaÁ„o, fig.height=7, fig.width=10}
+#### AtivaÁ„o do pacote com a segunda forma de transformaÁ„o
 library("HoRM", lib.loc="~/R/win-library/3.4")
-#### Valor de rho a partir da primeira transforma√ß√£o --------
+#### Valor de rho a partir da primeira transformaÁ„o --------
 lmT.SCc["rho"]
-#### Regress√£o com o novo procedimento ----------------------
+#### Regress„o com o novo procedimento ----------------------
 lmT_hil.SCc <- hildreth.lu(x = cai_SCc$consulta, y = cai_SCc$sadt, rho = 0.7097007)
-         ## rho representa o ru√≠do gerado pela autocorrela√ß√£o
+         ## rho representa o ruÌdo gerado pela autocorrelaÁ„o
 
-#### Extra√ß√£o de dados a partir do objeto do modelo ---------
+#### ExtraÁ„o de dados a partir do objeto do modelo ---------
 cai_SCc_Hil <- as.tibble(lmT_hil.SCc[["model"]]) %>%
   select(sadt = y, consulta = x)
-#### Inclus√£o de valores previstos __------------------------    
+#### Inclus„o de valores previstos __------------------------    
 cai_SCc_Hil <- add_predictions(cai_SCc_Hil,lmT_hil.SCc)
-#### Novo gr√°fico -------------------------------------------
+#### Novo gr·fico -------------------------------------------
 ggplot(cai_SCc_Hil, aes(y = consulta)) +
   geom_point(aes(x = sadt), color = "dark blue", alpha = 0.5, size = 3) +
   geom_line(aes(x = pred),color = "orange", size = 1.2) +
@@ -577,9 +577,9 @@ ggplot(cai_SCc_Hil, aes(y = consulta)) +
        x = 'SADT Transformado', y = 'Consulta Transformada')
 ```
 
-<p align="justify">A vantagem do pacote *"HoRM"* sobre o pacote *"Orcutt"* √© a gera√ß√£o de objeto de modelo linear padr√£o, o que facilita os diagn√≥sticos b√°sicos do "R".</p>
+<p align="justify">A vantagem do pacote *"HoRM"* sobre o pacote *"Orcutt"* È a geraÁ„o de objeto de modelo linear padr„o, o que facilita os diagnÛsticos b·sicos do "R".</p>
 
-```{r analise ap√≥s segunda transforma√ß√£o, fig.height=7, fig.width=10}
+```{r analise apÛs segunda transformaÁ„o, fig.height=7, fig.width=10}
 #### Leitura do objeto do modelo ----------------------------
 f.lm_extract <- function(lmo) {
   print(summary(lmo))
@@ -589,28 +589,28 @@ f.lm_extract <- function(lmo) {
   }
   return(lmo)
 }
-## Gr√°ficos
+## Gr·ficos
 ## (1) (2)
 ## (3) (4)
 par(mfrow = c(2,2), oma = c(0, 0, 1.1, 0))
 invisible(f.lm_extract(lmT_hil.SCc))
-#### Retornando √† configur√ß√£o de plotagem com Gr√°fico √önico -
+#### Retornando ‡ configurÁ„o de plotagem com Gr·fico ⁄nico -
 par(mfrow = c(1,1), oma = c(0, 0, 0, 0))
 ```
 
-<p align="justify">O sum√°rio do terceiro modelo tamb√©m confirma a rejei√ß√£o das hip√≥teses nulas (coeficientes iguais a zero), pelos testes $t$ e $F$, e apresentando o mesma explica√ß√£o de **94,55%** da varia√ß√£o de SADT por consulta, pois o mesmo valor de ru√≠do foi aplicado √† segunda transforma√ß√£o a partir do c√°lculo realizado no procedimento da primeira transforma√ß√£o (Orcutt).</p>
+<p align="justify">O sum·rio do terceiro modelo tambÈm confirma a rejeiÁ„o das hipÛteses nulas (coeficientes iguais a zero), pelos testes $t$ e $F$, e apresentando o mesma explicaÁ„o de **94,55%** da variaÁ„o de SADT por consulta, pois o mesmo valor de ruÌdo foi aplicado ‡ segunda transformaÁ„o a partir do c·lculo realizado no procedimento da primeira transformaÁ„o (Orcutt).</p>
 
 ***
 ## Outros Experimentos
-[Retorno para Conte√∫do](#conteudo)
+[Retorno para Conte˙do](#conteudo)
 
-<p align="justify">Outras t√©cnicas e visualiza√ß√µes foram aplicadas dentro do estudo, e est√£o representadas a seguir, com respectivos coment√°rios:</p>
+<p align="justify">Outras tÈcnicas e visualizaÁıes foram aplicadas dentro do estudo, e est„o representadas a seguir, com respectivos coment·rios:</p>
 
 ```{r demais aspectos, fig.height=7, fig.width=10}
 #### Intervalos para os valores previstos, IC 95% -----------
 as.tibble(predict.lm(lmT_hil.SCc, level=0.95, interval = 'confidence'))
 
-#### Prepara√ß√£o/Gr√°fico de intervalos do modelo original ----
+#### PreparaÁ„o/Gr·fico de intervalos do modelo original ----
 
 #rm(SCc.CI)
 
@@ -621,36 +621,36 @@ cai_SCc <- add_column(cai_SCc, rn = as.numeric(row.names(SCc.CI)))
 #### Intervalos pelo pacote plotrix -------------------------
 plotCI(SCc.CI$fit[1:6], ui = SCc.CI$upr[1:6], li = SCc.CI$lwr[1:6], ylab = NULL, xlab = NULL)
 
-#### Intervalos com apresenta√ß√£o melhorada pelo GGplot2 -----
+#### Intervalos com apresentaÁ„o melhorada pelo GGplot2 -----
 ggplot(SCc.CI[25:65,], aes(x = rn, y = fit, col = fit)) +
   geom_point(size = 2) +
   geom_errorbar(aes(ymax = upr, ymin = lwr)) +
   geom_line(color = "light blue", size = 0.4, alpha = 0.5) +
   geom_point(data = cai_SCc[25:65,], aes(y = sadt),col = "red" , size = 1.5) +
   theme_dark() +
-  scale_colour_gradient2(name="Varia√ß√£o em\ntorno da m√©dia", 
+  scale_colour_gradient2(name="VariaÁ„o em\ntorno da mÈdia", 
                         low = "white", 
                         mid = "orange",
                         midpoint = 591713,
                         high = "white") +
-  labs(title = 'Amostra de assertividade nas previs√µes', 
-       x = 'Observa√ß√µes', y = 'Valor Previsto')
+  labs(title = 'Amostra de assertividade nas previsıes', 
+       x = 'ObservaÁıes', y = 'Valor Previsto')
 
-#### Teste de distribui√ß√£o T para m√©dia de SADT, IC 95% ----- 
+#### Teste de distribuiÁ„o T para mÈdia de SADT, IC 95% ----- 
 t.test(cai_SCc$sadt, conf.level = 0.95)
 
-#### Teste de distribui√ß√£o T para m√©dia do modelo, IC 95% --- 
+#### Teste de distribuiÁ„o T para mÈdia do modelo, IC 95% --- 
 t.test(fitted(lmT.SCc), conf.level = 0.95) #IC para modelo
 
 #### Intervalo para coeficientes do modelo original, IC 95% - 
 confint(lm.cai_SCc, level=0.95)
 
-#### Gr√°fico padr√£o de SADT e valores previstos  ------------
+#### Gr·fico padr„o de SADT e valores previstos  ------------
 par(mfrow = c(1,2), oma = c(0, 0, 1.1, 0))
 plot(cai_SCc$sadt, col = 'blue')
 plot(fitted(lmT.SCc), col = 'green')
 
-#### Histograma padr√£o para SADT e modelo  ------------------
+#### Histograma padr„o para SADT e modelo  ------------------
 hist(cai_SCc$sadt, col = 'light blue')
 hist(fitted(lmT.SCc), col = 'light green')
 par(mfrow = c(1,1), oma = c(0, 0, 0, 0))
@@ -668,7 +668,7 @@ ggplot(cai_SCc,aes(sadt)) +
   scale_x_continuous(breaks = seq(200000, 800000, by = 100000)) +
   scale_y_continuous(labels = NULL) +
   labs(title = 'Histograma de SADT', x = 'SADT', y = 'Contagem') +
-  scale_fill_distiller(name = 'Observa√ß√µes',
+  scale_fill_distiller(name = 'ObservaÁıes',
                        palette = 'YlGnBu',
                        direction = 1)
 
@@ -684,30 +684,30 @@ ggplot(cai_SCc,aes(predT)) +
   scale_x_continuous(breaks = seq(200000, 800000, by = 100000)) +
   scale_y_continuous(labels = NULL) +
   labs(title = 'Histograma de SADT Previsto pelo modelo', x = 'SADT Previsto', y = 'Contagem') +
-  scale_fill_distiller(name = 'Observa√ß√µes',
+  scale_fill_distiller(name = 'ObservaÁıes',
                        palette = 'YlGn',
                        direction = 1)
 
-#### Gr√°fico de Controle Estat√≠stico de Processo ------------
+#### Gr·fico de Controle EstatÌstico de Processo ------------
 qcc.cai_SCc <- qcc(cai_SCc$sadt, type = 'xbar.one', newdata = fitted(lmT.SCc));qcc.cai_SCc
 
 #### Histograma e densidade com alvos para capacidade -------
 process.capability (qcc.cai_SCc, spec.limits=c(400000,700000))
 ```
 ***
-## Visualiza√ß√µes de Dados
-[Retorno para Conte√∫do](#conteudo)
+## VisualizaÁıes de Dados
+[Retorno para Conte˙do](#conteudo)
 
-<p align="justify">Al√©m de suas capacidades estat√≠sticas, o potencial de utiliza√ß√£o da ferramenta apenas para demonstra√ß√£o de resultados √© muito elevado, pois quase todos os aspectos da √°rea de desenho podem ser modificados, e o conceito de gr√°fico em camadas permite a acumula√ß√£o e troca de estruturas que n√£o s√£o poss√≠veis no MS Excel:</p>
+<p align="justify">AlÈm de suas capacidades estatÌsticas, o potencial de utilizaÁ„o da ferramenta apenas para demonstraÁ„o de resultados È muito elevado, pois quase todos os aspectos da ·rea de desenho podem ser modificados, e o conceito de gr·fico em camadas permite a acumulaÁ„o e troca de estruturas que n„o s„o possÌveis no MS Excel:</p>
 
-```{r gr√°fico de receita/despesa, fig.height=7, fig.width=10}
-#### Importa√ß√£o de dados e inclus√£o de coluna ---------------
-rec_des <- read_excel('Gr√°fico e Previs√£o 2017 2.xlsx') %>%  
+```{r gr·fico de receita/despesa, fig.height=7, fig.width=10}
+#### ImportaÁ„o de dados e inclus„o de coluna ---------------
+rec_des <- read_excel('Gr·fico e Previs„o 2017 2.xlsx') %>%  
   add_column(Diff = .$Despesa - .$Receita) %>% 
   as.tibble()
 
-#### Gr√°fico base -------------------------------------------
-GGrec_des <- ggplot(data = rec_des, aes(x = Ano)) + # Dados b√°sicos e eixos comuns
+#### Gr·fico base -------------------------------------------
+GGrec_des <- ggplot(data = rec_des, aes(x = Ano)) + # Dados b·sicos e eixos comuns
   # Barras de despesa
   geom_col(aes(y = Despesa/1000000, fill = Diff/1000000), 
            width = 0.9,
@@ -715,7 +715,7 @@ GGrec_des <- ggplot(data = rec_des, aes(x = Ano)) + # Dados b√°sicos e eixos com
            #stat = "sum",
            col = "black",
            size = 1) +
-  # Efeito gradiente para qualquer preenchimento usado na est√©tica do gr√°fico
+  # Efeito gradiente para qualquer preenchimento usado na estÈtica do gr·fico
   scale_fill_gradient(name="Delta entre Despesa\ne Receita em Mil, 2011 - 2017",  
                       low = "green", 
                       high = "red", 
@@ -723,17 +723,17 @@ GGrec_des <- ggplot(data = rec_des, aes(x = Ano)) + # Dados b√°sicos e eixos com
                       guide = "colourbar") +
   # Controle da quebra da escala no eixo X
   scale_x_continuous(breaks = seq(2011, 2017, by = 1)) +
-  # Tema geral da √°rea do gr√°fico
+  # Tema geral da ·rea do gr·fico
   theme_light() +  
-  # Mudan√ßa de orienta√ß√£o do texto da legenda do eixo x
+  # MudanÁa de orientaÁ„o do texto da legenda do eixo x
   theme(axis.text.x = element_text(angle = 45, 
                                  vjust = 1, 
                                  size = 9, 
                                  hjust = 1)) +
-  # Textos de eixos e T√≠tulo  
-  labs(title = 'M√©dia Mensal de Despesa X Receita', x = 'Anos', y = 'Despesa/Receita');GGrec_des
+  # Textos de eixos e TÌtulo  
+  labs(title = 'MÈdia Mensal de Despesa X Receita', x = 'Anos', y = 'Despesa/Receita');GGrec_des
 
-#### Gr√°fico com adi√ß√£o de camada com coluna de receita -----
+#### Gr·fico com adiÁ„o de camada com coluna de receita -----
 GGrec_des + 
   # Controle da quebra da escala no eixo y
   scale_y_continuous(breaks = seq(50, 180, by = 10)) +
@@ -744,14 +744,14 @@ GGrec_des +
            stat = "sum",
            size = 1)
 
-#### Gr√°fico com adi√ß√£o de camada com √°rea de receita -------
+#### Gr·fico com adiÁ„o de camada com ·rea de receita -------
 GGrec_des + 
-  # √Årea de receita
+  # ¡rea de receita
   geom_area(aes(y = Receita/1000000),
             col = "blue",
             size = 0.2,
             alpha = 0.3) +
-  # Pontos para marca√ß√£o da receita sobre a √°rea
+  # Pontos para marcaÁ„o da receita sobre a ·rea
   geom_point(aes(y = Receita/1000000, col = Diff/1000000),
              size=3.8, shape=21, fill="white") +
   # Texto com valores
@@ -759,7 +759,7 @@ GGrec_des +
                 label = format((Diff/1000000), digits = 2),
                 col = Diff/1000000), 
             size = 4) +
-  # Efeito gradiente para qualquer cor usada na est√©tica do gr√°fico  
+  # Efeito gradiente para qualquer cor usada na estÈtica do gr·fico  
   scale_colour_gradient(name="Valor do Delta\nem Mil, 2011 - 2017", 
                     low = "blue", 
                     high = "orange", 
@@ -772,15 +772,15 @@ GGrec_des +
 ```
 
 ***
-## Conclus√£o
-[Retorno para Conte√∫do](#conteudo)
+## Conclus„o
+[Retorno para Conte˙do](#conteudo)
 
 A partir do estudo realizado foram confirmadas as seguintes premissas:
 
-<p align="justify">- A plataforma de c√≥digo aberto "R" para computa√ß√£o estat√≠stica constitui uma ferramenta profissional, flex√≠vel e com alto poder de aplica√ß√£o, desde de fun√ß√µes inerentes at√© suas estruturas secund√°rias para manipula√ß√£o de dados e apresenta√ß√£o gr√°fica. Empresas como <b>Google, Pfizer, Microsoft, Uber, Facebook, IBM, Ford, Novartis, Roche, New York Times</b> (esta √∫ltima para para visualiza√ß√£o de dados) j√° fazem uso em grande escala, contando com equipes dedicadas e especialistas, incluindo desenvolvimento personalizado da ferramenta.</p>
+<p align="justify">- A plataforma de cÛdigo aberto "R" para computaÁ„o estatÌstica constitui uma ferramenta profissional, flexÌvel e com alto poder de aplicaÁ„o, desde de funÁıes inerentes atÈ suas estruturas secund·rias para manipulaÁ„o de dados e apresentaÁ„o gr·fica. Empresas como <b>Google, Pfizer, Microsoft, Uber, Facebook, IBM, Ford, Novartis, Roche, New York Times</b> (esta ˙ltima para para visualizaÁ„o de dados) j· fazem uso em grande escala, contando com equipes dedicadas e especialistas, incluindo desenvolvimento personalizado da ferramenta.</p>
 
-<p align="justify">- Os resultados encontrados no piloto estat√≠stico de Consultas X Exames confirmam o forte relacionamento entre estes componentes, e seu modelo linear poder√° trazer uma vantagem estrat√©gica no relacionamento com prestadores, principalmente no controle de resultados do projeto de "Banco de Consultas".</p>
+<p align="justify">- Os resultados encontrados no piloto estatÌstico de Consultas X Exames confirmam o forte relacionamento entre estes componentes, e seu modelo linear poder· trazer uma vantagem estratÈgica no relacionamento com prestadores, principalmente no controle de resultados do projeto de "Banco de Consultas".</p>
 
-<p align="justify">Estas respostas apontam para grande valia de futuros trabalhos realizados em conjunto com equipes t√©cnicas do Planserv, e podem alavancar decis√µes em diversas disciplinas relacionadas a informa√ß√£o, com grandes contribui√ß√µes para suporte a decis√£o, identifica√ß√£o de padr√µes, diagn√≥stico de distor√ß√µes e estrat√©gia em geral.</p>
+<p align="justify">Estas respostas apontam para grande valia de futuros trabalhos realizados em conjunto com equipes tÈcnicas do Planserv, e podem alavancar decisıes em diversas disciplinas relacionadas a informaÁ„o, com grandes contribuiÁıes para suporte a decis„o, identificaÁ„o de padrıes, diagnÛstico de distorÁıes e estratÈgia em geral.</p>
 
 ***

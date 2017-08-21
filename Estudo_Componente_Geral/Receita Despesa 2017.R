@@ -1,5 +1,20 @@
 rm(rec_des)
 
+library("stringr", lib.loc="~/R/win-library/3.4")
+library("dplyr", lib.loc="~/R/win-library/3.4")
+library("ggplot2", lib.loc="~/R/win-library/3.4")
+library("readr", lib.loc="~/R/win-library/3.4")
+library("tibble", lib.loc="~/R/win-library/3.4")
+library("tidyr", lib.loc="~/R/win-library/3.4")
+library("reshape2", lib.loc="~/R/win-library/3.4")
+library("magrittr", lib.loc="~/R/win-library/3.4")
+library("readxl", lib.loc="~/R/win-library/3.4")
+library("modelr", lib.loc="~/R/win-library/3.4")
+library("purrr", lib.loc="~/R/win-library/3.4")
+library("forcats", lib.loc="~/R/win-library/3.4")
+library("plotrix", lib.loc="~/R/win-library/3.4")
+library("qcc", lib.loc="~/R/win-library/3.4")
+
 rec_des <- read_excel('Previsão_2017.xlsx') %>%
   add_column(Diff = .$Despesa - .$Receita) %>%
   mutate(Mês = factor(.$Mês, levels = .$Mês))

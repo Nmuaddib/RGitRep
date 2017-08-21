@@ -148,6 +148,10 @@ print("Abra o código com o botão à direta e acima")
 
 ## Análise
 
+Mapa Original
+
+![](mapa.png)
+
 ---
 
 **Correlações mais relevantes em ambulatório:**
@@ -177,5 +181,9 @@ f.cor_cmpar(caiS.corP,smstS.corP,'taxa','material')
 f.cor_cmpar(caiS.corP,smstS.corP,'honorario','medicamento')
 f.cor_cmpar(caiS.corP,smstS.corP,'sadt','medicamento')
 ```
+
+Mapa Pós Análise
+
+![](mapa_pas.png)
 
 ---
