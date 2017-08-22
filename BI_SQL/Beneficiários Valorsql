@@ -1,0 +1,73 @@
+select  substr(fc.ID_TEMPO_MES_ANO_REF,1,4) ano,
+        substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes,
+        sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0))  QP,
+        sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0))  VT,
+        tbt.BT,
+        count(distinct fc.COD_TS) BA,
+        count(distinct fc.CONTA) CT,
+        count(1) IT,
+        count(distinct fc.COD_TS)/tbt.BT PA,
+        round((sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)))/(tbt.BT),2) VM,
+        round((sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)))/(count(distinct fc.COD_TS)),2) VA,
+        round((sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)))/(count(distinct fc.CONTA)),2) VC,
+        round((sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)))/(count(1)),2) VI,
+        round((sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)))/(tbt.BT),2) QM,        
+        round((sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)))/(count(distinct fc.COD_TS)),2) QA,
+        round((sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)))/(count(distinct fc.CONTA)),2) QC,
+        round((sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)))/(count(1)),2) QI
+from    TS.FAT_ITEM_CONTA fc,
+        (select  to_char(pcm.mes_ano_ref,'RRRRMM') anomes,
+                sum(qtd_ativos) BT
+        from    ts.posicao_cadastro_mes pcm           
+        where   pcm.mes_ano_ref between to_date ('01/01/2014','dd/mm/yyyy') and to_date ('01/06/2017','dd/mm/yyyy') 
+        group by   
+                to_char(pcm.mes_ano_ref,'RRRRMM')
+        order by 1) tbt
+where   substr(fc.ID_TEMPO_MES_ANO_REF,1,6) = tbt.anomes
+--and     substr(fc.ID_TEMPO_MES_ANO_REF,1,6) in ('201605')--, '201606', '201705', '201706')
+group by substr(fc.ID_TEMPO_MES_ANO_REF,1,4),
+         substr(fc.ID_TEMPO_MES_ANO_REF,1,6),
+         tbt.BT
+having  sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) > 0
+or      sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)) > 0
+order by 1
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+/*
+select sum(f.ct)
+from (select  t.anomes,
+        t.COD_TS BF,
+        count(t.CONTA) CT,
+        sum(t.CT) IT,        
+        sum(t.QT),
+        sum(t.VL)
+from    (select  substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes,
+            fc.CONTA,
+            fc.COD_TS,
+            count(1) CT,
+            sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0))  QT,
+            sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0))  VL
+        from    TS.FAT_ITEM_CONTA fc
+        where   substr(fc.ID_TEMPO_MES_ANO_REF,1,6) in ('201605')--, '201606', '201705', '201706')
+        group by substr(fc.ID_TEMPO_MES_ANO_REF,1,6),
+            fc.CONTA,
+            fc.COD_TS
+        having  sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) > 0
+        or      sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)) > 0
+        order by 1,2,3) t
+group by t.anomes,
+         t.COD_TS) f
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+select  to_char(pcm.mes_ano_ref,'RRRRMM') anomes,
+        sum(qtd_ativos) qtd_beneficiarios
+from    ts.posicao_cadastro_mes pcm           
+where   pcm.mes_ano_ref between to_date ('01/01/2014','dd/mm/yyyy') and to_date ('01/06/2017','dd/mm/yyyy') 
+group by   
+        to_char(pcm.mes_ano_ref,'RRRRMM')
+order by 1
+--*/
