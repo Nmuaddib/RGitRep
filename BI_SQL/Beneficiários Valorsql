@@ -2,6 +2,7 @@ select  substr(fc.ID_TEMPO_MES_ANO_REF,1,4) ano,
         substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes,
         sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0))  QP,
         sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0))  VT,
+        (sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)))/(sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0))) VQ,
         tbt.BT,
         count(distinct fc.COD_TS) BA,
         count(distinct fc.CONTA) CT,
@@ -30,7 +31,7 @@ group by substr(fc.ID_TEMPO_MES_ANO_REF,1,4),
          tbt.BT
 having  sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) > 0
 or      sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)) > 0
-order by 1
+order by 2
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
