@@ -3,7 +3,7 @@ author: "Nelson Simões - CTI/Planserv"
 date: "23 de agosto de 2017"
 output:
   html_document:
-    code_folding: hide
+    code_folding: show
     theme: cerulean
     highlight: pygments
 ---
@@ -14,12 +14,13 @@ output:
 
 ### Preparação do ambiente
 
-Bibliotecas utilizadas no trabalho no código abaixo (oculto, utilize o botão a direita para expor).
-```{r setup, message = FALSE, warning = FALSE}
-## Opções iniciais de configuração do ambiente --------------
+Bibliotecas utilizadas no trabalho no código abaixo
+```{r setup, include=TRUE, message=FALSE, warning=FALSE}
+## Opções iniciais de configuração do ambiente
+# ------------------------------------------------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE)
 options(scipen=999)
-#### --------------------------------------------------------
+# ------------------------------------------------------------------------------------------
 library("stringr", lib.loc="~/R/win-library/3.4")
 library("dplyr", lib.loc="~/R/win-library/3.4")
 library("ggplot2", lib.loc="~/R/win-library/3.4")
@@ -29,72 +30,136 @@ library("tidyr", lib.loc="~/R/win-library/3.4")
 library("magrittr", lib.loc="~/R/win-library/3.4")
 library("readxl", lib.loc="~/R/win-library/3.4")
 library("purrr", lib.loc="~/R/win-library/3.4")
-#### --------------------------------------------------------
+# ------------------------------------------------------------------------------------------
 ```
 
-```{r importação}
-x_vv_main <- read_excel('BV_extract_sqlbi.xls') %>% 
-  mutate(ANOMES = factor(.$ANOMES, .$ANOMES), ANO = factor(.$ANO)) %>% 
+### Processo de criação do sumário anual
+
+```{r processo, message=FALSE, warning=FALSE}
+## Importação
+# ------------------------------------------------------------------------------------------
+
+x_vv_main <- read_excel('VV_extract_sqlbi.xls') %>% 
+  mutate(ANOMES = factor(.$ANOMES), ANO = factor(.$ANO)) %>% 
   as.tibble()
-```
 
-```{r processo}
-##
-# Quebra em blocos por ano, calcula a média de cada variável, armazena em lista de planilhas
-##
+## Quebra em blocos por ano, calcula a média de cada variável, armazena em lista de planilhas
+# ------------------------------------------------------------------------------------------
 
 mn.ano <- x_vv_main %>%
   split(.$ANO) %>%
   map(map_dbl, mean)
 
-##
-# Cria planilha vazia com nomes de colunas a partir de um bloco da lista acima
-##
+## Cria planilha vazia com nomes de colunas a partir de um bloco da lista acima
+# ------------------------------------------------------------------------------------------
 
 vv_ano <- setNames(data.frame(matrix(ncol = 17, nrow = 0)),
                    names(mn.ano[[1]])[-2]) %>% 
   as.tibble()
 
-##
-# Extrai variáveis dos blocos na lista para a planilha vazia
-##
+## Extrai variáveis dos blocos na lista para a planilha vazia
+# ------------------------------------------------------------------------------------------
 
 for (i in seq_along(mn.ano)) vv_ano[i, 1:17] <- c(ANO = names(mn.ano[i]),mn.ano[[i]][3:18])
 
-##
-# Converte variáveis para número de dupla precisão e ano para fator
-##
+## Converte variáveis para número de dupla precisão e ano para fator
+# ------------------------------------------------------------------------------------------
 
 vv_ano[,2:17] %<>% map_df(as.double)
 vv_ano$ANO %<>% factor(.)
 
+## Função para calculo de variação percentual em relação ao ano anterior
+# ----------------------------------------------------------------------
+## f.lag_perc <- function(col) (col-lag(col))/lag(col)
 
-# Função para calculo de variação percentual em relação ao ano anterior
-# f.lag_perc <- function(col) (col-lag(col))/lag(col)
-
-##
-# Calcula a variação percentual ano a ano de cada variável
-##
+## Calcula a variação percentual ano a ano de cada variável
+# ------------------------------------------------------------------------------------------
 
 vv_var_perc_ano <- vv_ano[,2:17] %>%
-  map_df(function(.) ((.-lag(.))/lag(.)*100)) %>%
+  map_df(function(.) (.-lag(.))/lag(.)) %>%
   cbind(vv_ano[,1],.)
 
-## 2 #'['(2:dim(vv_ano)[1],) %>% 
-## 3 #2:dim(vv_ano)[1]
+## Para retirada do ano sem valores prévios no resultado acima
+# ------------------------------------------------------------------------------------------
+## @2 #'['(2:dim(vv_ano)[1],) %>% 
+## @3 #2:dim(vv_ano)[1]
 
-##
-# Renomeia colunas, para junção de planilhas
-##
+## Renomeia colunas, para junção de planilhas
+# ------------------------------------------------------------------------------------------
 
 colnames(vv_var_perc_ano) <- paste0(colnames(vv_var_perc_ano),'.vp')
 names(vv_var_perc_ano)[1] <- 'ANO'
 
-##
-# Junção de planilhas e reordenação de campos
-##
+## Junção de planilhas
+# ------------------------------------------------------------------------------------------
 
 vv_ano_n <- merge(vv_ano, vv_var_perc_ano, by = 'ANO')
-vv_ano_n <- vv_ano_n[,c(1,2,18,3,19,4,20,5,21,6,22,7,23,8,24,9,25,
-                        10,26,11,27,12,28,13,29,14,30,15,31,16,32,17,33)]
+
+## Reordenação de campos
+# ------------------------------------------------------------------------------------------
+
+names.v <- names(vv_ano)[1]
+
+for (i in seq_along(names(vv_ano))) {
+  if (i > 1) {
+    names.v[length(names.v)+1] <- c(names(vv_ano)[i])
+    names.v[length(names.v)+1] <- paste0(names(vv_ano)[i], '.vp')
+  }
+}
+
+vv_ano_n <- select(vv_ano_n, names.v)
+
+
+## Alternativa para reordenação
+# ------------------------------------------------------------------------------------------
+## vv_ano_n <- vv_ano_n[,c(1,2,18,3,19,4,20,5,21,6,22,7,23,8,24,9,25,
+##                        10,26,11,27,12,28,13,29,14,30,15,31,16,32,17,33)]
+
+## Exportação de planilha
+# ------------------------------------------------------------------------------------------
+
+write.csv2(vv_ano_n, 'resumo_ano.csv')
+
+print(as.tibble(vv_ano_n))
 ```
+
+### Escala de dados por Ano e Mês para análise gráfica no tempo
+
+```{r escala anomes, message=FALSE, warning=FALSE}
+## Geração de planilha com valores convertidos em escala de desvío padrão
+# ------------------------------------------------------------------------------------------
+vv_am_scale <- x_vv_main[3:18] %>% 
+  map_df(scale, F, T)
+
+## Renomeia colunas e união de planilhas
+# ------------------------------------------------------------------------------------------
+colnames(vv_am_scale) <- paste0(colnames(vv_am_scale),'.sd')
+
+vv_am_scale <- cbind(x_vv_main[1:2], vv_am_scale)
+
+vv_am_scale_n <- merge(x_vv_main, vv_am_scale, by = 'ANOMES')
+
+colnames(vv_am_scale_n)[2] <- 'ANO'
+
+## Reordenação de campos
+# ------------------------------------------------------------------------------------------
+names.v <- names(x_vv_main)[1]
+names.v[2] <- names(x_vv_main)[2]
+
+for (i in seq_along(names(x_vv_main))) {
+  if (i > 2) {
+    names.v[length(names.v)+1] <- c(names(x_vv_main)[i])
+    names.v[length(names.v)+1] <- paste0(names(x_vv_main)[i], '.sd')
+  }
+}
+
+vv_am_scale_n <- select(vv_am_scale_n, names.v)
+
+## Exportação de planilha
+# ------------------------------------------------------------------------------------------
+
+write.csv2(vv_am_scale_n, 'resumo_anomes.csv')
+
+print(as.tibble(vv_am_scale_n))
+```
+
