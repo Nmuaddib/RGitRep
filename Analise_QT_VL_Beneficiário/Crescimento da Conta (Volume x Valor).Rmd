@@ -163,3 +163,35 @@ write.csv2(vv_am_scale_n, 'resumo_anomes.csv')
 print(as.tibble(vv_am_scale_n))
 ```
 
+
+```{r gráficos, fig.height=7, fig.width=10}
+
+names(vv_am_scale_n)
+
+ggplot(data = vv_am_scale_n, aes(x = ANOMES)) +
+  geom_line(aes(y = QP.sd), col = 'orange', size = 1.1, group = 1, show.legend = TRUE) +
+  geom_line(aes(y = VT.sd), col = 'blue', size = 1.1, group = 1, show.legend = T) +
+  labs(title = 'Avaliação Padronizada de Volume x Valores',
+       x = 'Ano e Mês',
+       y = 'Desvios Padrão') +
+  theme_dark() +
+  theme(axis.text.x = element_text(angle = 45,
+                                   vjust = 1,
+                                   size = 9,
+                                   hjust = 1))
+
+ggplot(data = vv_am_scale_n, aes(x = ANOMES)) +
+  geom_line(aes(y = VT.sd-QP.sd), col = 'light blue', size = 1.1, group = 1) + #, col = ANO
+  geom_line(aes(y = mean(VT.sd-QP.sd)), col = 'orange', size = 1.1, group = 1) +
+  facet_wrap(~ANO, ncol = 2, scales = "free") +
+  labs(title = 'Avaliação Padronizada de Volume x Valores',
+       x = 'Ano e Mês',
+       y = 'Desvios Padrão') +
+  theme_dark() +
+  theme(axis.text.x = element_text(angle = 45,
+                                   vjust = 1,
+                                   size = 9,
+                                   hjust = 1))
+
+```
+
