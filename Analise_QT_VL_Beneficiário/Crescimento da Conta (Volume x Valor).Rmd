@@ -3,7 +3,7 @@ author: "Nelson Simões - CTI/Planserv"
 date: "23 de agosto de 2017"
 output:
   html_document:
-    code_folding: show
+    code_folding: hide
     theme: cerulean
     highlight: pygments
 ---
@@ -163,15 +163,44 @@ write.csv2(vv_am_scale_n, 'resumo_anomes.csv')
 print(as.tibble(vv_am_scale_n))
 ```
 
+### Avaliação gráfica
 
 ```{r gráficos, fig.height=7, fig.width=10}
+#names(vv_am_scale_n)
 
-names(vv_am_scale_n)
+## Formatação da planilha para plotagem gráfica
+# ------------------------------------------------------------------------------------------
+vv_plot <- vv_am_scale_n %>%
+  select(ANO, ANOMES, 
+         'Quantidade Aprovada' = QP.sd,
+         'Valor Total' = VT.sd, 
+         #'Quantidade Média' = QM.sd, 
+         #'Ticket Médio' = VM.sd, 
+         #'Quantidade por Atendido' = QA.sd, 
+         #'Valor por Atendido' = VA.sd, 
+         #'Quantidade por Conta' = QC.sd, 
+         #'Valor por Conta' = VC.sd, 
+         #'Quantidade por Item' = QI.sd, 
+         #'Valor por Item' = VI.sd,
+         'Valor por Quantidade' = VQ.sd#,
+         #'Beneficiários Totais' = BT.sd,
+         #'Beneficiários Atendidos' = BA.sd,
+         #'Quantidade de Contas' = CT.sd,
+         #'Quantidade de Itens' = IT.sd,
+         #'Percentual de Atendidos' = PA.sd
+         ) %>% 
+  gather(-ANO,
+         -ANOMES,
+         key = 'Indicador', value = 'Valor')
 
-ggplot(data = vv_am_scale_n, aes(x = ANOMES)) +
-  geom_line(aes(y = QP.sd), col = 'orange', size = 1.1, group = 1, show.legend = TRUE) +
-  geom_line(aes(y = VT.sd), col = 'blue', size = 1.1, group = 1, show.legend = T) +
-  labs(title = 'Avaliação Padronizada de Volume x Valores',
+## Gráfico de dados padronizados
+# ------------------------------------------------------------------------------------------
+ggplot(data = vv_plot, aes(x = ANOMES)) +
+  geom_line(aes(y = Valor, 
+                group = Indicador,
+                col = Indicador),
+            size = 1.1) +
+  labs(title = 'Comparação de Indicadores por dados padronizados',
        x = 'Ano e Mês',
        y = 'Desvios Padrão') +
   theme_dark() +
@@ -180,14 +209,44 @@ ggplot(data = vv_am_scale_n, aes(x = ANOMES)) +
                                    size = 9,
                                    hjust = 1))
 
+## Gráfico a partir de planilha original
+# ------------------------------------------------------------------------------------------
+ggplot(data = vv_am_scale_n, aes(x = ANOMES)) +
+  geom_bar(aes(y = QP.sd), 
+           fill = 'orange', 
+           width = 0.9, 
+           alpha = 0.6, 
+           stat = 'sum',
+           show.legend = F) +
+  geom_label(aes(x='201402', y=1.13), 
+             label = 'Quantidade', col = 'orange', hjust = 'left') +  
+  geom_bar(aes(y = VT.sd), 
+           fill = 'blue', 
+           width = 0.6, 
+           alpha = 0.3, 
+           stat = 'sum',
+           show.legend = F) +
+  geom_label(aes(x='201402', y=1.2), 
+             label = 'Valor', col = 'blue', hjust = 'left') +
+  labs(title = 'Comparação de Indicadores por dados padronizados',
+       x = 'Ano e Mês',
+       y = 'Desvios Padrão') +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45,
+                                   vjust = 1,
+                                   size = 9,
+                                   hjust = 1))
+
+## Gráfico da diferença entre variação padronizada entre Valor e Quantidade, por ano
+# ------------------------------------------------------------------------------------------
 ggplot(data = vv_am_scale_n, aes(x = ANOMES)) +
   geom_line(aes(y = VT.sd-QP.sd), col = 'light blue', size = 1.1, group = 1) + #, col = ANO
   geom_line(aes(y = mean(VT.sd-QP.sd)), col = 'orange', size = 1.1, group = 1) +
   facet_wrap(~ANO, ncol = 2, scales = "free") +
-  labs(title = 'Avaliação Padronizada de Volume x Valores',
+  labs(title = 'Comparação de Indicadores por dados padronizados',
        x = 'Ano e Mês',
        y = 'Desvios Padrão') +
-  theme_dark() +
+  theme_light() +
   theme(axis.text.x = element_text(angle = 45,
                                    vjust = 1,
                                    size = 9,

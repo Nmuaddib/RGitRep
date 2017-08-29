@@ -91,6 +91,8 @@ Planilha original importada e resultado final com dados padronizados, total do P
 x_geral <- read_excel('Geral2014_17.xls')
 as.tibble(x_geral)
 
+x_geral <- cbind(x_geral, ID_AM = 1:42)
+
 x_geral %<>% mutate(DIF = VA_FT-VA_AT)
 
 FA.scale_geral <- cbind(anomes = x_geral$ANOMES, 

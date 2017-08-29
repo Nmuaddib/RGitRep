@@ -1,3 +1,4 @@
+/*
 select  t.anomes,
         sum(nvl(t.QTA_FT,0)) QTA_FT,
         sum(nvl(t.VA_FT,0)) VA_FT,
@@ -30,13 +31,14 @@ group by to_char(DATA_ATENDIMENTO, 'RRRRMM'),
 group by t.anomes
 having  sum(nvl(t.QTA_FT,0)) + sum(nvl(t.VA_FT,0)) + sum(nvl(t.QTA_AT,0)) + sum(nvl(t.VA_AT,0)) <> 0
 order by 1
+--*/
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --desc TS.FAT_ITEM_CONTA
 --desc TS.DIM_PRESTADOR
-
+/*
 select  t.prestador,
         t.anomes,
         sum(nvl(t.QTA_FT,0)) QTA_FT,
@@ -81,6 +83,7 @@ group by t.prestador,
          t.anomes
 having  sum(nvl(t.QTA_FT,0)) + sum(nvl(t.VA_FT,0)) + sum(nvl(t.QTA_AT,0)) + sum(nvl(t.VA_AT,0)) <> 0         
 order by 2
+--*/
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -89,9 +92,11 @@ select  t.codigo,
         t.prestador,
         t.anomes,
         sum(nvl(t.QTA_FT,0)) QTA_FT,
-        sum(nvl(t.VA_FT,0)) VA_FT,       
+        sum(nvl(t.VA_FT,0)) VA_FT,     
+        sum(nvl(t.VR_FT,0)) VR_FT,
         sum(nvl(t.QTA_AT,0)) QTA_AT,
         sum(nvl(t.VA_AT,0)) VA_AT,
+        sum(nvl(t.VR_FT,0)) VR_AT,
         sum(t.C_FAT) C_AFT
 from
 (select dp.COD_PRESTADOR_TS codigo,
@@ -101,14 +106,16 @@ from
         0 C_FAT,
         sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) QTA_FT,
         sum(nvl(fc.VAL_APROVADO_ITEM,0)) VA_FT,
+        sum(nvl(fc.VALOR_PAGO_REVISAO,0)) VR_FT,
         count(1) N_FT,
         sum(0) QTA_AT,
         sum(0) VA_AT,
+        sum(0) VR_AT,
         sum(0) N_AT        
 from    TS.FAT_ITEM_CONTA fc,
         TS.DIM_PRESTADOR dp
 where   fc.COD_PRESTADOR_TS(+) = dp.COD_PRESTADOR_TS
-and     dp.NOME_PRESTADOR like '%HOSPITAL SANTA LUZIA%'
+--and     dp.NOME_PRESTADOR like '%HOSPITAL SANTA LUZIA%'
 group by dp.COD_PRESTADOR_TS,
          dp.NOME_PRESTADOR,
          substr(fc.ID_TEMPO_MES_ANO_REF,1,6),
@@ -122,14 +129,16 @@ select  dp.COD_PRESTADOR_TS codigo,
         1 C_FAT,
         sum(0) QTA_FT,
         sum(0) VA_FT,
+        sum(0) VR_FT,
         sum(0) N_FT,
         sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) QTA_AT,
         sum(nvl(fc.VAL_APROVADO_ITEM,0)) VA_AT,
+        sum(nvl(fc.VALOR_PAGO_REVISAO,0)) VR_AT,
         count(1) N_AT
 from    TS.FAT_ITEM_CONTA fc,
         TS.DIM_PRESTADOR dp
 where   fc.COD_PRESTADOR_TS(+) = dp.COD_PRESTADOR_TS
-and     dp.NOME_PRESTADOR like '%HOSPITAL SANTA LUZIA%'
+--and     dp.NOME_PRESTADOR like '%HOSPITAL SANTA LUZIA%'
 group by dp.COD_PRESTADOR_TS,
          dp.NOME_PRESTADOR,
          to_char(DATA_ATENDIMENTO, 'RRRRMM'),
