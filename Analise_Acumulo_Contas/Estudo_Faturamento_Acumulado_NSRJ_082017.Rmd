@@ -43,13 +43,14 @@ library("purrr", lib.loc="~/R/win-library/3.4")
 
 Planilha original importada e resultado final com dados padronizados, por prestador.
 ```{r processo}
-x_fat_ate <- read_excel('Geral2014_17_prestadores_t.xls')
+#x_fat_ate <- read_excel('Geral2014_17_prestadores_t.xls')
+x_fat_ate <- read_excel('Geral2014_17_prestadores.xlsx')
 as.tibble(x_fat_ate)
 
-f.name_scale <- function(lt) {
+f.name_lst <- function(lt) {
   prest <- names(lt)
   anomes_vec <- x_fat_ate %>% 
-    filter(PRESTADOR == prest) %>% 
+    filter(CODIGO == prest) %>% 
     select(ANOMES)
   idx_f <- length(anomes_vec[[1]])
   idx_i <- idx_f - (length(lt[[1]]) - 1)
@@ -60,20 +61,20 @@ f.name_scale <- function(lt) {
 x_fat_ate %<>% mutate(DIF = VA_FT-VA_AT)
 
 FA.lst_scale <- x_fat_ate %>%
-  split(.$PRESTADOR, drop = T) %>%
+  split(.$CODIGO, drop = T) %>%
   map("DIF") %>%
   map(scale, F, T) #%>% 
 #  map(f.get_last_scale, 2)
 
-for (i in seq_along(FA.lst_scale)) names(FA.lst_scale[[i]]) <- f.name_scale(FA.lst_scale[i])
+for (i in seq_along(FA.lst_scale)) names(FA.lst_scale[[i]]) <- f.name_lst(FA.lst_scale[i])
 
 idx <- unlist(FA.lst_scale)
 
 FA.df_scale <- tibble(prestador = character(), anomes = character(), escala = double())
 
 for (i in seq_along(unlist(FA.lst_scale))) {
-  FA.df_scale[i,] <- c(str_sub(names(idx)[i], 1, str_locate(names(idx)[i], ".2")[1]-1),
-                       str_sub(names(idx)[i], str_locate(names(idx)[i], ".2")[1]+1),
+  FA.df_scale[i,] <- c(str_sub(names(idx)[i], 1, str_locate(names(idx)[i], ".201")[1]-1),
+                       str_sub(names(idx)[i], str_locate(names(idx)[i], ".201")[1]+1),
                        idx[i])
 }
 
@@ -88,7 +89,7 @@ FA.df_scale
 
 Planilha original importada e resultado final com dados padronizados, total do Planserv.
 ```{r geral}
-x_geral <- read_excel('Geral2014_17.xls')
+x_geral <- read_excel('Geral2014_17.xlsx')
 as.tibble(x_geral)
 
 x_geral <- cbind(x_geral, ID_AM = 1:42)
@@ -110,9 +111,9 @@ FA.scale_geral
 ## Planilha final
 
 Junção dos dados das planilhas anteriores, código oculto abaixo.
-```{r lookups, fig.height=7, fig.width=10}
+```{r lookups}
 x_fat_ate <- x_fat_ate %>%
-  add_column(., escala = FA.df_scale[match(paste(.$PRESTADOR,
+  add_column(., escala = FA.df_scale[match(paste(.$CODIGO,
                                                  .$ANOMES),
                                            paste(FA.df_scale$prestador, 
                                                  FA.df_scale$anomes)), 3][[1]]) %>%
@@ -124,7 +125,63 @@ write.csv2(x_fat_ate, 'Prestador_FT_AT_Anomes.csv')
 x_fat_ate
 ```
 
-## Gráficos comparativos 
+## Ranking por faturamento e desvio absoluto médio
+
+Montagem de rankings para seleção de prestadores para análise gráfica
+```{r ranking}
+f.sum_rank <- function(df) {
+  res <- vector()
+  res[1] <- sum(df$VA_FT, na.rm = T) + sum(df$VR_FT, na.rm = T) 
+  res[2] <- mad(df$escala, na.rm = T)
+  res[3] <- mean(abs(df$escala), na.rm = T)
+  names(res) <- c('VT', 'DM', 'VM')
+  return(res)
+}
+
+FA.lst_rank <- x_fat_ate %>%
+  split(.$CODIGO, drop = T) %>% 
+  map(f.sum_rank)
+
+FA.df_rank <- tibble(prestador = character(), 
+                     faturado = double(), 
+                     dma = double(), 
+                     dma.c = double(),
+                     faturado.r = integer(), 
+                     dma.r = integer(), 
+                     dma.c.r = integer())
+
+for (i in seq_along(FA.lst_rank)) {
+  FA.df_rank[i,] <- c(names(FA.lst_rank)[[i]], 
+                      FA.lst_rank[[i]]['VT'],
+                      FA.lst_rank[[i]]['DM'],
+                      FA.lst_rank[[i]]['VM'],
+                      0,
+                      0,
+                      0)
+}
+
+FA.df_rank <- FA.df_rank %>%
+  add_column(., nome = x_fat_ate[match(.$prestador,x_fat_ate$CODIGO), 2][[1]])
+
+
+
+FA.df_rank %<>% mutate(faturado = as.double(faturado),
+                      dma = as.double(dma), 
+                      dma.c = as.double(dma.c)) %>% 
+  arrange(desc(faturado)) %>% 
+  mutate(faturado.r = 1:dim(FA.df_rank)[1]) %>% 
+  arrange(desc(dma)) %>% 
+  mutate(dma.r = 1:dim(FA.df_rank)[1]) %>%
+  arrange(desc(dma.c)) %>% 
+  mutate(dma.c.r = 1:dim(FA.df_rank)[1]) %>% 
+  select(prestador, nome, faturado.r, faturado, dma.r, dma, dma.c.r, dma.c)
+
+write.csv2(FA.df_rank, 'Prestador_ranking.csv')
+
+FA.df_rank
+```
+
+## Preparação de gráficos
 
 Para dados padronizados Planserv x Prestador, código oculto abaixo.
 ```{r gráficos}
@@ -132,7 +189,7 @@ x_fat_ate %<>% mutate(ANOMES = factor(.$ANOMES, levels = x_geral$ANOMES),
                       escala_geral = as.double(escala_geral))
 
 FA.lst_prestador <- x_fat_ate %>% 
-  split(.$PRESTADOR)
+  split(.$CODIGO)
 
 f.gg_param <- function(nm) {
 
@@ -151,7 +208,7 @@ f.gg_param <- function(nm) {
                            low = 'red',
                            midpoint = 0) +
     labs(title = paste0('Proporção do Delta Faturamento x Atendimento Padronizada\n',
-                        names(FA.lst_prestador[nm])),
+                        FA.lst_prestador[[nm]][[1,'PRESTADOR']]),
          x = 'Ano e Mês', 
          y = 'Desvios Padrão') +
     theme_bw() +
@@ -173,7 +230,7 @@ f.gg_param <- function(nm) {
 }
 
 f.tb_param <- function(nm) {
-  print(nm)
+  print(FA.lst_prestador[[nm]][[1,'PRESTADOR']])
   print('###############################################################')
   tbp <- FA.lst_prestador[[nm]] %>% select ('Ano e mês' = ANOMES,
                                             'Valor Faturado' = VA_FT,
@@ -183,8 +240,6 @@ f.tb_param <- function(nm) {
     as.data.frame()
   print(tbp)
 }
-
-
 ```
 
 ### Como ler o gráfico a seguir?
@@ -197,10 +252,31 @@ f.tb_param <- function(nm) {
 - A diferença entre Planserv e prestador independe da proporção entre faturamento e atendimento, podendo ambas estarem acima de zero (ambos possuem proporção de faturamento maior que atendimento) ou abaixo de zero (ambos possuem proporção de atendimento maior que faturamento).
 - Um comportamento ideal para a gestão de contas do prestador é indicado quando seus valores permanecem constantemente próximos de zero, ou pelo menos mais próximos de zero em relação ao valor geral do Planserv, e a avaliação dos pontos adjacentes no tempo é importante para verificar se houve descontrole (ex: valores extremos de atendimento maior que faturamento em um mês compensados com a proporção inversa nos meses seguintes, também de modo extremo).
 
-```{r plotagem, fig.height=7, fig.width=10}
-for (i in seq_along(names(FA.lst_prestador))) {
-  f.gg_param(names(FA.lst_prestador)[i])
-  f.tb_param(names(FA.lst_prestador)[i])
+```{r plotagem, fig.height=7, fig.width=10, message=FALSE, warning=FALSE}
+
+##----------------------------------------------------------------------------
+##----------------------------------------------------------------------------
+##----------------------------------------------------------------------------
+v.top <- 20
+v.limite_min <- 10000000
+# v.rank:
+#   faturado.r
+#   dma.r
+#   dma.c.r
+##----------------------------------------------------------------------------
+##----------------------------------------------------------------------------
+##----------------------------------------------------------------------------
+
+FA.plot_rank <- FA.df_rank %>%
+  filter(faturado > v.limite_min) %>% 
+  arrange(dma.r) %>%
+  select(prestador) %>% 
+  '['(1:v.top,) %>% 
+  '[['(1)
+
+for (i in seq_along(FA.plot_rank)) {
+  f.gg_param(FA.plot_rank[i])
+  f.tb_param(FA.plot_rank[i])
 }
 
 ```

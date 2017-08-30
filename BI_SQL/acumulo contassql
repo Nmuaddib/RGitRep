@@ -1,89 +1,48 @@
-/*
+--/*
 select  t.anomes,
         sum(nvl(t.QTA_FT,0)) QTA_FT,
         sum(nvl(t.VA_FT,0)) VA_FT,
+        sum(nvl(t.VR_FT,0)) VR_FT,        
         sum(nvl(t.QTA_AT,0)) QTA_AT,
         sum(nvl(t.VA_AT,0)) VA_AT,
-        count(1) N_AFT
+        sum(nvl(t.VR_FT,0)) VR_AT,        
+        sum(t.C_FAT) C_AFT        
 from
 (select substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes,
         substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes_f,
+        0 C_FAT,        
         sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) QTA_FT,
         sum(nvl(fc.VAL_APROVADO_ITEM,0)) VA_FT,
+        sum(nvl(fc.VALOR_PAGO_REVISAO,0)) VR_FT,        
         count(1) N_FT,
         sum(0) QTA_AT,
         sum(0) VA_AT,
+        sum(0) VR_AT,        
         sum(0) N_AT
-from    TS.FAT_ITEM_CONTA_2 fc
-group by substr(fc.ID_TEMPO_MES_ANO_REF,1,6)
+from    TS.FAT_ITEM_CONTA fc
+group by substr(fc.ID_TEMPO_MES_ANO_REF,1,6),
+         0
 union   
 select  to_char(DATA_ATENDIMENTO, 'RRRRMM') anomes,
         substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes_f,
+        1 C_FAT,        
         sum(0) QTA_FT,
         sum(0) VA_FT,
+        sum(0) VR_FT,        
         sum(0) N_FT,
         sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) QTA_AT,
         sum(nvl(fc.VAL_APROVADO_ITEM,0)) VA_AT,
+        sum(nvl(fc.VALOR_PAGO_REVISAO,0)) VR_AT,        
         count(1) N_AT
-from    TS.FAT_ITEM_CONTA_2 fc
+from    TS.FAT_ITEM_CONTA fc
 group by to_char(DATA_ATENDIMENTO, 'RRRRMM'),
-         substr(fc.ID_TEMPO_MES_ANO_REF,1,6)) t
+         substr(fc.ID_TEMPO_MES_ANO_REF,1,6),
+         1) t
+where    t.anomes between '201401' and '201706'         
 group by t.anomes
 having  sum(nvl(t.QTA_FT,0)) + sum(nvl(t.VA_FT,0)) + sum(nvl(t.QTA_AT,0)) + sum(nvl(t.VA_AT,0)) <> 0
+and     substr(t.anomes,1,3) = '201'
 order by 1
---*/
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---desc TS.FAT_ITEM_CONTA
---desc TS.DIM_PRESTADOR
-/*
-select  t.prestador,
-        t.anomes,
-        sum(nvl(t.QTA_FT,0)) QTA_FT,
-        sum(nvl(t.VA_FT,0)) VA_FT,        
-        sum(nvl(t.QTA_AT,0)) QTA_AT,
-        sum(nvl(t.VA_AT,0)) VA_AT,
-        count(1) N_AFT
-from
-(select dp.NOME_PRESTADOR prestador,
-        substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes,
-        substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes_f,        
-        sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) QTA_FT,
-        sum(nvl(fc.VAL_APROVADO_ITEM,0)) VA_FT,
-        count(1) N_FT,
-        sum(0) QTA_AT,
-        sum(0) VA_AT,
-        sum(0) N_AT
-from    TS.FAT_ITEM_CONTA_2 fc,
-        TS.DIM_PRESTADOR dp
-where   fc.COD_PRESTADOR_TS(+) = dp.COD_PRESTADOR_TS
-and     dp.NOME_PRESTADOR like '%SIM CLINICAS%'
-group by dp.NOME_PRESTADOR,
-         substr(fc.ID_TEMPO_MES_ANO_REF,1,6)
-union   
-select  dp.NOME_PRESTADOR prestador,
-        to_char(DATA_ATENDIMENTO, 'RRRRMM') anomes,
-        substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes_f,
-        sum(0) QTA_FT,
-        sum(0) VA_FT,
-        sum(0) N_FT,
-        sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) QTA_AT,
-        sum(nvl(fc.VAL_APROVADO_ITEM,0)) VA_AT,
-        count(1) N_AT
-from    TS.FAT_ITEM_CONTA_2 fc,
-        TS.DIM_PRESTADOR dp
-where   fc.COD_PRESTADOR_TS(+) = dp.COD_PRESTADOR_TS
-and     dp.NOME_PRESTADOR like '%SIM CLINICAS%'
-group by dp.NOME_PRESTADOR,
-         to_char(DATA_ATENDIMENTO, 'RRRRMM'),
-         substr(fc.ID_TEMPO_MES_ANO_REF,1,6)) t
-group by t.prestador,
-         t.anomes
-having  sum(nvl(t.QTA_FT,0)) + sum(nvl(t.VA_FT,0)) + sum(nvl(t.QTA_AT,0)) + sum(nvl(t.VA_AT,0)) <> 0         
-order by 2
---*/
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -113,8 +72,17 @@ from
         sum(0) VR_AT,
         sum(0) N_AT        
 from    TS.FAT_ITEM_CONTA fc,
-        TS.DIM_PRESTADOR dp
+        TS.DIM_PRESTADOR dp,
+        (select * from
+            (select fc.COD_PRESTADOR_TS codigo,
+                    sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)) VA_FT
+            from    TS.FAT_ITEM_CONTA fc
+            where   substr(fc.ID_TEMPO_MES_ANO_REF,1,4) = '2017'
+            group by fc.COD_PRESTADOR_TS
+            order by 2 desc) t
+        where rownum <= 200) tp        
 where   fc.COD_PRESTADOR_TS(+) = dp.COD_PRESTADOR_TS
+and     dp.COD_PRESTADOR_TS = tp.codigo
 --and     dp.NOME_PRESTADOR like '%HOSPITAL SANTA LUZIA%'
 group by dp.COD_PRESTADOR_TS,
          dp.NOME_PRESTADOR,
@@ -136,8 +104,17 @@ select  dp.COD_PRESTADOR_TS codigo,
         sum(nvl(fc.VALOR_PAGO_REVISAO,0)) VR_AT,
         count(1) N_AT
 from    TS.FAT_ITEM_CONTA fc,
-        TS.DIM_PRESTADOR dp
+        TS.DIM_PRESTADOR dp,
+        (select * from
+            (select fc.COD_PRESTADOR_TS codigo,
+                    sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)) VA_FT
+            from    TS.FAT_ITEM_CONTA fc
+            where   substr(fc.ID_TEMPO_MES_ANO_REF,1,4) = '2017'
+            group by fc.COD_PRESTADOR_TS
+            order by 2 desc) t
+        where rownum <= 200) tp        
 where   fc.COD_PRESTADOR_TS(+) = dp.COD_PRESTADOR_TS
+and     dp.COD_PRESTADOR_TS = tp.codigo
 --and     dp.NOME_PRESTADOR like '%HOSPITAL SANTA LUZIA%'
 group by dp.COD_PRESTADOR_TS,
          dp.NOME_PRESTADOR,
@@ -145,9 +122,14 @@ group by dp.COD_PRESTADOR_TS,
          substr(fc.ID_TEMPO_MES_ANO_REF,1,6),
          1
 order by 1,4,3) t
-where   t.anomes_f between '201401' and '201706'
+where    t.anomes between '201401' and '201706'
 group by t.codigo,
          t.prestador,
          t.anomes
-having  sum(nvl(t.QTA_FT,0)) + sum(nvl(t.VA_FT,0)) + sum(nvl(t.QTA_AT,0)) + sum(nvl(t.VA_AT,0)) <> 0         
-order by 2,3
+having  sum(nvl(t.QTA_FT,0)) + sum(nvl(t.VA_FT,0)) + sum(nvl(t.QTA_AT,0)) + sum(nvl(t.VA_AT,0)) <> 0
+and     substr(t.anomes,1,3) = '201'
+order by 1,2,3
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
