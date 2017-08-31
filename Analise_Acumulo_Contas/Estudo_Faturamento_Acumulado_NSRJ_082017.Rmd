@@ -8,7 +8,7 @@ output:
     highlight: pygments
 ---
 
-# Estudo sobre Faturamento x Atendimento por Prestador
+## Estudo sobre Faturamento x Atendimento por Prestador
 
 ---
 
@@ -163,8 +163,6 @@ for (i in seq_along(FA.lst_rank)) {
 FA.df_rank <- FA.df_rank %>%
   add_column(., nome = x_fat_ate[match(.$prestador,x_fat_ate$CODIGO), 2][[1]])
 
-
-
 FA.df_rank %<>% mutate(faturado = as.double(faturado),
                       dma = as.double(dma), 
                       dma.c = as.double(dma.c)) %>% 
@@ -193,15 +191,19 @@ FA.lst_prestador <- x_fat_ate %>%
 
 f.gg_param <- function(nm) {
 
+  v.gt <- which(FA.lst_prestador[[nm]][,'ANOMES'] == '201705')
+  
   ggp <- ggplot(data = FA.lst_prestador[[nm]], aes(x = ANOMES, y = escala_geral)) +
     geom_linerange(aes(ymax = ifelse(escala > escala_geral, escala, escala_geral),
                        ymin = ifelse(escala <= escala_geral, escala, escala_geral),
                        col = (escala_geral-escala)),
-                   size = 1.2, alpha = 0.7) +
+                   size = 1.2, alpha = 0.3) +
     geom_hline(yintercept = 0, col = 'black', alpha = 0.4) + 
+    geom_vline(xintercept = v.gt, col = 'red', size = 1, alpha = 0.6) +
+    geom_label(aes(x = v.gt-0.2, y = 3, label = 'Gestão de teto >'), col = 'red', hjust = 'right', alpha = 0.8) +
     geom_point(aes(y = escala, col = (escala_geral-escala)), 
                size = 4, alpha = 1) + 
-    geom_point(col = 'red', size = 1.7, alpha = 0.9, shape = 15) +  
+    geom_point(col = 'red', size = 1.7, alpha = 0.5, shape = 15) +  
     scale_colour_gradient2(name='Delta para\nEscala Geral', 
                            high = 'dark green', 
                            mid = 'light blue',
@@ -240,6 +242,8 @@ f.tb_param <- function(nm) {
     as.data.frame()
   print(tbp)
 }
+
+FA.lst_prestador[[1]]$ANOMES
 ```
 
 ### Como ler o gráfico a seguir?
@@ -258,7 +262,7 @@ f.tb_param <- function(nm) {
 ##----------------------------------------------------------------------------
 ##----------------------------------------------------------------------------
 v.top <- 20
-v.limite_min <- 10000000
+v.limite_min <- 35000000
 # v.rank:
 #   faturado.r
 #   dma.r
@@ -268,7 +272,11 @@ v.limite_min <- 10000000
 ##----------------------------------------------------------------------------
 
 FA.plot_rank <- FA.df_rank %>%
-  filter(faturado > v.limite_min) %>% 
+  filter(faturado > v.limite_min)
+
+v.top <- ifelse(dim(FA.plot_rank)[1] < v.top, dim(FA.plot_rank)[1], v.top) 
+
+FA.plot_rank %<>% 
   arrange(dma.r) %>%
   select(prestador) %>% 
   '['(1:v.top,) %>% 
@@ -278,6 +286,5 @@ for (i in seq_along(FA.plot_rank)) {
   f.gg_param(FA.plot_rank[i])
   f.tb_param(FA.plot_rank[i])
 }
-
 ```
 
