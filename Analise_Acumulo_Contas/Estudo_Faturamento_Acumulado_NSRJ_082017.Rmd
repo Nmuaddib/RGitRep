@@ -12,7 +12,7 @@ output:
 
 ---
 
-### Preparação do ambiente
+#### Preparação do ambiente
 
 Bibliotecas utilizadas no trabalho no código abaixo (oculto, utilize o botão a direita para expor).
 ```{r setup, message = FALSE, warning = FALSE}
@@ -29,7 +29,7 @@ library("tidyr", lib.loc="~/R/win-library/3.4")
 library("magrittr", lib.loc="~/R/win-library/3.4")
 library("readxl", lib.loc="~/R/win-library/3.4")
 library("purrr", lib.loc="~/R/win-library/3.4")
-#### --------------------------------------------------------
+##----------------------------------------------------------------------------
 #f.get_last_scale <- function(mtx, idx = 0) {
 #  l <- dim(mtx)[1]
 #  if (idx > 0) idx <- idx - 1
@@ -39,7 +39,7 @@ library("purrr", lib.loc="~/R/win-library/3.4")
 #}
 ```
 
-##Processamento detalhado por prestador
+### Processamento detalhado por prestador
 
 Para separação dos seguintes grupos de indicadores:
 
@@ -50,11 +50,31 @@ FMA - Valor/Qt de Faturamento do mês anterior (Referência do faturamento = Ref
 ATE - Valor/Qt de Atendimento total (Soma de linhas de atendimento para referência)  
   
 ```{r processo detalhado, message=FALSE, warning=FALSE}
+##----------------------------------------------------------------------------
+##----------------------------------------------------------------------------
+##----------------------------------------------------------------------------
+v.top <- 50
+v.limite_min <- 35*1000*1000
+# v.rank:
+#   faturado.r
+#   dma.r
+#   dma.c.r
+##----------------------------------------------------------------------------
+##----------------------------------------------------------------------------
+##----------------------------------------------------------------------------
+
 x_anomes_id <- read_excel('anomes_id.xlsx') %>% 
   mutate(anomes = factor(anomes))
 
 x_fat_ate_d <- read_excel('Geral2014_17_prestadores_d.xlsx')
-as.tibble(x_fat_ate_d)
+x_geral_d <- read_excel('Geral2014_17_d.xlsx')
+
+print(paste0('Representatividade dos 200 maiores prestadores no faturamento total (2014-2017/07): ', round((((sum(x_fat_ate_d$VA)+sum(x_fat_ate_d$VR))/(sum(x_geral_d$VA)+sum(x_geral_d$VR)))*100)), '%   '))
+print(paste0('Parâmetro de seleção de prestadores (top N): ', v.top, '    '))
+print(paste0('Parâmetro de Valor mínimo de faturamento acumulado total: ', v.limite_min, '    '))
+
+##----------------------------------------------------------------------------
+##as.tibble(x_fat_ate_d)
 
 x_fat_ate_d %<>%
   merge(.,x_anomes_id, by.x = 'ANOMES_FT', by.y = 'anomes') %>% 
@@ -109,16 +129,20 @@ FA.df_base %<>% select(CODIGO, PRESTADOR, ANOMES,
                        ) %>% 
   mutate(P_FCR = VA_FCR/VA_FTT, P_FMA = VA_FMA/VA_FTT, DIF = VA_FTT-VA_ATE)
 
+##----------------------------------------------------------------------------
 write.csv2(FA.df_base, 'Prestador_FT_AT_Anomes_d.csv')
+##----------------------------------------------------------------------------
 ```
 
-## Processo de cálculo de dados padronizados por prestador
+### Processo de cálculo de dados padronizados por prestador
 
 Planilha original importada e resultado final com dados padronizados, por prestador.
 ```{r processo}
 #x_fat_ate <- read_excel('Geral2014_17_prestadores_t.xls')
 x_fat_ate <- read_excel('Geral2014_17_prestadores.xlsx')
-as.tibble(x_fat_ate)
+
+##----------------------------------------------------------------------------
+##as.tibble(x_fat_ate)
 
 f.name_lst <- function(lt) {
   prest <- names(lt)
@@ -153,18 +177,20 @@ for (i in seq_along(unlist(FA.lst_scale))) {
 
 FA.df_scale %<>% mutate(escala = as.double(escala))
 
-FA.df_scale
-
+##----------------------------------------------------------------------------
+##FA.df_scale
 ```
 
-## Cálculo de dados padronizados do Planserv
+### Cálculo de dados padronizados do Planserv
 
 Planilha original importada e resultado final com dados padronizados, total do Planserv.
 ```{r geral}
 x_geral <- read_excel('Geral2014_17.xlsx')
-as.tibble(x_geral)
 
-x_geral <- cbind(x_geral, ID_AM = 1:42)
+##----------------------------------------------------------------------------
+##as.tibble(x_geral)
+
+x_geral <- cbind(x_geral, ID_AM = 1:43)
 
 x_geral %<>% mutate(DIF = VA_FT-VA_AT)
 
@@ -177,10 +203,11 @@ FA.df_scale_geral %<>%
   as.tibble() %>% 
   mutate(escala = as.double(escala))
 
-FA.df_scale_geral
+##----------------------------------------------------------------------------
+##FA.df_scale_geral
 ```
 
-## Planilha final
+### Planilha final
 
 Junção dos dados das planilhas anteriores, código oculto abaixo.
 ```{r lookups}
@@ -200,12 +227,13 @@ x_fat_ate %<>%
                                          paste(FA.df_base$CODIGO, 
                                                FA.df_base$ANOMES)), 14])
 
+##----------------------------------------------------------------------------
 write.csv2(x_fat_ate, 'Prestador_FT_AT_Anomes.csv')
-
-x_fat_ate
+##----------------------------------------------------------------------------
+##x_fat_ate
 ```
 
-## Ranking por faturamento e desvio absoluto médio
+### Ranking por faturamento e desvio absoluto médio
 
 Montagem de rankings para seleção de prestadores para análise gráfica
 ```{r ranking}
@@ -254,12 +282,13 @@ FA.df_rank %<>% mutate(faturado = as.double(faturado),
   mutate(dma.c.r = 1:dim(FA.df_rank)[1]) %>% 
   select(prestador, nome, faturado.r, faturado, dma.r, dma, dma.c.r, dma.c)
 
+##----------------------------------------------------------------------------
 write.csv2(FA.df_rank, 'Prestador_ranking.csv')
-
-FA.df_rank
+##----------------------------------------------------------------------------
+##FA.df_rank
 ```
 
-## Preparação de gráficos
+### Preparação de gráficos
 
 Para dados padronizados Planserv x Prestador, código oculto abaixo.
 ```{r gráficos}
@@ -268,6 +297,28 @@ x_fat_ate %<>% mutate(ANOMES = factor(.$ANOMES, levels = x_geral$ANOMES),
 
 FA.lst_prestador <- x_fat_ate %>% 
   split(.$CODIGO)
+
+f.tb_param <- function(nm, i) {
+  print(FA.lst_prestador[[nm]][[1,'PRESTADOR']])
+  print('------------------------------------------------------------------')  
+  print(paste0('Raking da seleção               : ',str_pad(i, width = 3, side="left", 
+                                                            pad = ' '), '    '))
+  print(paste0('Raking de faturamento           : ', str_pad(FA.df_rank[FA.df_rank$prestador == FA.lst_prestador[[nm]][[1,'CODIGO']],'faturado.r'], width = 3, side="left", pad = ' '), '    '))
+  print(paste0('Raking de desvio médio absoluto : ', str_pad(FA.df_rank[FA.df_rank$prestador == FA.lst_prestador[[nm]][[1,'CODIGO']],'dma.r'], width = 3, side="left", pad = ' '), '    '))
+  print('------------------------------------------------------------------')
+  tbp <- FA.lst_prestador[[nm]] %>% 
+    mutate(VA_FT = round(VA_FT), 
+           VA_AT = round(VA_AT),
+           P_FCR = round((P_FCR*100), digits = 2)) %>% 
+    select ('Ano e mês' = ANOMES,
+            'Valor Faturado' = VA_FT,
+            'Valor Atendido' = VA_AT,
+            '% F.Corrente' = P_FCR,
+            'Qt.Rf.Faturadas' = C_FTT) %>% 
+    as.data.frame()
+  
+  print(tbp)
+}
 
 f.gg_param <- function(nm) {
 
@@ -281,14 +332,14 @@ f.gg_param <- function(nm) {
     geom_point(aes(y = escala, col = (escala_geral-escala)), 
                size = 4, alpha = 1) + 
     geom_point(col = 'red', size = 1.7, alpha = 0.5, shape = 15) +
-    geom_line(aes(y = (1-P_FCR)+4), col = 'blue', size = 0.8, alpha = 0.4, group = 1) +
+    geom_line(aes(y = (P_FCR)+4), col = 'blue', size = 0.8, alpha = 0.4, group = 1) +
     geom_hline(yintercept = 0, col = 'black', alpha = 0.4) + 
-    geom_hline(yintercept = 5, col = 'red', alpha = 0.7) +
+    geom_hline(yintercept = 5, col = 'green', alpha = 0.7) +
     geom_hline(yintercept = 4.5, col = 'black', alpha = 0.7) +    
-    geom_hline(yintercept = 4, col = 'green', alpha = 0.7) +  
+    geom_hline(yintercept = 4, col = 'red', alpha = 0.7) +  
+    geom_label(aes(x = 1, y = 5.3, label = '% Faturamento Corrente'), 
+               col = 'blue', hjust = 'left', alpha = 0.8) +     
     geom_vline(xintercept = v.gt, col = 'red', size = 1, alpha = 0.6) +
-    geom_label(aes(x = 1, y = 5.3, label = '% Acumulado de Meses Anteriores'), 
-               col = 'blue', hjust = 'left', alpha = 0.8) +    
     geom_label(aes(x = v.gt-0.2, y = 3, label = 'Gestão de teto >'), 
                col = 'red', hjust = 'right', alpha = 0.8) +
     scale_y_continuous(breaks = seq(-7, 7, by = 0.5)) +
@@ -310,16 +361,34 @@ f.gg_param <- function(nm) {
   plot(ggp)
 }
 
-f.tb_param <- function(nm) {
-  print(FA.lst_prestador[[nm]][[1,'PRESTADOR']])
-  print('##################################################################')
-  tbp <- FA.lst_prestador[[nm]] %>% select ('Ano e mês' = ANOMES,
-                                            'Valor Faturado' = VA_FT,
-                                            'Valor Atendido' = VA_AT,
-                                            '% F.Corrente' = P_FCR,
-                                            'Qt.Rf.Faturadas' = C_FTT) %>% 
-    as.data.frame()
-  print(tbp)
+f.gg_da <- function(nm) {
+
+  v.gt <- which(FA.lst_prestador[[nm]][,'ANOMES'] == '201705')
+  
+  ggp <- ggplot(data = FA.lst_prestador[[nm]], aes(x = ANOMES)) +
+    geom_line(aes(y = (VA_FT)/1000), 
+              size = 0.9, col = 'dark green', alpha = 1, group = 1) +
+    geom_line(aes(y = (VA_AT)/1000), 
+              size = 0.9, col = 'blue', alpha = 1, group = 1) +    
+    geom_vline(xintercept = v.gt, col = 'red', size = 1, alpha = 0.6) +
+    geom_label(aes(x = v.gt-0.2, y = 3, label = 'Gestão de teto >'), 
+               col = 'red', hjust = 'right', alpha = 0.8) +
+    geom_label(aes(x = 1, y = 0, label = 'Faturado'), 
+               col = 'dark green', hjust = 'left', alpha = 0.8) +
+    geom_label(aes(x = 5, y = 0, label = 'Atendido'), 
+               col = 'blue', hjust = 'left', alpha = 0.8) +    
+    scale_y_continuous(breaks = seq(0, 100000, by = 500)) +    
+    labs(title = paste0('Valores de Faturamento e Atendimento\n',
+                        FA.lst_prestador[[nm]][[1,'PRESTADOR']]),
+         x = 'Ano e Mês', 
+         y = 'Valores em Milhares') +
+    theme_linedraw() +
+    theme(axis.text.x = element_text(angle = 45, 
+                                     vjust = 1, 
+                                     size = 9, 
+                                     hjust = 1))
+  
+  plot(ggp)
 }
 ```
 
@@ -335,22 +404,9 @@ f.tb_param <- function(nm) {
 
 ---
 
-- A parte superior (entre 4 e 5 no eixo vertical, representando 0% a 100%) apresenta linha da variação percentual para o valor faturado, que é referente à outros meses de atendimento. Quanto mais próximo da linha verde, maior o faturamento de uma referência que foi atendido naquela mesma referência. Se a linha azul está sempre próxima à vermelha, o prestador tem a maior parcela de cada faturamento referente à meses anteriores. A linha acendente demonstra um período de acumulo de contas.
+- A parte superior (entre 4 e 5 no eixo vertical, representando 0% a 100%) apresenta linha da variação percentual para o valor faturado no mês de referência que foi atendido no mesmo mês. Se a linha azul está sempre próxima à vermelha, o prestador tem a maior parcela de cada faturamento referente à meses anteriores. A linha descendente demonstra um período de acumulo de contas.
 
 ```{r plotagem, fig.height=7, fig.width=10, message=FALSE, warning=FALSE}
-
-##----------------------------------------------------------------------------
-##----------------------------------------------------------------------------
-##----------------------------------------------------------------------------
-v.top <- 5
-v.limite_min <- 70000000
-# v.rank:
-#   faturado.r
-#   dma.r
-#   dma.c.r
-##----------------------------------------------------------------------------
-##----------------------------------------------------------------------------
-##----------------------------------------------------------------------------
 
 FA.plot_rank <- FA.df_rank %>%
   filter(faturado > v.limite_min)
@@ -364,8 +420,9 @@ FA.plot_rank %<>%
   '[['(1)
 
 for (i in seq_along(FA.plot_rank)) {
+  f.tb_param(FA.plot_rank[i], i)  
   f.gg_param(FA.plot_rank[i])
-  f.tb_param(FA.plot_rank[i])
+  f.gg_da(FA.plot_rank[i])
 }
 ```
 
