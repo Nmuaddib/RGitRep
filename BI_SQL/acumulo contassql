@@ -38,7 +38,7 @@ from    TS.FAT_ITEM_CONTA fc
 group by to_char(DATA_ATENDIMENTO, 'RRRRMM'),
          substr(fc.ID_TEMPO_MES_ANO_REF,1,6),
          1) t
-where    t.anomes between '201401' and '201706'         
+where    t.anomes between '201401' and '201707'         
 group by t.anomes
 having  sum(nvl(t.QTA_FT,0)) + sum(nvl(t.VA_FT,0)) + sum(nvl(t.QTA_AT,0)) + sum(nvl(t.VA_AT,0)) <> 0
 and     substr(t.anomes,1,3) = '201'
@@ -122,7 +122,7 @@ group by dp.COD_PRESTADOR_TS,
          substr(fc.ID_TEMPO_MES_ANO_REF,1,6),
          1
 order by 1,4,3) t
-where    t.anomes between '201401' and '201706'
+where    t.anomes between '201401' and '201707'
 group by t.codigo,
          t.prestador,
          t.anomes
