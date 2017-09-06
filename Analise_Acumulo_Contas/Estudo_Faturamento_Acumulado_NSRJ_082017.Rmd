@@ -243,6 +243,22 @@ FA.saldo_ate <-  FA.df_base %>%
 
 ### Geração de rankings
 
+Conteúdo do arquivo gerado:
+
+| Coluna  | Descrição  |
+|---|----------------------------------------------------------|
+| **prestador**  | Código do Prestador  |
+| **nome**  | Nome do Prestador  |
+| **faturado.r**  | Ranking de faturamento  |
+| **dma.r**  | Valor total de faturamento entre 2014 e o ano corrente  |
+| **dma**  | Ranking de desvio médio absoluto  |
+| **dma.c.r**  | Desvio médio absoluto, avalia a oscilação do prestador em relação ao valor faturado e atendido  |
+| **dma.c**  | Ranking de desvio médio absoluto calculado  |
+| **fcr.r**  | Desvio médio absoluto calculado, formula modificada que leva em consideração a média dos valores absolutos e não a mediana  |
+| **fcr**  | Ranking de faturamento corrente  |
+| **isa.r**  | Indice do saldo de atendimento, percentual em relação ao faturamento do ano  |
+| **isa**  | Indice do saldo de atendimento, percentual em relação ao faturamento do ano   corrente, que está pendente para o valor de atendimento (Ex: 10.000 de faturamento anual, 9.000 de atendimento, ISA = -10%)  |
+
 ```{r ranking}
 f.sum_rank <- function(df) {
   res <- vector()
@@ -511,9 +527,7 @@ f.gg_fa <- function(nm) {
 - **Faturamento total                :** Faturamento total entre 2014 e ano corrente
 - **Desvio médio absoluto            :** Medida de dispersão, avalia a oscilação entre meses que possuem mais faturamento que atendimento, e meses que possuem mais atendimento que faturamento (menor = melhor)
 - **% Médio de faturamento corrente  :** Proporção média do valor faturado que é referente à atendimentos na mesma referência (maior = melhor)
-- **% Limite de acumulado 2017       :** Valor calculado para determinar percentual aceitável no saldo negativo de atendimentos para o ano corrente. Seu valor deve ser superior ao valor da primeira linha, coluna **"% Saldo sobre Faturamento"** da tabela logo a seguir.  
-
-<b>Formula = (1 / "Quantidade de meses faturados") x (1 - " % Médio de faturamento corrente")</b>
+- **% Limite de acumulado 2017       :** Valor calculado para determinar percentual aceitável no saldo negativo de atendimentos para o ano corrente. Seu valor deve ser superior ao valor absoluto da primeira linha, coluna **"% Saldo sobre Faturamento"** da tabela seguinte no resumo. <b>Formula = (1 / "Quantidade de meses faturados") x (1 - " % Médio de faturamento corrente")</b>
 
 #### Gráfico padronizado para diferença entre valores de faturamento e atendimento
 
