@@ -30,6 +30,9 @@ library("tidyr", lib.loc="~/R/win-library/3.4")
 library("magrittr", lib.loc="~/R/win-library/3.4")
 library("readxl", lib.loc="~/R/win-library/3.4")
 library("purrr", lib.loc="~/R/win-library/3.4")
+#library("RODBC", lib.loc="~/R/win-library/3.4")
+#library("sqldf", lib.loc="~/R/win-library/3.4")
+
 # ------------------------------------------------------------------------------------------
 ```
 
