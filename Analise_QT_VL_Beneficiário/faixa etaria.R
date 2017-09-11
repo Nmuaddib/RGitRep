@@ -54,3 +54,45 @@ ggplot(data = x_vv_faixa , aes(x = ANOMES)) +
                                    vjust = 1, 
                                    size = 9, 
                                    hjust = 1))
+
+
+f.stats <- function(vec) {
+  res <- double()
+  res[1] <- min(vec)
+  res[2] <- max(vec)
+  res[3] <- res[2]-res[1]
+  res[4] <- sum(vec)
+  res[5] <- round(res[3]/res[1]*100, 4)
+  names(res) <- c('min', 'max', 'delta', 'sum', 'p_delta')
+  return(res)
+}
+
+lt <- x_vv_faixa %>% 
+  split(.$FAIXA) %>% 
+  map(arrange, ANOMES, FAIXA) %>% 
+  map("BENEFICIARIOS") %>% 
+  map(f.stats) %>% 
+  map('delta') %>% 
+  unlist() %>% 
+  as.data.frame() %>% 
+  cbind(rownames(.), .) %>% 
+  as.tibble()
+
+names(lt) <- c('FAIXA','DELTA')
+
+delta.df <- vv_faixa_ano %>% 
+  split(.$FAIXA) %>% 
+  map(arrange, ANO, FAIXA) %>% 
+  map('BENEFICIARIOS.md') %>% 
+  map(f.stats) 
+
+delta.df
+
+#%>% 
+map('delta') %>% 
+  unlist() %>% 
+  as.data.frame() %>% 
+  cbind(rownames(.), .) %>% 
+  as.tibble()
+
+names(delta.df) <- c('FAIXA','DELTA')
