@@ -42,7 +42,7 @@ con <- dbConnect(drv, "ts_consulta", "ts_consulta", dbname='TS.INTRANET')
 
 ### Criação de base a partir do banco de dados
 
-```{sql connection=con, output.var="x_vv_main"}
+```{sql connection=con, eval=FALSE, include=FALSE, output.var="x_vv_main"}
 select  substr(fc.ID_TEMPO_MES_ANO_REF,1,4) ano,
         substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes,
         sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0))  VT,        
@@ -82,7 +82,7 @@ order by 2
 ```{r importação}
 ## Importação, para processamento offline
 # ------------------------------------------------------------------------------------------
-# x_vv_main_ip <- read_excel('VV_extract_sqlbi.xls')
+x_vv_main <- read_excel('VV_extract_sqlbi_m18.xlsx') #'VV_extract_sqlbi_59m.xlsx''VV_extract_sqlbi.xls'
 
 x_vv_main %<>% 
   mutate(ANOMES = factor(.$ANOMES), ANO = factor(.$ANO)) %>% 
@@ -305,7 +305,7 @@ ggplot(data = vv_am_scale_n, aes(x = ANOMES)) +
 
 ### Analise de faixa etária
 
-```{sql connection=con, output.var="x_vv_faixa"}
+```{sql connection=con, eval=FALSE, include=FALSE, output.var="x_vv_faixa"}
 select  to_char(pcm.mes_ano_ref,'RRRRMM') anomes,
         fe.DESC_FAIXA faixa,
         sum(qtd_ativos) BT
@@ -323,22 +323,12 @@ order by 1,2
 ### Gráficos e resumo
 
 ```{r faixa, fig.height=7, fig.width=10}
-x_vv_faixa_ip <- read_excel('beneficiarios_faixa.xlsx')
-
-x_vv_faixa_ip %<>% 
-  mutate(ANO = factor(str_sub(ANOMES, 1, 4)), 
-         ANOMES = factor(ANOMES), 
-         FAIXA = factor(FAIXA, levels = c("até 18 anos", "19 a 23 anos", 
-                                          "24 a 28 anos", "29 a 33 anos", 
-                                          "34 a 38 anos", "39 a 43 anos", 
-                                          "44 a 48 anos", "49 a 53 anos", 
-                                          "54 a 58 anos", "59 anos ou mais"))) %>% 
-  select(ANO, ANOMES, FAIXA, BENEFICIARIOS = BT)
+x_vv_faixa <- read_excel('beneficiarios_faixa.xlsx')
 
 x_vv_faixa %<>% 
   mutate(ANO = factor(str_sub(ANOMES, 1, 4)), 
          ANOMES = factor(ANOMES), 
-         FAIXA = factor(FAIXA, levels = c("ate 18 anos", "19 a 23 anos", 
+         FAIXA = factor(FAIXA, levels = c("até 18 anos", "19 a 23 anos", 
                                           "24 a 28 anos", "29 a 33 anos", 
                                           "34 a 38 anos", "39 a 43 anos", 
                                           "44 a 48 anos", "49 a 53 anos", 
