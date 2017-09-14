@@ -82,10 +82,23 @@ order by 2
 ```{r importação}
 ## Importação, para processamento offline
 # ------------------------------------------------------------------------------------------
-x_vv_main <- read_excel('VV_extract_sqlbi_m18.xlsx') #'VV_extract_sqlbi_59m.xlsx''VV_extract_sqlbi.xls'
+x_vv_main <- read_excel('VV_extract_sqlbi.xls')
+
+x_vv_main_c <- read_excel('VV_extract_sqlbi_componente.xlsx')
+x_vv_main_c$COMPONENTE[is.na(x_vv_main_c$COMPONENTE)] <- 'NA'
+
+x_vv_classe <- read_excel('VV_componente_class.xlsx')
+#x_vv_classe <- read_excel('VV_componente_comp.xlsx')
+x_vv_classe$COMPONENTE[is.na(x_vv_classe$COMPONENTE)] <- 'NA'
 
 x_vv_main %<>% 
   mutate(ANOMES = factor(.$ANOMES), ANO = factor(.$ANO)) %>% 
+  as.tibble()
+
+x_vv_main_c %<>% merge(., x_vv_classe, by = c('INTERNACAO','COMPONENTE')) %>% 
+  mutate(ANOMES = factor(.$ANOMES), 
+         ANO = factor(.$ANO), 
+         CLASSE = factor(paste0(.$ANO,'-', .$CLASSE))) %>% 
   as.tibble()
 ```
 
@@ -99,6 +112,10 @@ mn.ano <- x_vv_main %>%
   split(.$ANO) %>%
   map(map_dbl, mean)
 
+mn_c.ano <- x_vv_main_c %>%
+  split(.$CLASSE) %>%
+  map(map_dbl, mean)
+
 ## Cria planilha vazia com nomes de colunas a partir de um bloco da lista acima
 # ------------------------------------------------------------------------------------------
 
@@ -106,16 +123,29 @@ vv_ano <- setNames(data.frame(matrix(ncol = 17, nrow = 0)),
                    names(mn.ano[[1]])[-2]) %>% 
   as.tibble()
 
+vv_ano_c <- setNames(data.frame(matrix(ncol = 14, nrow = 0)),
+                     names(mn_c.ano[[1]])[c(-1, -2, -4)]) %>%
+  '['(c(1, 14, 2:13)) %>%
+  as.tibble()
+
 ## Extrai variáveis dos blocos na lista para a planilha vazia
 # ------------------------------------------------------------------------------------------
 
 for (i in seq_along(mn.ano)) vv_ano[i, 1:17] <- c(ANO = names(mn.ano[i]),mn.ano[[i]][3:18])
+
+for (i in seq_along(mn_c.ano)) vv_ano_c[i, 1:14] <- c(str_sub(names(mn_c.ano[i]), 1, 4),
+                                                    str_sub(names(mn_c.ano[i]), 6),
+                                                    mn_c.ano[[i]][5:16])
 
 ## Converte variáveis para número de dupla precisão e ano para fator
 # ------------------------------------------------------------------------------------------
 
 vv_ano[,2:17] %<>% map_df(as.double)
 vv_ano$ANO %<>% factor(.)
+
+vv_ano_c[,3:14] %<>% map_df(as.double)
+vv_ano_c %<>% mutate(ANO = factor(.$ANO), CLASSE = factor(.$CLASSE)) %>% 
+  arrange(CLASSE, ANO)
 
 ## Função para calculo de variação percentual em relação ao ano anterior
 # ----------------------------------------------------------------------
@@ -128,6 +158,21 @@ vv_var_perc_ano <- vv_ano[,2:17] %>%
   map_df(function(.) (.-lag(.))/lag(.)) %>%
   cbind(vv_ano[,1],.)
 
+vv_var_perc_ano_c <- vv_ano_c[2:14] %>%
+  split(.$CLASSE) %>% 
+  map(select, -CLASSE) %>% 
+  map(map_df, function(.) (.-lag(.))/lag(.)) %>% 
+  map(~cbind(vv_ano[,1], CLASSE = '', .))
+  
+vv_ano_n_c <- tibble()
+
+for (i in seq_along(vv_var_perc_ano_c)) {
+    vv_var_perc_ano_c[[i]][,2] <- names(vv_var_perc_ano_c[i])
+    vv_ano_n_c %<>%  rbind(., vv_var_perc_ano_c[[i]])
+}
+
+vv_var_perc_ano_c <- vv_ano_n_c
+
 ## Para retirada do ano sem valores prévios no resultado acima
 # ------------------------------------------------------------------------------------------
 ## @2 #'['(2:dim(vv_ano)[1],) %>% 
@@ -139,10 +184,15 @@ vv_var_perc_ano <- vv_ano[,2:17] %>%
 colnames(vv_var_perc_ano) <- paste0(colnames(vv_var_perc_ano),'.vp')
 names(vv_var_perc_ano)[1] <- 'ANO'
 
+colnames(vv_var_perc_ano_c) <- paste0(colnames(vv_var_perc_ano_c),'.vp')
+names(vv_var_perc_ano_c)[1:2] <- c('ANO','CLASSE')
+
 ## Junção de planilhas
 # ------------------------------------------------------------------------------------------
 
 vv_ano_n <- merge(vv_ano, vv_var_perc_ano, by = 'ANO')
+
+vv_ano_n_c <- merge(vv_ano_c, vv_var_perc_ano_c, by = c('ANO','CLASSE'))
 
 ## Reordenação de campos
 # ------------------------------------------------------------------------------------------
@@ -158,6 +208,17 @@ for (i in seq_along(names(vv_ano))) {
 
 vv_ano_n <- select(vv_ano_n, names.v)
 
+names.v <- names(vv_ano_c)[1:2]
+
+for (i in seq_along(names(vv_ano_c))) {
+  if (i > 2) {
+    names.v[length(names.v)+1] <- c(names(vv_ano_c)[i])
+    names.v[length(names.v)+1] <- paste0(names(vv_ano_c)[i], '.vp')
+  }
+}
+
+vv_ano_n_c %<>% select(names.v) %>% 
+  arrange(CLASSE, ANO)
 
 ## Alternativa para reordenação
 # ------------------------------------------------------------------------------------------
@@ -169,7 +230,11 @@ vv_ano_n <- select(vv_ano_n, names.v)
 
 write.csv2(vv_ano_n, 'resumo_ano.csv')
 
+write.csv2(vv_ano_n_c, 'resumo_ano_componente.csv')
+
 print(as.tibble(vv_ano_n))
+
+print(as.tibble(vv_ano_n_c))
 ```
 
 ### Escala de dados por Ano e Mês para análise gráfica no tempo
