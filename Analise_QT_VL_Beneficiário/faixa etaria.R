@@ -96,3 +96,28 @@ map('delta') %>%
   as.tibble()
 
 names(delta.df) <- c('FAIXA','DELTA')
+
+x_vv_main_c %>% 
+  '['(c(17, 4, 5:16))
+
+x_vv_main_c %>% 
+  '['(c(3, 17, 4, 5:16)) %>% 
+  group_by(ANO, CLASSE, ANOMES) %>% 
+  summarise(VT = sum(VT),
+            VA = sum(VA),
+            VC = sum(VC),
+            VI = sum(VI),
+            QP = sum(QP),
+            QA = sum(QA),
+            QC = sum(QC),
+            QI = sum(QI),
+            VQ = sum(VQ),
+            BA = sum(BA),
+            CT = sum(CT),
+            IT = sum(IT)) %>% 
+  as.data.frame()
+
+names(mn_c.ano[[1]])[-1:-3]
+
+t <- x_vv_main_c %>% 
+  filter(COMPONENTE != 'NA')
