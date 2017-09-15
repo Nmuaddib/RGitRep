@@ -121,3 +121,66 @@ names(mn_c.ano[[1]])[-1:-3]
 
 t <- x_vv_main_c %>% 
   filter(COMPONENTE != 'NA')
+
+
+```{r conn, eval=FALSE, include=FALSE}
+drv <- dbDriver("Oracle")
+con <- dbConnect(drv, "ts_consulta", "ts_consulta", dbname='TS.INTRANET')
+```
+
+### Criação de base a partir do banco de dados
+
+```{sql connection=con, eval=FALSE, include=FALSE, output.var="x_vv_main"}
+select  substr(fc.ID_TEMPO_MES_ANO_REF,1,4) ano,
+substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes,
+sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0))  VT,        
+round((sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)))/(tbt.BT),2) VM,
+round((sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)))/(count(distinct fc.COD_TS)),2) VA,
+round((sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)))/(count(distinct fc.CONTA)),2) VC,
+round((sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)))/(count(1)),2) VI,
+sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0))  QP,        
+round((sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)))/(tbt.BT),2) QM,        
+round((sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)))/(count(distinct fc.COD_TS)),2) QA,
+round((sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)))/(count(distinct fc.CONTA)),2) QC,
+round((sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)))/(count(1)),2) QI,
+(sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)))/(sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0))) VQ,
+tbt.BT,
+count(distinct fc.COD_TS) BA,
+count(distinct fc.CONTA) CT,
+count(1) IT,
+count(distinct fc.COD_TS)/tbt.BT PA        
+from    TS.FAT_ITEM_CONTA fc,
+(select  to_char(pcm.mes_ano_ref,'RRRRMM') anomes,
+ sum(qtd_ativos) BT
+ from    ts.posicao_cadastro_mes pcm           
+ where   pcm.mes_ano_ref between to_date ('01/01/2014','dd/mm/yyyy') and to_date ('01/07/2017','dd/mm/yyyy') 
+ group by   
+ to_char(pcm.mes_ano_ref,'RRRRMM')
+ order by 1) tbt
+where   substr(fc.ID_TEMPO_MES_ANO_REF,1,6) = tbt.anomes
+--and     substr(fc.ID_TEMPO_MES_ANO_REF,1,6) in ('201605')--, '201606', '201705', '201706')
+group by substr(fc.ID_TEMPO_MES_ANO_REF,1,4),
+substr(fc.ID_TEMPO_MES_ANO_REF,1,6),
+tbt.BT
+having  sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) > 0
+or      sum(nvl(fc.VAL_APROVADO_ITEM,0)) + sum(nvl(fc.VALOR_PAGO_REVISAO,0)) > 0
+order by 2
+```
+
+### Analise de faixa etária
+
+```{sql connection=con, eval=FALSE, include=FALSE, output.var="x_vv_faixa"}
+select  to_char(pcm.mes_ano_ref,'RRRRMM') anomes,
+fe.DESC_FAIXA faixa,
+sum(qtd_ativos) BT
+from    ts.posicao_cadastro_mes pcm,
+TS.FAIXA_ETARIA fe
+where   pcm.mes_ano_ref between to_date ('01/01/2014','dd/mm/yyyy') and to_date ('01/07/2017','dd/mm/yyyy') 
+and     pcm.TIPO_FAIXA_ETARIA = fe.TIPO_FAIXA
+and     pcm.COD_FAIXA_ETARIA = fe.COD_FAIXA_ETARIA
+group by   
+to_char(pcm.mes_ano_ref,'RRRRMM'),
+fe.DESC_FAIXA
+order by 1,2
+```
+
