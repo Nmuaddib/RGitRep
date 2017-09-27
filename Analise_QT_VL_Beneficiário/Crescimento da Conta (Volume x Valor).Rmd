@@ -42,7 +42,7 @@ library("ROracle", lib.loc="~/R/win-library/3.4")
 # ------------------------------------------------------------------------------------------
 x_vv_main <- read_excel('VV_extract_sqlbi.xls')
 
-x_vv_main_c <- read_excel('VV_extract_sqlbi_componente.xlsx')
+x_vv_main_c <- read_excel('VV_extract_sqlbi_AMB_ESP.xlsx')
 
 x_vv_main %<>% 
   mutate(ANOMES = factor(.$ANOMES), ANO = factor(.$ANO)) %>% 
@@ -111,18 +111,22 @@ vv_var_perc_ano <- vv_ano[,2:17] %>%
   map_df(function(.) (.-lag(.))/lag(.)) %>%
   cbind(vv_ano[,1],.)
 
+vv_ano_c[2:14]
+
 vv_var_perc_ano_c <- vv_ano_c[2:14] %>%
   split(.$CLASSE) %>% 
   map(select, -CLASSE) %>% 
   map(map_df, function(.) (.-lag(.))/lag(.)) %>% 
-  map(~cbind(vv_ano[,1], CLASSE = '', .))
-  
+  map(~cbind(ANO = '', CLASSE = '', .))
+
 vv_ano_n_c <- tibble()
 
 for (i in seq_along(vv_var_perc_ano_c)) {
     vv_var_perc_ano_c[[i]][,2] <- names(vv_var_perc_ano_c[i])
     vv_ano_n_c %<>%  rbind(., vv_var_perc_ano_c[[i]])
 }
+
+vv_ano_n_c[,1] <- vv_ano_c[,1]
 
 vv_var_perc_ano_c <- vv_ano_n_c
 
@@ -183,7 +187,7 @@ vv_ano_n_c %<>% select(names.v) %>%
 
 write.csv2(vv_ano_n, 'resumo_ano.csv')
 
-write.csv2(vv_ano_n_c, 'resumo_ano_componente.csv')
+write.csv2(vv_ano_n_c, 'resumo_ano_AMB_ESP.csv')
 
 print(as.tibble(vv_ano_n))
 
@@ -443,7 +447,7 @@ plot(gg)
 
 idx <-  tmp[,4:15]
 
-for (i in seq_along(idx)) f.plot_comp(idx[,i])
+#for (i in seq_along(idx)) f.plot_comp(idx[,i])
 
 ```
 

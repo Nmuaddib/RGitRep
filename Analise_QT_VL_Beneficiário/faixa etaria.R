@@ -184,3 +184,13 @@ fe.DESC_FAIXA
 order by 1,2
 ```
 
+seq_along(vv_var_perc_ano_c)
+
+View(vv_ano_c[2:14])
+vv_ano[,1]
+
+vv_var_perc_ano_c[[1]]
+
+vv_ano[1,1]
+
+View(vv_ano_c)
