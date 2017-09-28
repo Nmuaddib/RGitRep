@@ -40,7 +40,7 @@ library("ROracle", lib.loc="~/R/win-library/3.4")
 ```{r importação}
 ## Importação, para processamento offline
 # ------------------------------------------------------------------------------------------
-x_vv_main <- read_excel('VV_extract_sqlbi.xls')
+x_vv_main <- read_excel('VV_extract_sqlbi_internação.xlsx')
 
 x_vv_main_c <- read_excel('VV_extract_sqlbi_AMB_ESP.xlsx')
 
@@ -185,7 +185,7 @@ vv_ano_n_c %<>% select(names.v) %>%
 ## Exportação de planilha
 # ------------------------------------------------------------------------------------------
 
-write.csv2(vv_ano_n, 'resumo_ano.csv')
+write.csv2(vv_ano_n, 'resumo_ano_internacao.csv')
 
 write.csv2(vv_ano_n_c, 'resumo_ano_AMB_ESP.csv')
 

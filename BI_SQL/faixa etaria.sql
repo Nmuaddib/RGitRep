@@ -24,4 +24,14 @@ and     pcm.TIPO_FAIXA_ETARIA = fe.TIPO_FAIXA
 and     pcm.COD_FAIXA_ETARIA = fe.COD_FAIXA_ETARIA    
 
 
+select  to_char(pcm.mes_ano_ref,'RRRRMM') anomes,
+        sum(qtd_ativos) BT
+from    ts.posicao_cadastro_mes pcm           
+where   pcm.mes_ano_ref between to_date('01/01/2014','dd/mm/yyyy') and to_date('01/08/2017','dd/mm/yyyy')
+--and     pcm.COD_FAIXA_ETARIA = 10
+group by   
+        to_char(pcm.mes_ano_ref,'RRRRMM')
+order by 1        
+
+
 

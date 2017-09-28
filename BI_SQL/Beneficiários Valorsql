@@ -20,17 +20,21 @@ from    TS.FAT_ITEM_CONTA fc,
         (select  to_char(pcm.mes_ano_ref,'RRRRMM') anomes,
                 sum(qtd_ativos) BT
         from    ts.posicao_cadastro_mes pcm           
-        where   pcm.mes_ano_ref between to_date ('01/01/2014','dd/mm/yyyy') and to_date ('01/07/2017','dd/mm/yyyy')
-        and     pcm.COD_FAIXA_ETARIA = 10
+        where   pcm.mes_ano_ref between to_date ('01/01/2014','dd/mm/yyyy') and to_date ('01/08/2017','dd/mm/yyyy')
+        --and     pcm.COD_FAIXA_ETARIA = 10
+        --and     pcm.COD_FAIXA_ETARIA = 1
+        and     pcm.COD_FAIXA_ETARIA not in (1, 10)        
         group by   
                 to_char(pcm.mes_ano_ref,'RRRRMM')
         order by 1) tbt,
-        (select  b.COD_TS,
+        /**/(select  b.COD_TS,
                 b.NOME_ASSOCIADO,
                 b.DATA_NASCIMENTO,
                 2017-to_number(to_char(b.DATA_NASCIMENTO,'RRRR')) idade
         from    ts.dim_beneficiario b
-        where   2017-to_number(to_char(b.DATA_NASCIMENTO,'RRRR')) > 58) bnf
+        --where   2017-to_number(to_char(b.DATA_NASCIMENTO,'RRRR')) > 58) bnf
+        --where   2017-to_number(to_char(b.DATA_NASCIMENTO,'RRRR')) < 19) bnf
+        where   2017-to_number(to_char(b.DATA_NASCIMENTO,'RRRR')) between 19 and 58) bnf        
 where   substr(fc.ID_TEMPO_MES_ANO_REF,1,6) = tbt.anomes
 and     fc.COD_TS = bnf.COD_TS
 --and     substr(fc.ID_TEMPO_MES_ANO_REF,1,6) in ('201605')--, '201606', '201705', '201706')
@@ -131,7 +135,7 @@ from    TS.FAT_ITEM_CONTA fc,
         (select  to_char(pcm.mes_ano_ref,'RRRRMM') anomes,
                 sum(qtd_ativos) BT
         from    ts.posicao_cadastro_mes pcm           
-        where   pcm.mes_ano_ref between to_date ('01/01/2014','dd/mm/yyyy') and to_date ('01/07/2017','dd/mm/yyyy')
+        where   pcm.mes_ano_ref between to_date ('01/01/2014','dd/mm/yyyy') and to_date ('01/08/2017','dd/mm/yyyy')
 --        and     pcm.COD_FAIXA_ETARIA = 10
         group by   
                 to_char(pcm.mes_ano_ref,'RRRRMM')
@@ -226,7 +230,7 @@ from    TS.FAT_ITEM_CONTA fc,
         (select  to_char(pcm.mes_ano_ref,'RRRRMM') anomes,
                 sum(qtd_ativos) BT
         from    ts.posicao_cadastro_mes pcm           
-        where   pcm.mes_ano_ref between to_date ('01/01/2014','dd/mm/yyyy') and to_date ('01/07/2017','dd/mm/yyyy')
+        where   pcm.mes_ano_ref between to_date ('01/01/2014','dd/mm/yyyy') and to_date ('01/08/2017','dd/mm/yyyy')
 --        and     pcm.COD_FAIXA_ETARIA = 10
         group by   
                 to_char(pcm.mes_ano_ref,'RRRRMM')
