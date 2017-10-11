@@ -2,7 +2,11 @@
 title: ''
 author: "Nelson Simões - CTI/Planserv"
 date: "10 de outubro de 2017"
-output: html_document 
+output:
+  html_document:
+    code_folding: hide
+    theme: cerulean
+    highlight: pygments
 ---
 
 ```{r setup, include=FALSE, message=FALSE, warning=FALSE}
@@ -17,11 +21,14 @@ library("tidyr", lib.loc="~/R/win-library/3.4")
 library("magrittr", lib.loc="~/R/win-library/3.4")
 library("readxl", lib.loc="~/R/win-library/3.4")
 library("purrr", lib.loc="~/R/win-library/3.4")
+library("knitr", lib.loc="~/R/win-library/3.4")
 library("DBI", lib.loc="~/R/win-library/3.4")
 library("ROracle", lib.loc="~/R/win-library/3.4")
 ```
 
-## Lista de prestadores com acentuado aumento de fatura
+---
+
+#### Processamento de prestadores com acentuado aumento de fatura
 
 ```{r main, fig.height=7, fig.width=10, message=FALSE, warning=FALSE}
 f.resumo <- function(df) {
@@ -64,6 +71,17 @@ f.resumo <- function(df) {
   return(res)
 }
 
+#x_prestadores_am <- read_excel('prestadores_2014_17.xlsx') %>% 
+#  select(codigo = CODIGO,
+#         nome = NOME,
+#         anomes = ANOMES,
+#         valor = VALOR,
+#         quantidade = QUANTIDADE,
+#         revisao = REVISAO) %>% 
+#  mutate(valor = as.double(valor),
+#         quantidade = as.double(quantidade),
+#         revisao = as.double(revisao))
+
 x_prestadores_am <- read_excel('prestadores_2016_17.xlsx') %>% 
   select(codigo = "Identificador do Prestador",
          nome = "Nome do Prestador",
@@ -100,21 +118,12 @@ for(i in seq_along(ls_range)) {
   }
 }
 
-df_prestadores_att <- df_prestadores %>% 
-  filter(#mx_mi > 3, 
-         #av_mi < 2, 
-         #mx_av < 2,
-         tav_hav > 2,         
-         str_sub(am_max, 1, 4) == '2017',
-         #am_min < '201606',
-         avg > 100000)
-
 f.plot <- function(df) {
   
   gg <- ggplot(data = df , aes(x = anomes)) +
     geom_line(aes(y = valor, color = valor, group = 1), 
               size = 1, alpha = 1, show.legend = T) +
-    labs(title = paste0('Faturamento do Prestador: ',df[1,2]),
+    labs(title = paste0('Faturamento do Prestador: ', df[1,2], ' - ', df[1,1]),
          x = 'Ano e mês', 
          y = 'Valores') +
     theme_gray() +
@@ -130,9 +139,31 @@ f.plot <- function(df) {
 
 x_prestadores_am %<>% mutate(anomes = factor(anomes))
 
+```
+
+### Resultado
+
+```{r plot, fig.height=7, fig.width=10, message=FALSE, warning=FALSE}
+
+df_prestadores_att <- df_prestadores %>% 
+  filter(#mx_mi > 3, 
+         #av_mi < 2, 
+         #mx_av < 2,
+         tav_hav > 2,         
+         str_sub(am_max, 1, 4) == '2017',
+         #am_min < '201606',
+         avg > 100000)
+
+df_prestadores_att %<>% arrange(desc(sum), nome, codigo)
+
+kable(select(df_prestadores_att, codigo, nome, sum, avg, tav_hav, mx_mi, av_mi, mx_av), 
+      caption = 'Prestadores marcados')
+
 for (i in 1:nrow(df_prestadores_att)) {
   df_tmp <- x_prestadores_am %>% 
     filter(codigo == df_prestadores_att[[1]][i])
   f.plot(df_tmp)
 }
+
 ```
+
