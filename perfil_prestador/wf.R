@@ -34,5 +34,7 @@ str(tab_detalhamento)
 
 names(tab_detalhamento)
 
+mean(tab_especialidade$C_TOTAL_2017_VALOR, na.rm = T)
+
   
 

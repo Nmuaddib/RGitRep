@@ -2,8 +2,14 @@
 title: ''
 author: "Nelson Simões - CTI/Planserv"
 date: "24 de outubro de 2017"
-output: html_document
+output:
+  html_document:
+    code_folding: show
+    theme: cerulean
+    highlight: pygments
 ---
+
+### Setup e conexão com o BI/BD Top Saude
 
 ```{r setup, include=TRUE, message=FALSE, warning=FALSE}
 ## Opções iniciais de configuração do ambiente
@@ -26,7 +32,7 @@ library("ROracle", lib.loc="~/R/win-library/3.4")
 # ------------------------------------------------------------------------------------------
 ```
 
-```{r conn, include=FALSE}
+```{r conn, echo=TRUE}
 drv <- dbDriver("Oracle")
 con <- dbConnect(drv, "ts_consulta", "ts_consulta", dbname='TS.INTRANET')
 v_prest <- '594480'
@@ -36,7 +42,7 @@ v_fim <- '201708'
 
 ### Criação de base a partir do banco de dados
 
-```{sql connection=con , include=FALSE, output.var="x_tab_habilitacao"}
+```{sql connection=con, echo=TRUE, output.var="x_tab_habilitacao"}
 select  ps.num_insc_fiscal,
         ps.nome_prestador,
         hp.cod_especialidade, 
@@ -55,7 +61,7 @@ and     hp.cod_prestador_ts = hpe.cod_prestador_ts
 order by 4
 ```
 
-```{sql connection=con , include=FALSE, output.var="x_tab_ben_vlr_apr"}
+```{sql connection=con, echo=TRUE, output.var="x_tab_ben_vlr_apr"}
 select  dp.COD_PRESTADOR_TS codigo,
         dp.NOME_PRESTADOR nome,
         substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes,
@@ -75,7 +81,7 @@ group by dp.COD_PRESTADOR_TS,
 order by 1,3
 ```
 
-```{sql connection=con , include=FALSE, output.var="x_tab_tratamento"}
+```{sql connection=con, echo=TRUE, output.var="x_tab_tratamento"}
 select  dp.COD_PRESTADOR_TS codigo,
         dp.NOME_PRESTADOR nome,
         fc.NOME_TIPO_TRATAMENTO tratamento,
@@ -97,7 +103,7 @@ group by dp.COD_PRESTADOR_TS,
 order by 1,3,4
 ```
 
-```{sql connection=con , include=FALSE, output.var="x_tab_especialidade"}
+```{sql connection=con, echo=TRUE, output.var="x_tab_especialidade"}
 select  dp.COD_PRESTADOR_TS codigo,
         dp.NOME_PRESTADOR nome,
         di.NOME_ESPECIALIDADE especialidade,
@@ -121,7 +127,7 @@ group by dp.COD_PRESTADOR_TS,
 order by 1,3,4
 ```
 
-```{sql connection=con , include=FALSE, output.var="x_tab_detalhamento"}
+```{sql connection=con, echo=TRUE, output.var="x_tab_detalhamento"}
 select  dp.COD_PRESTADOR_TS codigo,
         dp.NOME_PRESTADOR nome,
         di.NOME_ESPECIALIDADE especialidade,
@@ -149,7 +155,7 @@ group by dp.COD_PRESTADOR_TS,
 order by 1,3,4,5,6
 ```
 
-```{sql connection=con , include=FALSE, output.var="x_tab_itens"}
+```{sql connection=con, echo=TRUE, output.var="x_tab_itens"}
 select  dp.COD_PRESTADOR_TS codigo,
         dp.NOME_PRESTADOR nome,
         di.ITEM_MEDICO,
@@ -175,7 +181,7 @@ group by dp.COD_PRESTADOR_TS,
 order by 1,4,5
 ```
 
-```{sql connection=con , include=FALSE, output.var="x_tab_cotas"}
+```{sql connection=con, echo=TRUE, output.var="x_tab_cotas"}
 select ps.num_insc_fiscal,
        ps.nome_prestador,
        to_char(er.mes_ano_ref,'RRRRMM') anomes,
@@ -217,6 +223,8 @@ and     er.cod_prestador_ts = x1.cod_prestador_ts(+)
 order by 3
 ```
 
+### Tratamento dos dados
+
 ```{r main, message=FALSE, warning=FALSE}
 ##-----------------------------------------------------------------------------------------------------
 x_dp_esp <- read_excel('de_para_esp.xlsx') %>% 
@@ -234,7 +242,7 @@ tab_tratamento <- x_tab_tratamento %>%
   filter(str_sub(ANOMES,3,4) == 17) %>% 
   group_by(CODIGO, NOME, TRATAMENTO) %>% 
   summarise(BN = sum(BN), QUANTIDADE = sum(QUANTIDADE), VALOR = sum(VALOR), REVISAO = sum(REVISAO)) %>% 
-  mutate(ANOMES = '2017_TOTAL')%>% 
+  mutate(ANOMES = 'TOTAL_2017')%>% 
   select(1:3, 8, 4:7) %>% 
   as.data.frame() %>%
   rbind(., x_tab_tratamento) %>%
@@ -245,7 +253,7 @@ tab_tratamento <- x_tab_tratamento %>%
   mutate(ANOMES = paste0('C_',ANOMES)) %>% 
   unite(ANOMES_IND, c(ANOMES, IND)) %>%
   spread(ANOMES_IND, VALOR) %>% 
-  arrange(desc(C_2017_TOTAL_VALOR))
+  arrange(desc(C_TOTAL_2017_VALOR))
 
 write.csv2(tab_tratamento, 'tab_tratamento.csv')
 ##-----------------------------------------------------------------------------------------------------
@@ -256,7 +264,7 @@ tab_especialidade <- x_tab_especialidade %>%
   filter(str_sub(ANOMES,3,4) == 17) %>% 
   group_by(CODIGO, NOME, ESPECIALIDADE) %>% 
   summarise(BN = sum(BN), QUANTIDADE = sum(QUANTIDADE), VALOR = sum(VALOR), REVISAO = sum(REVISAO)) %>% 
-  mutate(ANOMES = '2017_TOTAL')%>% 
+  mutate(ANOMES = 'TOTAL_2017')%>% 
   select(1:3, 8, 4:7) %>% 
   as.data.frame() %>%
   rbind(., x_tab_especialidade) %>%
@@ -270,7 +278,17 @@ tab_especialidade <- x_tab_especialidade %>%
   mutate(ANOMES = paste0('C_',ANOMES)) %>% 
   unite(ANOMES_IND, c(ANOMES, IND)) %>%
   spread(ANOMES_IND, VALOR) %>% 
-  arrange(desc(C_2017_TOTAL_VALOR))
+  arrange(desc(C_TOTAL_2017_VALOR)) %>% 
+  mutate(MAIORES_ESP = '')
+
+v_mark_80pc <- sum(tab_especialidade$C_TOTAL_2017_VALOR, na.rm = T)*0.8
+
+v_sum <- 0
+
+for (i in 1:nrow(tab_especialidade)) {
+  if (v_sum <= v_mark_80pc) tab_especialidade[i, 'MAIORES_ESP'] <- 'X'
+  v_sum <- v_sum + ifelse(is.na(tab_especialidade[i, 'C_TOTAL_2017_VALOR']), 0, tab_especialidade[i, 'C_TOTAL_2017_VALOR'])
+}
 
 write.csv2(tab_especialidade, 'tab_especialidade.csv')
 ##-----------------------------------------------------------------------------------------------------
@@ -284,7 +302,7 @@ tab_detalhamento <- x_tab_detalhamento %>%
   filter(str_sub(ANOMES,3,4) == 17) %>% 
   group_by(CODIGO, NOME, ESPECIALIDADE, ITEM, GRUPO) %>% 
   summarise(BN = sum(BN), QUANTIDADE = sum(QUANTIDADE), VALOR = sum(VALOR), REVISAO = sum(REVISAO)) %>% 
-  mutate(ANOMES = '2017_TOTAL')%>% 
+  mutate(ANOMES = 'TOTAL_2017')%>% 
   select(1:5, 10, 6:9) %>% 
   as.data.frame() %>%
   rbind(., x_tab_detalhamento) %>%
@@ -301,9 +319,33 @@ tab_detalhamento <- x_tab_detalhamento %>%
   mutate(ANOMES = paste0('C_',ANOMES)) %>% 
   unite(ANOMES_IND, c(ANOMES, IND)) %>%
   spread(ANOMES_IND, VALOR) %>% 
-  arrange(desc(C_2017_TOTAL_VALOR))
+  arrange(desc(C_TOTAL_2017_VALOR)) %>% 
+  mutate(MAIORES_ESP = tab_especialidade[match(.$ESPECIALIDADE, tab_especialidade$ESPECIALIDADE), 'MAIORES_ESP'], MAIORES_ITS = '')
 
-write.csv2(tab_detalhamento, 'tab_detalhamento.csv')
+f.maiores_its_esp <- function(df) {
+  
+  v_mark_80pc <- sum(df$C_TOTAL_2017_VALOR, na.rm = T)*0.8
+
+  v_sum <- 0
+
+  for (i in 1:nrow(df)) {
+    if (v_sum <= v_mark_80pc) df[i, 'MAIORES_ITS'] <- 'X'
+    v_sum <- v_sum + ifelse(is.na(df[i, 'C_TOTAL_2017_VALOR']), 0, df[i, 'C_TOTAL_2017_VALOR'])
+  }
+  
+  return(df)
+  
+}
+
+v_esp <- tab_detalhamento$ESPECIALIDADE
+
+tab_s_detalhamento <- tab_detalhamento %>% 
+  split(v_esp) %>% 
+  map(f.maiores_its_esp) %>% 
+  unsplit(v_esp) %>% 
+  arrange(desc(MAIORES_ESP), ESPECIALIDADE, desc(C_TOTAL_2017_VALOR))
+
+write.csv2(tab_s_detalhamento, 'tab_detalhamento.csv')
 ##-----------------------------------------------------------------------------------------------------
 tab_itens <- x_tab_itens %>%
   mutate(ITEM = ifelse(!is.na(match(x_tab_itens$ITEM, x_dp_prc$banco)),
@@ -312,7 +354,7 @@ tab_itens <- x_tab_itens %>%
   filter(str_sub(ANOMES,3,4) == 17) %>% 
   group_by(CODIGO, NOME, ITEM_MEDICO, ITEM) %>% 
   summarise(BN = sum(BN), QUANTIDADE = sum(QUANTIDADE), VALOR = sum(VALOR), REVISAO = sum(REVISAO)) %>% 
-  mutate(ANOMES = '2017_TOTAL')%>% 
+  mutate(ANOMES = 'TOTAL_2017')%>% 
   select(1:4, 9, 5:8) %>% 
   as.data.frame() %>%
   rbind(., x_tab_itens) %>%
@@ -326,7 +368,17 @@ tab_itens <- x_tab_itens %>%
   mutate(ANOMES = paste0('C_',ANOMES)) %>% 
   unite(ANOMES_IND, c(ANOMES, IND)) %>%
   spread(ANOMES_IND, VALOR) %>% 
-  arrange(desc(C_2017_TOTAL_VALOR))
+  arrange(desc(C_TOTAL_2017_VALOR)) %>% 
+  mutate(MAIORES_ITS = '')
+
+v_mark_80pc <- sum(tab_itens$C_TOTAL_2017_VALOR, na.rm = T)*0.8
+
+v_sum <- 0
+
+for (i in 1:nrow(tab_itens)) {
+  if (v_sum <= v_mark_80pc) tab_itens[i, 'MAIORES_ITS'] <- 'X'
+  v_sum <- v_sum + ifelse(is.na(tab_itens[i, 'C_TOTAL_2017_VALOR']), 0, tab_itens[i, 'C_TOTAL_2017_VALOR'])
+}
 
 write.csv2(tab_itens, 'tab_itens.csv')
 ##-----------------------------------------------------------------------------------------------------
