@@ -253,7 +253,17 @@ tab_tratamento <- x_tab_tratamento %>%
   mutate(ANOMES = paste0('C_',ANOMES)) %>% 
   unite(ANOMES_IND, c(ANOMES, IND)) %>%
   spread(ANOMES_IND, VALOR) %>% 
-  arrange(desc(C_TOTAL_2017_VALOR))
+  arrange(desc(C_TOTAL_2017_VALOR)) %>% 
+  mutate(MAIORES_TTM = '')
+ 
+v_mark_80pc <- sum(tab_tratamento$C_TOTAL_2017_VALOR, na.rm = T)*0.8
+ 
+v_sum <- 0
+ 
+for (i in 1:nrow(tab_tratamento)) {
+  if (v_sum <= v_mark_80pc) tab_tratamento[i, 'MAIORES_TTM'] <- 'X'
+  v_sum <- v_sum + ifelse(is.na(tab_tratamento[i, 'C_TOTAL_2017_VALOR']), 0, tab_tratamento[i, 'C_TOTAL_2017_VALOR'])
+}
 
 write.csv2(tab_tratamento, 'tab_tratamento.csv')
 ##-----------------------------------------------------------------------------------------------------
