@@ -1,0 +1,400 @@
+---
+title: ''
+author: "Nelson Simões - CTI/Planserv"
+date: "24 de outubro de 2017"
+output:
+  html_document:
+    code_folding: show
+    theme: cerulean
+    highlight: pygments
+---
+
+### Setup e conexão com o BI/BD Top Saude
+
+```{r setup, include=TRUE, message=FALSE, warning=FALSE}
+## Opções iniciais de configuração do ambiente
+# ------------------------------------------------------------------------------------------
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+# ------------------------------------------------------------------------------------------
+library("stringr", lib.loc="~/R/win-library/3.4")
+library("dplyr", lib.loc="~/R/win-library/3.4")
+library("ggplot2", lib.loc="~/R/win-library/3.4")
+library("readr", lib.loc="~/R/win-library/3.4")
+library("tibble", lib.loc="~/R/win-library/3.4")
+library("tidyr", lib.loc="~/R/win-library/3.4")
+library("magrittr", lib.loc="~/R/win-library/3.4")
+library("readxl", lib.loc="~/R/win-library/3.4")
+library("purrr", lib.loc="~/R/win-library/3.4")
+library("knitr", lib.loc="~/R/win-library/3.4")
+library("DBI", lib.loc="~/R/win-library/3.4")
+library("ROracle", lib.loc="~/R/win-library/3.4")
+# ------------------------------------------------------------------------------------------
+```
+
+```{r conn, echo=TRUE}
+drv <- dbDriver("Oracle")
+con <- dbConnect(drv, "ts_consulta", "ts_consulta", dbname='TS.INTRANET')
+v_prest <- '594480'
+v_ini <- '201601'
+v_fim <- '201708'
+```
+
+### Criação de base a partir do banco de dados
+
+```{sql connection=con, echo=TRUE, output.var="x_tab_habilitacao"}
+select  ps.num_insc_fiscal,
+        ps.nome_prestador,
+        hp.cod_especialidade, 
+        esp.NOME_ESPECIALIDADE,
+        to_date(HP.DATA_INI_HAB,'dd/mm/rrrr') data_ini_hab, 
+        hpe.COD_EDITAL  
+from    ts.habilitacao_prestador hp, 
+        ts.prestador_servico ps, 
+        TS.ESPECIALIDADE esp, 
+        TS.HABILITACAO_PRESTADOR_EDITAL hpe
+where   hp.cod_prestador_ts = ?v_prest
+and     hp.cod_prestador_ts = ps.cod_prestador_ts
+and     hp.COD_ESPECIALIDADE = esp.COD_ESPECIALIDADE
+and     hp.cod_especialidade = hpe.cod_especialidade
+and     hp.cod_prestador_ts = hpe.cod_prestador_ts
+order by 4
+```
+
+```{sql connection=con, echo=TRUE, output.var="x_tab_ben_vlr_apr"}
+select  dp.COD_PRESTADOR_TS codigo,
+        dp.NOME_PRESTADOR nome,
+        substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes,
+        count(distinct fc.COD_TS) bn,
+        sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) quantidade,
+        sum(nvl(fc.VAL_APROVADO_ITEM,0)) valor,
+        sum(nvl(fc.VALOR_PAGO_REVISAO,0)) revisao
+from    TS.FAT_ITEM_CONTA fc,
+        TS.DIM_PRESTADOR dp     
+where   fc.COD_PRESTADOR_TS(+) = dp.COD_PRESTADOR_TS
+and     substr(fc.ID_TEMPO_MES_ANO_REF,1,6) between ?v_ini and ?v_fim
+and     dp.COD_PRESTADOR_TS = ?v_prest
+--and     dp.NOME_PRESTADOR like '%%'
+group by dp.COD_PRESTADOR_TS,
+         dp.NOME_PRESTADOR,
+         substr(fc.ID_TEMPO_MES_ANO_REF,1,6)
+order by 1,3
+```
+
+```{sql connection=con, echo=TRUE, output.var="x_tab_tratamento"}
+select  dp.COD_PRESTADOR_TS codigo,
+        dp.NOME_PRESTADOR nome,
+        fc.NOME_TIPO_TRATAMENTO tratamento,
+        substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes,
+        count(distinct fc.COD_TS) bn,
+        sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) quantidade,
+        sum(nvl(fc.VAL_APROVADO_ITEM,0)) valor,
+        sum(nvl(fc.VALOR_PAGO_REVISAO,0)) revisao
+from    TS.FAT_ITEM_CONTA fc,
+        TS.DIM_PRESTADOR dp       
+where   fc.COD_PRESTADOR_TS(+) = dp.COD_PRESTADOR_TS
+and     substr(fc.ID_TEMPO_MES_ANO_REF,1,6) between ?v_ini and ?v_fim
+and     dp.COD_PRESTADOR_TS = ?v_prest
+--and     dp.NOME_PRESTADOR like '%%'
+group by dp.COD_PRESTADOR_TS,
+         dp.NOME_PRESTADOR,
+         fc.NOME_TIPO_TRATAMENTO,
+         substr(fc.ID_TEMPO_MES_ANO_REF,1,6)
+order by 1,3,4
+```
+
+```{sql connection=con, echo=TRUE, output.var="x_tab_especialidade"}
+select  dp.COD_PRESTADOR_TS codigo,
+        dp.NOME_PRESTADOR nome,
+        di.NOME_ESPECIALIDADE especialidade,
+        substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes,
+        count(distinct fc.COD_TS) bn,
+        sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) quantidade,
+        sum(nvl(fc.VAL_APROVADO_ITEM,0)) valor,
+        sum(nvl(fc.VALOR_PAGO_REVISAO,0)) revisao
+from    TS.FAT_ITEM_CONTA fc,
+        TS.DIM_ITEM di,
+        TS.DIM_PRESTADOR dp       
+where   fc.COD_PRESTADOR_TS(+) = dp.COD_PRESTADOR_TS
+and     fc.ITEM_MEDICO = di.ITEM_MEDICO
+and     substr(fc.ID_TEMPO_MES_ANO_REF,1,6) between ?v_ini and ?v_fim
+and     dp.COD_PRESTADOR_TS = ?v_prest
+--and     dp.NOME_PRESTADOR like '%%'
+group by dp.COD_PRESTADOR_TS,
+         dp.NOME_PRESTADOR,
+         di.NOME_ESPECIALIDADE,
+         substr(fc.ID_TEMPO_MES_ANO_REF,1,6)
+order by 1,3,4
+```
+
+```{sql connection=con, echo=TRUE, output.var="x_tab_detalhamento"}
+select  dp.COD_PRESTADOR_TS codigo,
+        dp.NOME_PRESTADOR nome,
+        di.NOME_ESPECIALIDADE especialidade,
+        di.NOME_ITEM item,
+        di.NOME_GRUPO_ESTATISTICO grupo,
+        substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes,
+        count(distinct fc.COD_TS) bn,
+        sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) quantidade,
+        sum(nvl(fc.VAL_APROVADO_ITEM,0)) valor,
+        sum(nvl(fc.VALOR_PAGO_REVISAO,0)) revisao
+from    TS.FAT_ITEM_CONTA fc,
+        TS.DIM_ITEM di,
+        TS.DIM_PRESTADOR dp        
+where   fc.COD_PRESTADOR_TS(+) = dp.COD_PRESTADOR_TS
+and     fc.ITEM_MEDICO = di.ITEM_MEDICO
+and     substr(fc.ID_TEMPO_MES_ANO_REF,1,6) between ?v_ini and ?v_fim
+and     dp.COD_PRESTADOR_TS = ?v_prest
+--and     dp.NOME_PRESTADOR like '%%'
+group by dp.COD_PRESTADOR_TS,
+         dp.NOME_PRESTADOR,
+         di.NOME_ESPECIALIDADE,
+         di.NOME_ITEM,         
+         di.NOME_GRUPO_ESTATISTICO,
+         substr(fc.ID_TEMPO_MES_ANO_REF,1,6)
+order by 1,3,4,5,6
+```
+
+```{sql connection=con, echo=TRUE, output.var="x_tab_itens"}
+select  dp.COD_PRESTADOR_TS codigo,
+        dp.NOME_PRESTADOR nome,
+        di.ITEM_MEDICO,
+        di.NOME_ITEM item,
+        substr(fc.ID_TEMPO_MES_ANO_REF,1,6) anomes,
+        count(distinct fc.COD_TS) bn,
+        sum(nvl(fc.QTD_ITEM,0)) - sum(nvl(fc.QTD_GLOSADO,0)) quantidade,
+        sum(nvl(fc.VAL_APROVADO_ITEM,0)) valor,
+        sum(nvl(fc.VALOR_PAGO_REVISAO,0)) revisao
+from    TS.FAT_ITEM_CONTA fc,
+        TS.DIM_ITEM di,
+        TS.DIM_PRESTADOR dp  
+where   fc.COD_PRESTADOR_TS(+) = dp.COD_PRESTADOR_TS
+and     fc.ITEM_MEDICO = di.ITEM_MEDICO
+and     substr(fc.ID_TEMPO_MES_ANO_REF,1,6) between ?v_ini and ?v_fim
+and     dp.COD_PRESTADOR_TS = ?v_prest
+--and     dp.NOME_PRESTADOR like '%%'
+group by dp.COD_PRESTADOR_TS,
+         dp.NOME_PRESTADOR,
+         di.ITEM_MEDICO,
+         di.NOME_ITEM,
+         substr(fc.ID_TEMPO_MES_ANO_REF,1,6)
+order by 1,4,5
+```
+
+```{sql connection=con, echo=TRUE, output.var="x_tab_cotas"}
+select ps.num_insc_fiscal,
+       ps.nome_prestador,
+       to_char(er.mes_ano_ref,'RRRRMM') anomes,
+       case when er.mes_ano_ref <= '01/06/2017' then
+           x1.QTD_APS
+       else
+           x.valor_orcamento
+       end valor_cota,   
+       (ER.VAL_INFORMADO - ER.VAL_GLOSADO - ER.VAL_GLOSADO_EDITAL - ER.VAL_GLOSADO_995) val_pago 
+from   ts.extrato_remessa er,
+       ts.prestador_servico ps,
+       (SELECT pco.mes_ano_ref, 
+               pco.COD_PRESTADOR_TS, 
+               pco.VALOR_ORCAMENTO 
+        FROM   ts.PRESTADOR_COTA_ORCAMENTARIA pco) x, 
+       (SELECT COD_PRESTADOR_TS, 
+               SUM(QTD_APS) qtd_aps, 
+               DATA_INICIO_APS 
+        FROM   (SELECT  DATA_INICIO_APS, 
+                        COD_PRESTADOR_TS, 
+                        QTD_APS 
+                FROM    TS.PRESTADOR_APS_HOSPITALAR 
+                UNION 
+                SELECT  pa.DATA_INICIO_APS, 
+                        pa.COD_PRESTADOR_TS, 
+                        (pa.QTD_APS*nvl(CP.VAL_PROCEDIMENTO,0)) QTD_APS 
+                FROM    TS.PRESTADOR_APS pa, 
+                        ts.classificacao_preco cp 
+                WHERE PA.ID_CLASSIFICACAO = CP.ID_CLASSIFICACAO) 
+        GROUP BY COD_PRESTADOR_TS, 
+                 DATA_INICIO_APS) x1 
+where   to_char(er.mes_ano_ref,'RRRRMM') between ?v_ini and ?v_fim
+and     er.cod_prestador_ts = ?v_prest
+and     er.mes_ano_ref = x.mes_ano_ref(+)
+and     er.cod_prestador_ts = x.cod_prestador_ts(+)
+and     er.cod_prestador_ts = ps.cod_prestador_ts(+)
+and     er.mes_ano_ref = x1.DATA_INICIO_APS(+)
+and     er.cod_prestador_ts = x1.cod_prestador_ts(+)
+order by 3
+```
+
+### Tratamento dos dados
+
+```{r main, message=FALSE, warning=FALSE}
+##-----------------------------------------------------------------------------------------------------
+x_dp_esp <- read_excel('de_para_esp.xlsx') %>% 
+  as.data.frame()
+
+x_dp_prc <- read_excel('de_para_proc.xlsx') %>% 
+  as.data.frame()
+##-----------------------------------------------------------------------------------------------------
+##-----------------------------------------------------------------------------------------------------
+write.csv2(x_tab_habilitacao, 'tab_habilitacao.csv')
+##-----------------------------------------------------------------------------------------------------
+write.csv2(x_tab_ben_vlr_apr, 'tab_ben_vlr_apr.csv')
+##-----------------------------------------------------------------------------------------------------
+tab_tratamento <- x_tab_tratamento %>%
+  filter(str_sub(ANOMES,3,4) == 17) %>% 
+  group_by(CODIGO, NOME, TRATAMENTO) %>% 
+  summarise(BN = sum(BN), QUANTIDADE = sum(QUANTIDADE), VALOR = sum(VALOR), REVISAO = sum(REVISAO)) %>% 
+  mutate(ANOMES = 'TOTAL_2017')%>% 
+  select(1:3, 8, 4:7) %>% 
+  as.data.frame() %>%
+  rbind(., x_tab_tratamento) %>%
+  gather(IND, VALOR, BN:REVISAO) %>%
+  group_by(CODIGO, NOME, TRATAMENTO, ANOMES, IND) %>% 
+  summarise(VALOR = sum(VALOR)) %>%
+  as.data.frame() %>%   
+  mutate(ANOMES = paste0('C_',ANOMES)) %>% 
+  unite(ANOMES_IND, c(ANOMES, IND)) %>%
+  spread(ANOMES_IND, VALOR) %>% 
+  arrange(desc(C_TOTAL_2017_VALOR)) %>% 
+  mutate(MAIORES_TTM = '')
+ 
+v_mark_80pc <- sum(tab_tratamento$C_TOTAL_2017_VALOR, na.rm = T)*0.8
+ 
+v_sum <- 0
+ 
+for (i in 1:nrow(tab_tratamento)) {
+  if (v_sum <= v_mark_80pc) tab_tratamento[i, 'MAIORES_TTM'] <- 'X'
+  v_sum <- v_sum + ifelse(is.na(tab_tratamento[i, 'C_TOTAL_2017_VALOR']), 0, tab_tratamento[i, 'C_TOTAL_2017_VALOR'])
+}
+
+write.csv2(tab_tratamento, 'tab_tratamento.csv')
+##-----------------------------------------------------------------------------------------------------
+tab_especialidade <- x_tab_especialidade %>%
+  mutate(ESPECIALIDADE = ifelse(!is.na(match(x_tab_especialidade$ESPECIALIDADE, x_dp_esp$banco)),
+                                x_dp_esp[match(x_tab_especialidade$ESPECIALIDADE, x_dp_esp$banco),1],
+                                ESPECIALIDADE)) %>%
+  filter(str_sub(ANOMES,3,4) == 17) %>% 
+  group_by(CODIGO, NOME, ESPECIALIDADE) %>% 
+  summarise(BN = sum(BN), QUANTIDADE = sum(QUANTIDADE), VALOR = sum(VALOR), REVISAO = sum(REVISAO)) %>% 
+  mutate(ANOMES = 'TOTAL_2017')%>% 
+  select(1:3, 8, 4:7) %>% 
+  as.data.frame() %>%
+  rbind(., x_tab_especialidade) %>%
+  mutate(ESPECIALIDADE = ifelse(!is.na(match(.$ESPECIALIDADE, x_dp_esp$banco)),
+                                x_dp_esp[match(.$ESPECIALIDADE, x_dp_esp$banco),1],
+                                ESPECIALIDADE)) %>%
+  gather(IND, VALOR, BN:REVISAO) %>%
+  group_by(CODIGO, NOME, ESPECIALIDADE, ANOMES, IND) %>%
+  summarise(VALOR = sum(VALOR)) %>%
+  as.data.frame() %>%   
+  mutate(ANOMES = paste0('C_',ANOMES)) %>% 
+  unite(ANOMES_IND, c(ANOMES, IND)) %>%
+  spread(ANOMES_IND, VALOR) %>% 
+  arrange(desc(C_TOTAL_2017_VALOR)) %>% 
+  mutate(MAIORES_ESP = '')
+
+v_mark_80pc <- sum(tab_especialidade$C_TOTAL_2017_VALOR, na.rm = T)*0.8
+
+v_sum <- 0
+
+for (i in 1:nrow(tab_especialidade)) {
+  if (v_sum <= v_mark_80pc) tab_especialidade[i, 'MAIORES_ESP'] <- 'X'
+  v_sum <- v_sum + ifelse(is.na(tab_especialidade[i, 'C_TOTAL_2017_VALOR']), 0, tab_especialidade[i, 'C_TOTAL_2017_VALOR'])
+}
+
+write.csv2(tab_especialidade, 'tab_especialidade.csv')
+##-----------------------------------------------------------------------------------------------------
+tab_detalhamento <- x_tab_detalhamento %>%
+  mutate(ESPECIALIDADE = ifelse(!is.na(match(x_tab_detalhamento$ESPECIALIDADE, x_dp_esp$banco)),
+                                x_dp_esp[match(x_tab_detalhamento$ESPECIALIDADE, x_dp_esp$banco),1],
+                                ESPECIALIDADE),
+         ITEM = ifelse(!is.na(match(x_tab_detalhamento$ITEM, x_dp_prc$banco)),
+                       x_dp_prc[match(x_tab_detalhamento$ITEM, x_dp_prc$banco),1],
+                       ITEM)) %>%
+  filter(str_sub(ANOMES,3,4) == 17) %>% 
+  group_by(CODIGO, NOME, ESPECIALIDADE, ITEM, GRUPO) %>% 
+  summarise(BN = sum(BN), QUANTIDADE = sum(QUANTIDADE), VALOR = sum(VALOR), REVISAO = sum(REVISAO)) %>% 
+  mutate(ANOMES = 'TOTAL_2017')%>% 
+  select(1:5, 10, 6:9) %>% 
+  as.data.frame() %>%
+  rbind(., x_tab_detalhamento) %>%
+  mutate(ESPECIALIDADE = ifelse(!is.na(match(.$ESPECIALIDADE, x_dp_esp$banco)),
+                                x_dp_esp[match(.$ESPECIALIDADE, x_dp_esp$banco),1],
+                                ESPECIALIDADE),
+         ITEM = ifelse(!is.na(match(.$ITEM, x_dp_prc$banco)),
+                       x_dp_prc[match(.$ITEM, x_dp_prc$banco),1],
+                       ITEM)) %>%
+  gather(IND, VALOR, BN:REVISAO) %>%
+  group_by(CODIGO, NOME, ESPECIALIDADE, ITEM, GRUPO, ANOMES, IND) %>%
+  summarise(VALOR = sum(VALOR)) %>%
+  as.data.frame() %>%   
+  mutate(ANOMES = paste0('C_',ANOMES)) %>% 
+  unite(ANOMES_IND, c(ANOMES, IND)) %>%
+  spread(ANOMES_IND, VALOR) %>% 
+  arrange(desc(C_TOTAL_2017_VALOR)) %>% 
+  mutate(MAIORES_ESP = tab_especialidade[match(.$ESPECIALIDADE, tab_especialidade$ESPECIALIDADE), 'MAIORES_ESP'], MAIORES_ITS = '')
+
+f.maiores_its_esp <- function(df) {
+  
+  v_mark_80pc <- sum(df$C_TOTAL_2017_VALOR, na.rm = T)*0.8
+
+  v_sum <- 0
+
+  for (i in 1:nrow(df)) {
+    if (v_sum <= v_mark_80pc) df[i, 'MAIORES_ITS'] <- 'X'
+    v_sum <- v_sum + ifelse(is.na(df[i, 'C_TOTAL_2017_VALOR']), 0, df[i, 'C_TOTAL_2017_VALOR'])
+  }
+  
+  return(df)
+  
+}
+
+v_esp <- tab_detalhamento$ESPECIALIDADE
+
+tab_s_detalhamento <- tab_detalhamento %>% 
+  split(v_esp) %>% 
+  map(f.maiores_its_esp) %>% 
+  unsplit(v_esp) %>% 
+  arrange(desc(MAIORES_ESP), ESPECIALIDADE, desc(C_TOTAL_2017_VALOR))
+
+write.csv2(tab_s_detalhamento, 'tab_detalhamento.csv')
+##-----------------------------------------------------------------------------------------------------
+tab_itens <- x_tab_itens %>%
+  mutate(ITEM = ifelse(!is.na(match(x_tab_itens$ITEM, x_dp_prc$banco)),
+                       x_dp_prc[match(x_tab_itens$ITEM, x_dp_prc$banco),1],
+                       ITEM)) %>%
+  filter(str_sub(ANOMES,3,4) == 17) %>% 
+  group_by(CODIGO, NOME, ITEM_MEDICO, ITEM) %>% 
+  summarise(BN = sum(BN), QUANTIDADE = sum(QUANTIDADE), VALOR = sum(VALOR), REVISAO = sum(REVISAO)) %>% 
+  mutate(ANOMES = 'TOTAL_2017')%>% 
+  select(1:4, 9, 5:8) %>% 
+  as.data.frame() %>%
+  rbind(., x_tab_itens) %>%
+  mutate(ITEM = ifelse(!is.na(match(.$ITEM, x_dp_prc$banco)),
+                       x_dp_prc[match(.$ITEM, x_dp_prc$banco),1],
+                       ITEM)) %>%
+  gather(IND, VALOR, BN:REVISAO) %>%
+  group_by(CODIGO, NOME, ITEM_MEDICO, ITEM, ANOMES, IND) %>%
+  summarise(VALOR = sum(VALOR)) %>%
+  as.data.frame() %>%   
+  mutate(ANOMES = paste0('C_',ANOMES)) %>% 
+  unite(ANOMES_IND, c(ANOMES, IND)) %>%
+  spread(ANOMES_IND, VALOR) %>% 
+  arrange(desc(C_TOTAL_2017_VALOR)) %>% 
+  mutate(MAIORES_ITS = '')
+
+v_mark_80pc <- sum(tab_itens$C_TOTAL_2017_VALOR, na.rm = T)*0.8
+
+v_sum <- 0
+
+for (i in 1:nrow(tab_itens)) {
+  if (v_sum <= v_mark_80pc) tab_itens[i, 'MAIORES_ITS'] <- 'X'
+  v_sum <- v_sum + ifelse(is.na(tab_itens[i, 'C_TOTAL_2017_VALOR']), 0, tab_itens[i, 'C_TOTAL_2017_VALOR'])
+}
+
+write.csv2(tab_itens, 'tab_itens.csv')
+##-----------------------------------------------------------------------------------------------------
+tab_cotas <- merge(x_tab_cotas, x_tab_ben_vlr_apr, by = 'ANOMES') %>% 
+  select(1:4, VALOR_APROVADO = VALOR, 5)
+
+write.csv2(tab_cotas, 'tab_cotas.csv')
+##-----------------------------------------------------------------------------------------------------
+```
