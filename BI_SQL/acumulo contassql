@@ -19,7 +19,10 @@ from
         sum(0) VA_AT,
         sum(0) VR_AT,        
         sum(0) N_AT
-from    TS.FAT_ITEM_CONTA fc
+from    TS.FAT_ITEM_CONTA fc,
+        TS.DIM_ITEM di
+where   fc.ITEM_MEDICO = di.ITEM_MEDICO
+and     di.TIPO_ITEM = 'Material'
 group by substr(fc.ID_TEMPO_MES_ANO_REF,1,6),
          0
 union   
@@ -34,7 +37,10 @@ select  to_char(DATA_ATENDIMENTO, 'RRRRMM') anomes,
         sum(nvl(fc.VAL_APROVADO_ITEM,0)) VA_AT,
         sum(nvl(fc.VALOR_PAGO_REVISAO,0)) VR_AT,        
         count(1) N_AT
-from    TS.FAT_ITEM_CONTA fc
+from    TS.FAT_ITEM_CONTA fc,
+        TS.DIM_ITEM di
+where   fc.ITEM_MEDICO = di.ITEM_MEDICO  
+and     di.TIPO_ITEM = 'Material'
 group by to_char(DATA_ATENDIMENTO, 'RRRRMM'),
          substr(fc.ID_TEMPO_MES_ANO_REF,1,6),
          1) t
@@ -80,9 +86,12 @@ from    TS.FAT_ITEM_CONTA fc,
             where   substr(fc.ID_TEMPO_MES_ANO_REF,1,4) = '2017'
             group by fc.COD_PRESTADOR_TS
             order by 2 desc) t
-        where rownum <= 200) tp        
+        where rownum <= 200) tp,
+        TS.DIM_ITEM di  
 where   fc.COD_PRESTADOR_TS(+) = dp.COD_PRESTADOR_TS
 and     dp.COD_PRESTADOR_TS = tp.codigo
+and     fc.ITEM_MEDICO = di.ITEM_MEDICO 
+and     di.TIPO_ITEM = 'Material'
 --and     dp.NOME_PRESTADOR like '%HOSPITAL SANTA LUZIA%'
 group by dp.COD_PRESTADOR_TS,
          dp.NOME_PRESTADOR,
@@ -112,9 +121,12 @@ from    TS.FAT_ITEM_CONTA fc,
             where   substr(fc.ID_TEMPO_MES_ANO_REF,1,4) = '2017'
             group by fc.COD_PRESTADOR_TS
             order by 2 desc) t
-        where rownum <= 200) tp        
+        where rownum <= 200) tp,
+        TS.DIM_ITEM di        
 where   fc.COD_PRESTADOR_TS(+) = dp.COD_PRESTADOR_TS
 and     dp.COD_PRESTADOR_TS = tp.codigo
+and     fc.ITEM_MEDICO = di.ITEM_MEDICO 
+and     di.TIPO_ITEM = 'Material'
 --and     dp.NOME_PRESTADOR like '%HOSPITAL SANTA LUZIA%'
 group by dp.COD_PRESTADOR_TS,
          dp.NOME_PRESTADOR,
@@ -133,3 +145,5 @@ order by 1,2,3
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+select distinct TIPO_ITEM from TS.DIM_ITEM
+desc TS.DIM_ITEM
