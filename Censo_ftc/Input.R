@@ -16,7 +16,7 @@ for (i in seq_along(nvector)) nvector[i] <- paste0("X", str_pad(i, side = "left"
 tvector <- ""
 for (i in 1:63) tvector <- paste0(tvector,"c")
 
-mpath <- "C:/Users/Lorena/Documents/RGitRep/Censo_ftc/" 
+mpath <- "C:/R/RGitRep/Censo_ftc/" 
 
 f.tratamento <- function(ds_param, arq_output = "xput_l.txt", fast_output = "Y") {
   
@@ -118,40 +118,60 @@ f.tratamento <- function(ds_param, arq_output = "xput_l.txt", fast_output = "Y")
 
 ### FTC-COMERCIO
 ds_com <- read_delim(paste0(mpath,"FTC-COMERCIO/29FCS_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "com")
-ds_out <- f.tratamento(ds_com,paste0(mpath,"FTC-COMERCIO/29FCS_20190408_t.txt"), "N")
+ds_com_c <- f.tratamento(ds_com,paste0(mpath,"FTC-COMERCIO/29FCS_20190408_t.txt"), "N")
 rm(i)
 ##rm(ds_com)
 
 ### FTC-JEQ
 ds_jeq <- read_delim(paste0(mpath,"FTC-JEQ/06JEQ_20180408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "jeq")
+ds_jeq_c <- f.tratamento(ds_jeq,paste0(mpath,"FTC-JEQ/06JEQ_20180408_t.txt"), "N")
+rm(i)
 
 ### FTC-FSA
 ##ds_fsa  <- read_delim(paste0(mpath,"FTC-FSA/03_FSA_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "fsa")
 ds_fsa1  <- read_delim(paste0(mpath,"FTC-FSA/03_FSA_20190408_1.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "fsa1")
+ds_fsa1_c <- f.tratamento(ds_fsa1,paste0(mpath,"FTC-FSA/03_FSA_20190408_1_t.txt"), "N")
+rm(i)
 ds_fsa2  <- read_delim(paste0(mpath,"FTC-FSA/03_FSA_20190408_2.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "fsa2")
+ds_fsa2_c <- f.tratamento(ds_fsa2,paste0(mpath,"FTC-FSA/03_FSA_20190408_2_t.txt"), "N")
+rm(i)
 
 ### FTC-SALVADOR
 ##ds_sal <- read_delim(paste0(mpath,"FTC-SALVADOR/04SSA08042019.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sal")
 ds_sal1 <- read_delim(paste0(mpath,"FTC-SALVADOR/04SSA08042019_1.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sal1")
+ds_sal1_c <- f.tratamento(ds_sal1,paste0(mpath,"FTC-SALVADOR/04SSA08042019_1_t.txt"), "N")
+rm(i)
 ds_sal2 <- read_delim(paste0(mpath,"FTC-SALVADOR/04SSA08042019_2.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sal2")
+ds_sal2_c <- f.tratamento(ds_sal2,paste0(mpath,"FTC-SALVADOR/04SSA08042019_2_t.txt"), "N")
+rm(i)
 
 ### FTC-VCA
 ##ds_vca <- read_delim(paste0(mpath,"FTC-VCA/05FTC-VCA08042019.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "vca")
 ds_vca1 <- read_delim(paste0(mpath,"FTC-VCA/05FTC-VCA08042019_1.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "vca1")
+ds_vca1_c <- f.tratamento(ds_vca1,paste0(mpath,"FTC-VCA/05FTC-VCA08042019_1_t.txt"), "N")
+rm(i)
 ds_vca2 <- read_delim(paste0(mpath,"FTC-VCA/05FTC-VCA08042019_2.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "vca2")
-
+ds_vca2_c <- f.tratamento(ds_vca2,paste0(mpath,"FTC-VCA/05FTC-VCA08042019_2_t.txt"), "N")
+rm(i)
 ### OTE-ITABUNA
 ds_ita <- read_delim(paste0(mpath,"OTE-ITABUNA/07_ITA_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "ita")
+ds_ita_c <- f.tratamento(ds_ita,paste0(mpath,"OTE-ITABUNA/07_ITA_20190408_t.txt"), "N")
+rm(i)
 
 ### OTE-JUA
 ds_jua <- read_delim(paste0(mpath,"OTE-JUA/21OTEJUA_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "jua")
+ds_jua_c <- f.tratamento(ds_jua,paste0(mpath,"OTE-JUA/21OTEJUA_20190408_t.txt"), "N")
+rm(i)
 
 ### OTE-PETROLINA
 ds_pet <- read_delim(paste0(mpath,"OTE-PETROLINA/22OTEPET_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "pet")
+ds_pet_c <- f.tratamento(ds_pet,paste0(mpath,"OTE-PETROLINA/22OTEPET_20190408_t.txt"), "N")
+rm(i)
 
 ### OTE-SP
 ds_sp <- read_delim(paste0(mpath,"OTE-SP/20_OTESP_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sp")
-
+ds_sp_c <- f.tratamento(ds_sp,paste0(mpath,"OTE-SP/20_OTESP_20190408_t.txt"), "N")
+rm(i)
 ########
 
 # for (i in (1:nrow(ds_main_cl))) ds_main_cl[i,"idx"] <- i
@@ -160,13 +180,13 @@ ds_sp <- read_delim(paste0(mpath,"OTE-SP/20_OTESP_20190408.txt"),"|", col_names 
 #   filter(X01 == "41") %>%
 #   select(idx) %>%
 #   mutate(idxi=idx+1,idxf = 1)##"[["(.,1)
-# 
+#
 # for (i in 1:nrow(ds_alunos)) ds_alunos[i,3] <- ds_alunos[i+1, 1]-1
-# 
+#
 # ds_alunos %<>% mutate(diff = idxf - idxi)
 # ds_alunos_multicurs <- ds_alunos %>%
 #   filter(diff != 0)
-# 
+#
 # ls(ds_alunos_multicurs)
 # ###
 # ds_cursosdup <- ds_main_cl[ds_alunos_multicurs[1,"idxi"][[1]]:ds_alunos_multicurs[1,"idxf"][[1]], ] %>%
@@ -175,7 +195,7 @@ ds_sp <- read_delim(paste0(mpath,"OTE-SP/20_OTESP_20190408.txt"),"|", col_names 
 #   group_by(ALUNO,IDX,X03,X06) %>%
 #   summarise(CD = sum(CT, na.rm = T))## %>%
 # ##filter(CD > 1)
-# 
+#
 # for(i in 2:nrow(ds_alunos_multicurs)) {
 #   ds_temp <- ds_main_cl[ds_alunos_multicurs[i,"idxi"][[1]]:ds_alunos_multicurs[i,"idxf"][[1]], ] %>%
 #     select(X03, X06) %>%
@@ -185,7 +205,7 @@ ds_sp <- read_delim(paste0(mpath,"OTE-SP/20_OTESP_20190408.txt"),"|", col_names 
 #   ##filter(CD > 1)
 #   ds_cursosdup %<>%  rbind(., ds_temp)
 # }
-# 
+#
 # ds_cursosdup %<>% filter(CD > 1)
 
 ###
