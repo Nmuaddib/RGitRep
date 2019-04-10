@@ -18,22 +18,35 @@ for (i in 1:63) tvector <- paste0(tvector,"c")
 
 mpath <- "C:/R/RGitRep/Censo_ftc/" 
 
+fwrt <- "Y"
+
 f.tratamento <- function(ds_param, arq_output = "xput_l.txt", fast_output = "Y") {
   
   for (i in (1:nrow(ds_param))) ds_param[i,"idx"] <- i
   
   ####
-  
-  ds_alunos <- ds_param[,c("X01","idx")] %>% 
+
+  ds_alunos <- ds_param[,c("X01","X04","idx")] %>% 
     filter(X01 == "41") %>% 
-    select(idx) %>% 
+    select(ALUNO = X04,idx) %>% 
     mutate(idxi=idx+1,idxf = 1)##"[["(.,1)
   
-  for (i in 1:nrow(ds_alunos)) ds_alunos[i,3] <- ds_alunos[i+1, 1]-1
+  for (i in 1:nrow(ds_alunos)) ds_alunos[i,4] <- ds_alunos[i+1, 2]-1
   
   ds_alunos %<>% mutate(diff = idxf - idxi)
-  ds_alunos_multicurs <- ds_alunos %>% 
+  ds_alunos_multicurs <- ds_alunos[,-1] %>% 
     filter(diff != 0)
+    
+  # ds_alunos <- ds_param[,c("X01","idx")] %>% 
+  #   filter(X01 == "41") %>% 
+  #   select(X04,idx) %>%  
+  #   mutate(idxi=idx+1,idxf = 1)##"[["(.,1)
+  # 
+  # for (i in 1:nrow(ds_alunos)) ds_alunos[i,3] <- ds_alunos[i+1, 1]-1
+  # 
+  # ds_alunos %<>% mutate(diff = idxf - idxi)
+  # ds_alunos_multicurs <- ds_alunos %>% 
+  #   filter(diff != 0)
   
   ####
   
@@ -43,34 +56,59 @@ f.tratamento <- function(ds_param, arq_output = "xput_l.txt", fast_output = "Y")
     group_by(ALUNO,IDX,X03,X06) %>% 
     summarise(CD = sum(CT, na.rm = T))## %>% 
   ##filter(CD > 1)
-  
-  for(i in 2:nrow(ds_alunos_multicurs)) {
-    ds_temp <- ds_param[ds_alunos_multicurs[i,"idxi"][[1]]:ds_alunos_multicurs[i,"idxf"][[1]], ] %>% 
-      select(X03, X06) %>% 
-      mutate(ALUNO = ds_param[ds_alunos_multicurs[i,"idx"][[1]],"X04"][[1]], IDX = ds_param[ds_alunos_multicurs[i,"idx"][[1]],"idx"][[1]], CT = 1) %>% 
-      group_by(ALUNO,IDX,X03,X06) %>% 
-      summarise(CD = sum(CT, na.rm = T))## %>% 
-    ##filter(CD > 1)
-    ds_cursosdup %<>%  rbind(., ds_temp)
+  if (nrow(ds_alunos_multicurs) > 1) {
+   for(i in 2:nrow(ds_alunos_multicurs)) {
+     ds_temp <- ds_param[ds_alunos_multicurs[i,"idxi"][[1]]:ds_alunos_multicurs[i,"idxf"][[1]], ] %>% 
+       select(X03, X06) %>% 
+       mutate(ALUNO = ds_param[ds_alunos_multicurs[i,"idx"][[1]],"X04"][[1]], IDX = ds_param[ds_alunos_multicurs[i,"idx"][[1]],"idx"][[1]], CT = 1) %>% 
+       group_by(ALUNO,IDX,X03,X06) %>% 
+       summarise(CD = sum(CT, na.rm = T))## %>% 
+     ##filter(CD > 1)
+     ds_cursosdup %<>%  rbind(., ds_temp)
+   }
   }
-  
   ds_cursosdup %<>% filter(CD > 1)
+
+  if (nrow(ds_cursosdup) > 0) {    
+   ds_cursosdup %<>% merge(., ds_alunos_multicurs, by.x = "IDX", by.y = "idx", all.y = FALSE)
   
-  ds_cursosdup %<>% merge(., ds_alunos_multicurs, by.x = "IDX", by.y = "idx", all.y = FALSE)
+   ####
   
-  ####
+   del_idx <- double()
   
-  del_idx <- double()
+   for (i in 1:nrow(ds_cursosdup)) {
+     if (!is.na(ds_cursosdup[i,"X06"][[1]])) {
+      ds_temp <- ds_param[ds_cursosdup[i,"idxi"][[1]]:ds_cursosdup[i,"idxf"][[1]],] %>% 
+        filter(X03 == ds_cursosdup[i,"X03"][[1]], X06 == ds_cursosdup[i,"X06"][[1]]) %>% 
+        mutate(INGR = paste0(str_sub(.$X11, 3, 6), str_sub(.$X11, 1, 2))) %>% 
+        arrange(INGR)
+     } else {
+       ds_temp <- ds_param[ds_cursosdup[i,"idxi"][[1]]:ds_cursosdup[i,"idxf"][[1]],] %>% 
+         filter(X03 == ds_cursosdup[i,"X03"][[1]]) %>% 
+         mutate(INGR = paste0(str_sub(.$X11, 3, 6), str_sub(.$X11, 1, 2))) %>% 
+         arrange(INGR)       
+     }
+     for (j in 1:ds_cursosdup[i,"CD"][[1]]-1) del_idx <- append(del_idx, ds_temp[j,"idx"][[1]])
+   }
   
-  for (i in 1:nrow(ds_cursosdup)) {
-    ds_temp <- ds_param[ds_cursosdup[i,"idxi"][[1]]:ds_cursosdup[i,"idxf"][[1]],] %>% 
-      filter(X03 == ds_cursosdup[i,"X03"][[1]], X06 == ds_cursosdup[i,"X06"][[1]]) %>% 
-      mutate(INGR = paste0(str_sub(.$X11, 3, 6), str_sub(.$X11, 1, 2))) %>% 
-      arrange(INGR)
-    for (j in 1:ds_cursosdup[i,"CD"][[1]]-1) del_idx <- append(del_idx, ds_temp[j,"idx"][[1]])
+   ds_main_cl <- ds_param[-del_idx,]
+  } else {
+   ds_main_cl <- ds_param
   }
   
-  ds_main_cl <- ds_param[-del_idx,]
+############################################################################  
+  
+  # ds_transf_cpf <- ds_transfint[,2] %>%
+  #                   mutate(lin = 1) %>% 
+  #                   group_by(CPF) %>% 
+  #                   summarise(CT = sum(lin))
+  # v_transf <- ds_transf_cpf[,1][[1]]
+  # 
+  # for (i in seq_along(v_transf)) {
+  #   
+  # }
+  
+############################################################################
   
   if (fast_output == "Y") {
     for (i in 1:nrow(ds_main_cl)) {
@@ -114,64 +152,60 @@ f.tratamento <- function(ds_param, arq_output = "xput_l.txt", fast_output = "Y")
 #####
 
 ##ds_dupcurso <-  read_excel(paste0(mpath,"dupcurso.xlsx"))
-##ds_transfint <- read_excel(paste0(mpath,"transfint.xlsx"))
+ds_transfint <- read_excel(paste0(mpath,"transfint.xlsx"))
 
 ### FTC-COMERCIO
 ds_com <- read_delim(paste0(mpath,"FTC-COMERCIO/29FCS_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "com")
-ds_com_c <- f.tratamento(ds_com,paste0(mpath,"FTC-COMERCIO/29FCS_20190408_t.txt"), "N")
-rm(i)
-##rm(ds_com)
+ds_com_c <- f.tratamento(ds_com,paste0(mpath,"FTC-COMERCIO/29FCS_20190408_t.txt"), fwrt)
 
 ### FTC-JEQ
 ds_jeq <- read_delim(paste0(mpath,"FTC-JEQ/06JEQ_20180408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "jeq")
-ds_jeq_c <- f.tratamento(ds_jeq,paste0(mpath,"FTC-JEQ/06JEQ_20180408_t.txt"), "N")
-rm(i)
+ds_jeq_c <- f.tratamento(ds_jeq,paste0(mpath,"FTC-JEQ/06JEQ_20180408_t.txt"), fwrt)
+
+### FTC-EAD
+ds_ead <- read_delim(paste0(mpath,"FTC-EAD/30EAD_2_20190410.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "ead")
+ds_ead_c <- f.tratamento(ds_ead,paste0(mpath,"FTC-EAD/30EAD_2_20190410_t.txt"), fwrt)
 
 ### FTC-FSA
 ##ds_fsa  <- read_delim(paste0(mpath,"FTC-FSA/03_FSA_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "fsa")
 ds_fsa1  <- read_delim(paste0(mpath,"FTC-FSA/03_FSA_20190408_1.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "fsa1")
-ds_fsa1_c <- f.tratamento(ds_fsa1,paste0(mpath,"FTC-FSA/03_FSA_20190408_1_t.txt"), "N")
-rm(i)
+ds_fsa1_c <- f.tratamento(ds_fsa1,paste0(mpath,"FTC-FSA/03_FSA_20190408_1_t.txt"), fwrt)
+
 ds_fsa2  <- read_delim(paste0(mpath,"FTC-FSA/03_FSA_20190408_2.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "fsa2")
-ds_fsa2_c <- f.tratamento(ds_fsa2,paste0(mpath,"FTC-FSA/03_FSA_20190408_2_t.txt"), "N")
-rm(i)
+ds_fsa2_c <- f.tratamento(ds_fsa2,paste0(mpath,"FTC-FSA/03_FSA_20190408_2_t.txt"), fwrt)
 
 ### FTC-SALVADOR
 ##ds_sal <- read_delim(paste0(mpath,"FTC-SALVADOR/04SSA08042019.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sal")
 ds_sal1 <- read_delim(paste0(mpath,"FTC-SALVADOR/04SSA08042019_1.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sal1")
-ds_sal1_c <- f.tratamento(ds_sal1,paste0(mpath,"FTC-SALVADOR/04SSA08042019_1_t.txt"), "N")
-rm(i)
+ds_sal1_c <- f.tratamento(ds_sal1,paste0(mpath,"FTC-SALVADOR/04SSA08042019_1_t.txt"), fwrt)
+
 ds_sal2 <- read_delim(paste0(mpath,"FTC-SALVADOR/04SSA08042019_2.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sal2")
-ds_sal2_c <- f.tratamento(ds_sal2,paste0(mpath,"FTC-SALVADOR/04SSA08042019_2_t.txt"), "N")
-rm(i)
+ds_sal2_c <- f.tratamento(ds_sal2,paste0(mpath,"FTC-SALVADOR/04SSA08042019_2_t.txt"), fwrt)
 
 ### FTC-VCA
 ##ds_vca <- read_delim(paste0(mpath,"FTC-VCA/05FTC-VCA08042019.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "vca")
 ds_vca1 <- read_delim(paste0(mpath,"FTC-VCA/05FTC-VCA08042019_1.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "vca1")
-ds_vca1_c <- f.tratamento(ds_vca1,paste0(mpath,"FTC-VCA/05FTC-VCA08042019_1_t.txt"), "N")
-rm(i)
+ds_vca1_c <- f.tratamento(ds_vca1,paste0(mpath,"FTC-VCA/05FTC-VCA08042019_1_t.txt"), fwrt)
+
 ds_vca2 <- read_delim(paste0(mpath,"FTC-VCA/05FTC-VCA08042019_2.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "vca2")
-ds_vca2_c <- f.tratamento(ds_vca2,paste0(mpath,"FTC-VCA/05FTC-VCA08042019_2_t.txt"), "N")
-rm(i)
+ds_vca2_c <- f.tratamento(ds_vca2,paste0(mpath,"FTC-VCA/05FTC-VCA08042019_2_t.txt"), fwrt)
+
 ### OTE-ITABUNA
 ds_ita <- read_delim(paste0(mpath,"OTE-ITABUNA/07_ITA_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "ita")
-ds_ita_c <- f.tratamento(ds_ita,paste0(mpath,"OTE-ITABUNA/07_ITA_20190408_t.txt"), "N")
-rm(i)
+ds_ita_c <- f.tratamento(ds_ita,paste0(mpath,"OTE-ITABUNA/07_ITA_20190408_t.txt"), fwrt)
 
 ### OTE-JUA
 ds_jua <- read_delim(paste0(mpath,"OTE-JUA/21OTEJUA_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "jua")
-ds_jua_c <- f.tratamento(ds_jua,paste0(mpath,"OTE-JUA/21OTEJUA_20190408_t.txt"), "N")
-rm(i)
+ds_jua_c <- f.tratamento(ds_jua,paste0(mpath,"OTE-JUA/21OTEJUA_20190408_t.txt"), fwrt)
 
 ### OTE-PETROLINA
 ds_pet <- read_delim(paste0(mpath,"OTE-PETROLINA/22OTEPET_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "pet")
-ds_pet_c <- f.tratamento(ds_pet,paste0(mpath,"OTE-PETROLINA/22OTEPET_20190408_t.txt"), "N")
-rm(i)
+ds_pet_c <- f.tratamento(ds_pet,paste0(mpath,"OTE-PETROLINA/22OTEPET_20190408_t.txt"), fwrt)
 
 ### OTE-SP
 ds_sp <- read_delim(paste0(mpath,"OTE-SP/20_OTESP_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sp")
-ds_sp_c <- f.tratamento(ds_sp,paste0(mpath,"OTE-SP/20_OTESP_20190408_t.txt"), "N")
-rm(i)
+ds_sp_c <- f.tratamento(ds_sp,paste0(mpath,"OTE-SP/20_OTESP_20190408_t.txt"), fwrt)
+
 ########
 
 # for (i in (1:nrow(ds_main_cl))) ds_main_cl[i,"idx"] <- i
