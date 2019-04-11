@@ -18,7 +18,7 @@ for (i in 1:63) tvector <- paste0(tvector,"c")
 
 mpath <- "C:/R/RGitRep/Censo_ftc/" 
 
-fwrt <- "Y"
+fwrt <- "N"
 
 f.tratamento <- function(ds_param, arq_output = "xput_l.txt", fast_output = "Y") {
   
@@ -98,16 +98,54 @@ f.tratamento <- function(ds_param, arq_output = "xput_l.txt", fast_output = "Y")
   
 ############################################################################  
   
-  # ds_transf_cpf <- ds_transfint[,2] %>%
-  #                   mutate(lin = 1) %>% 
-  #                   group_by(CPF) %>% 
-  #                   summarise(CT = sum(lin))
-  # v_transf <- ds_transf_cpf[,1][[1]]
-  # 
-  # for (i in seq_along(v_transf)) {
-  #   
-  # }
+  ds_transf_cpf <- ds_transfint[,2] %>%
+    mutate(lin = 1) %>%
+    group_by(CPF) %>%
+    summarise(CT = sum(lin))
+  v_transf <- ds_transf_cpf[,1][[1]]
+  ds_main_cl %<>% mutate(ALUNO = "")
   
+  for (i in (1:nrow(ds_main_cl))) ds_main_cl[i,"idx"] <- i
+  
+  ds_alunos <- ds_main_cl[,c("X01","X04","idx")] %>% 
+    filter(X01 == "41") %>% 
+    select(ALUNO = X04,idx) %>% 
+    mutate(idxi=idx+1,idxf = 1)##"[["(.,1)
+  
+  for (i in 1:nrow(ds_alunos)) ds_alunos[i,4] <- ds_alunos[i+1, 2]-1
+  
+  ds_alunos %<>% mutate(diff = idxf - idxi)
+  
+  for (i in seq_along(v_transf)) {
+    ds_range <- ds_alunos[which(ds_alunos[,"ALUNO"] == v_transf[i]), c(1,3:4)]
+    if (nrow(ds_range) > 0) ds_main_cl[ds_range[1,2][[1]]:ds_range[1,3][[1]], 66] <- v_transf[i]
+  }
+  
+  ds_exist <- merge(ds_transfint[,c(2,5,7,11,12)], ds_main_cl[,c(3,6,7,66)], by.x = c("CPF","INEP_CURSO"), by.y = c("ALUNO","X03")) %>% 
+    mutate(NST = "")
+  
+  if (nrow(ds_exist) > 0) {
+    ds_exist[which(ds_exist[,"SIT_ALUNO"] == "TRANSF. INTERNA"),"NST"] <- "5"
+    ds_exist[which(ds_exist[,"SIT_ALUNO"] != "TRANSF. INTERNA"),"NST"] <- "OT"
+    
+    ds_orig_trans <- ds_exist %>% 
+      filter(NST == "5") %>% 
+      group_by(CPF) %>% 
+      summarise(DT = max(DT_TRANS)) %>% 
+      merge(., ds_exist, by.x = c("CPF","DT"), by.y = c("CPF","DT_TRANS"))
+    
+    ds_dest_trans <- ds_exist %>% 
+      filter(NST == "OT") %>% 
+      merge(., ds_orig_trans[,c(1,3)], by.x = "CPF", by.y = "CPF")
+    
+    for (i in 1:nrow(ds_orig_trans)) {
+      ds_main_cl[which((ds_main_cl[,3] == ds_orig_trans[i, 3]) & (ds_main_cl[,66] == ds_orig_trans[i, 1])),7] <- ds_orig_trans[i, "NST"]
+    }
+    
+    for (i in 1:nrow(ds_dest_trans)) {
+      ds_main_cl[which((ds_main_cl[,3] == ds_dest_trans[i, 2]) & (ds_main_cl[,66] == ds_dest_trans[i, 1])),8] <- ds_dest_trans[i, "INEP_CURSO.y"]
+    }
+  }  
 ############################################################################
   
   if (fast_output == "Y") {
@@ -246,7 +284,7 @@ ds_sp_c <- f.tratamento(ds_sp,paste0(mpath,"OTE-SP/20_OTESP_20190408_t.txt"), fw
 
 
 #----
-# ixini <- match("01070930571",ds_main$X04)
+# ixini <- match("00359005551",ds_main$X04)
 # ixini
 # i <- ixini + 1
 # while (ds_main[i,1][[1]] == "42") {

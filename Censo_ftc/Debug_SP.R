@@ -11,7 +11,7 @@ library(readxl)
 ##########################################
 
 mpath <- "C:/R/RGitRep/Censo_ftc/"
-arq_output <- paste0(mpath,"FTC-EAD/30EAD_2_20190410_t.txt")
+arq_output <- paste0(mpath,"xout.txt")
 
 fast_output <- "Y"
 
@@ -21,11 +21,25 @@ for (i in seq_along(nvector)) nvector[i] <- paste0("X", str_pad(i, side = "left"
 tvector <- ""
 for (i in 1:63) tvector <- paste0(tvector,"c")
 
-ds_ead <- read_delim(paste0(mpath,"FTC-EAD/30EAD_2_20190410.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "ead")
+ds_transfint <- read_excel(paste0(mpath,"transfint.xlsx"))
+# ds_com <- read_delim(paste0(mpath,"FTC-COMERCIO/29FCS_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "com")
+# ds_jeq <- read_delim(paste0(mpath,"FTC-JEQ/06JEQ_20180408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "jeq")
+# ds_ead <- read_delim(paste0(mpath,"FTC-EAD/30EAD_2_20190410.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "ead")
+# ds_fsa1  <- read_delim(paste0(mpath,"FTC-FSA/03_FSA_20190408_1.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "fsa1")
+# ds_fsa2  <- read_delim(paste0(mpath,"FTC-FSA/03_FSA_20190408_2.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "fsa2")
+# ds_sal1 <- read_delim(paste0(mpath,"FTC-SALVADOR/04SSA08042019_1.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sal1")
+# ds_sal2 <- read_delim(paste0(mpath,"FTC-SALVADOR/04SSA08042019_2.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sal2")
+# ds_vca1 <- read_delim(paste0(mpath,"FTC-VCA/05FTC-VCA08042019_1.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "vca1")
+# ds_vca2 <- read_delim(paste0(mpath,"FTC-VCA/05FTC-VCA08042019_2.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "vca2")
+# ds_ita <- read_delim(paste0(mpath,"OTE-ITABUNA/07_ITA_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "ita")
+# ds_jua <- read_delim(paste0(mpath,"OTE-JUA/21OTEJUA_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "jua")
+# ds_pet <- read_delim(paste0(mpath,"OTE-PETROLINA/22OTEPET_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "pet")
+ds_sp <- read_delim(paste0(mpath,"OTE-SP/20_OTESP_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sp")
 
-ds_main <- ds_ead %>% 
-  # ds_com %>%
+ds_param <- ds_sp %>% 
+  #ds_com %>%
   # rbind(.,ds_jeq) %>%
+  # rbind(.,ds_ead) %>%
   # rbind(.,ds_fsa1) %>%
   # rbind(.,ds_fsa2) %>%
   # rbind(.,ds_sal1) %>%
@@ -35,14 +49,14 @@ ds_main <- ds_ead %>%
   # rbind(.,ds_ita) %>%
   # rbind(.,ds_jua) %>%
   # rbind(.,ds_pet) %>%
-  # rbind(.,ds_sp[,1:64]) %>% 
+  # rbind(.,ds_sp) %>%
   mutate(idx = 1)
 
-for (i in (1:nrow(ds_main))) ds_main[i,"idx"] <- i
+for (i in (1:nrow(ds_param))) ds_param[i,"idx"] <- i
 
 ####
 
-ds_alunos <- ds_main[,c("X01","X04","idx")] %>% 
+ds_alunos <- ds_param[,c("X01","X04","idx")] %>% 
   filter(X01 == "41") %>% 
   select(ALUNO = X04,idx) %>% 
   mutate(idxi=idx+1,idxf = 1)##"[["(.,1)
@@ -53,67 +67,115 @@ ds_alunos %<>% mutate(diff = idxf - idxi)
 ds_alunos_multicurs <- ds_alunos[,-1] %>% 
   filter(diff != 0)
 
+# ds_alunos <- ds_param[,c("X01","idx")] %>% 
+#   filter(X01 == "41") %>% 
+#   select(X04,idx) %>%  
+#   mutate(idxi=idx+1,idxf = 1)##"[["(.,1)
+# 
+# for (i in 1:nrow(ds_alunos)) ds_alunos[i,3] <- ds_alunos[i+1, 1]-1
+# 
+# ds_alunos %<>% mutate(diff = idxf - idxi)
+# ds_alunos_multicurs <- ds_alunos %>% 
+#   filter(diff != 0)
+
 ####
-rm(ds_cursosdup)
-ds_cursosdup <- ds_main[ds_alunos_multicurs[1,"idxi"][[1]]:ds_alunos_multicurs[1,"idxf"][[1]], ] %>% 
-  select(X03, ifelse(is.na("X06"),"99","X06")) %>% 
-  mutate(ALUNO = ds_main[ds_alunos_multicurs[1,"idx"][[1]],"X04"][[1]], IDX = ds_main[ds_alunos_multicurs[1,"idx"][[1]],"idx"][[1]], CT = 1) %>% 
+
+ds_cursosdup <- ds_param[ds_alunos_multicurs[1,"idxi"][[1]]:ds_alunos_multicurs[1,"idxf"][[1]], ] %>% 
+  select(X03, X06) %>% 
+  mutate(ALUNO = ds_param[ds_alunos_multicurs[1,"idx"][[1]],"X04"][[1]], IDX = ds_param[ds_alunos_multicurs[1,"idx"][[1]],"idx"][[1]], CT = 1) %>% 
   group_by(ALUNO,IDX,X03,X06) %>% 
   summarise(CD = sum(CT, na.rm = T))## %>% 
 ##filter(CD > 1)
-
 if (nrow(ds_alunos_multicurs) > 1) {
- for(i in 2:nrow(ds_alunos_multicurs)) {
-   ds_temp <- ds_main[ds_alunos_multicurs[i,"idxi"][[1]]:ds_alunos_multicurs[i,"idxf"][[1]], ] %>% 
-     select(X03, X06) %>% 
-     mutate(ALUNO = ds_main[ds_alunos_multicurs[i,"idx"][[1]],"X04"][[1]], IDX = ds_main[ds_alunos_multicurs[i,"idx"][[1]],"idx"][[1]], CT = 1) %>% 
-     group_by(ALUNO,IDX,X03,X06) %>% 
-     summarise(CD = sum(CT, na.rm = T))## %>% 
-   ##filter(CD > 1)
-   ds_cursosdup %<>%  rbind(., ds_temp)
- }
+  for(i in 2:nrow(ds_alunos_multicurs)) {
+    ds_temp <- ds_param[ds_alunos_multicurs[i,"idxi"][[1]]:ds_alunos_multicurs[i,"idxf"][[1]], ] %>% 
+      select(X03, X06) %>% 
+      mutate(ALUNO = ds_param[ds_alunos_multicurs[i,"idx"][[1]],"X04"][[1]], IDX = ds_param[ds_alunos_multicurs[i,"idx"][[1]],"idx"][[1]], CT = 1) %>% 
+      group_by(ALUNO,IDX,X03,X06) %>% 
+      summarise(CD = sum(CT, na.rm = T))## %>% 
+    ##filter(CD > 1)
+    ds_cursosdup %<>%  rbind(., ds_temp)
+  }
 }
-
 ds_cursosdup %<>% filter(CD > 1)
 
-if (nrow(ds_cursosdup) > 0) {
- ds_cursosdup %<>% merge(., ds_alunos_multicurs, by.x = "IDX", by.y = "idx", all.y = FALSE)
-
- ####
+if (nrow(ds_cursosdup) > 0) {    
+  ds_cursosdup %<>% merge(., ds_alunos_multicurs, by.x = "IDX", by.y = "idx", all.y = FALSE)
   
- del_idx <- double()
-
- for (i in 1:nrow(ds_cursosdup)) {
-   if (!is.na(ds_cursosdup[1,"X06"][[1]])) {
-    ds_temp <- ds_main[ds_cursosdup[i,"idxi"][[1]]:ds_cursosdup[i,"idxf"][[1]],] %>% 
-      filter(X03 == ds_cursosdup[i,"X03"][[1]], X06 == ds_cursosdup[i,"X06"][[1]]) %>% 
-      mutate(INGR = paste0(str_sub(.$X11, 3, 6), str_sub(.$X11, 1, 2))) %>% 
-      arrange(INGR)
-   } else {
-     ds_temp <- ds_main[ds_cursosdup[i,"idxi"][[1]]:ds_cursosdup[i,"idxf"][[1]],] %>% 
-       filter(X03 == ds_cursosdup[i,"X03"][[1]]) %>% 
-       mutate(INGR = paste0(str_sub(.$X11, 3, 6), str_sub(.$X11, 1, 2))) %>% 
-       arrange(INGR)     
-   }
-   for (j in 1:ds_cursosdup[i,"CD"][[1]]-1) del_idx <- append(del_idx, ds_temp[j,"idx"][[1]])
- }
- 
- ds_main_cl <- ds_main[-del_idx,]
+  ####
+  
+  del_idx <- double()
+  
+  for (i in 1:nrow(ds_cursosdup)) {
+    if (!is.na(ds_cursosdup[i,"X06"][[1]])) {
+      ds_temp <- ds_param[ds_cursosdup[i,"idxi"][[1]]:ds_cursosdup[i,"idxf"][[1]],] %>% 
+        filter(X03 == ds_cursosdup[i,"X03"][[1]], X06 == ds_cursosdup[i,"X06"][[1]]) %>% 
+        mutate(INGR = paste0(str_sub(.$X11, 3, 6), str_sub(.$X11, 1, 2))) %>% 
+        arrange(INGR)
+    } else {
+      ds_temp <- ds_param[ds_cursosdup[i,"idxi"][[1]]:ds_cursosdup[i,"idxf"][[1]],] %>% 
+        filter(X03 == ds_cursosdup[i,"X03"][[1]]) %>% 
+        mutate(INGR = paste0(str_sub(.$X11, 3, 6), str_sub(.$X11, 1, 2))) %>% 
+        arrange(INGR)       
+    }
+    for (j in 1:ds_cursosdup[i,"CD"][[1]]-1) del_idx <- append(del_idx, ds_temp[j,"idx"][[1]])
+  }
+  
+  ds_main_cl <- ds_param[-del_idx,]
 } else {
- ds_main_cl <- ds_main
+  ds_main_cl <- ds_param
 }
 
 ############################################################################  
 
 ds_transf_cpf <- ds_transfint[,2] %>%
-  mutate(lin = 1) %>% 
-  group_by(CPF) %>% 
-  summarise(CT = sum(lin))
+                  mutate(lin = 1) %>%
+                  group_by(CPF) %>%
+                  summarise(CT = sum(lin))
 v_transf <- ds_transf_cpf[,1][[1]]
+ds_main_cl %<>% mutate(ALUNO = "")
 
-# for (i in seq_along(v_transf)) {
-#   
-# }
+for (i in (1:nrow(ds_main_cl))) ds_main_cl[i,"idx"] <- i
+
+ds_alunos <- ds_main_cl[,c("X01","X04","idx")] %>% 
+  filter(X01 == "41") %>% 
+  select(ALUNO = X04,idx) %>% 
+  mutate(idxi=idx+1,idxf = 1)##"[["(.,1)
+
+for (i in 1:nrow(ds_alunos)) ds_alunos[i,4] <- ds_alunos[i+1, 2]-1
+
+ds_alunos %<>% mutate(diff = idxf - idxi)
+
+for (i in seq_along(v_transf)) {
+  ds_range <- ds_alunos[which(ds_alunos[,"ALUNO"] == v_transf[i]), c(1,3:4)]
+  if (nrow(ds_range) > 0) ds_main_cl[ds_range[1,2][[1]]:ds_range[1,3][[1]], 66] <- v_transf[i]
+}
+
+ds_exist <- merge(ds_transfint[,c(2,5,7,11,12)], ds_main_cl[,c(3,6,7,64,65,66)], by.x = c("CPF","INEP_CURSO"), by.y = c("ALUNO","X03")) %>% 
+  mutate(NST = "")
+
+if (nrow(ds_exist) > 0) {
+ ds_exist[which(ds_exist[,"SIT_ALUNO"] == "TRANSF. INTERNA"),"NST"] <- "5"
+ ds_exist[which(ds_exist[,"SIT_ALUNO"] != "TRANSF. INTERNA"),"NST"] <- "OT"
+
+ ds_orig_trans <- ds_exist %>% 
+                   filter(NST == "5") %>% 
+                   group_by(CPF) %>% 
+                   summarise(DT = max(DT_TRANS)) %>% 
+                   merge(., ds_exist, by.x = c("CPF","DT"), by.y = c("CPF","DT_TRANS"))
+
+ ds_dest_trans <- ds_exist %>% 
+                   filter(NST == "OT") %>% 
+                   merge(., ds_orig_trans[,c(1,3)], by.x = "CPF", by.y = "CPF")
+
+  for (i in 1:nrow(ds_orig_trans)) {
+    ds_main_cl[which((ds_main_cl[,3] == ds_orig_trans[i, 3]) & (ds_main_cl[,66] == ds_orig_trans[i, 1])),7] <- ds_orig_trans[i, "NST"]
+  }
+
+  for (i in 1:nrow(ds_dest_trans)) {
+    ds_main_cl[which((ds_main_cl[,3] == ds_dest_trans[i, 2]) & (ds_main_cl[,66] == ds_dest_trans[i, 1])),8] <- ds_dest_trans[i, "INEP_CURSO.y"]
+  }
+}
 
 ############################################################################
 
@@ -129,18 +191,14 @@ if (fast_output == "Y") {
 } else {
   write_lines(ds_main_cl[1,1:2], arq_output, sep = "|", na = "", append = FALSE)
   write_lines(ds_main_cl[1,3], arq_output, na = "", append = TRUE)
-  for (i in 2:nrow(ds_main_cl)) { 
+  for (i in 2:nrow(ds_main_cl)) {
     if (ds_main_cl[i,1] == '41') {
       write_lines(ds_main_cl[i,1:26], arq_output, sep = "|", na = "", append = TRUE)
       write_lines(ds_main_cl[i,27], arq_output, na = "", append = TRUE)
     } else if (ds_main_cl[i,1] == '42') {
       write_lines(ds_main_cl[i,1:62], arq_output, sep = "|", na = "", append = TRUE)
       write_lines(ds_main_cl[i,63], arq_output, sep = ifelse(i == nrow(ds_main_cl), "", "\n"), na = "", append = TRUE)    
-    } else {
-      print("teste")
     }
   }
 }
-
-
 
