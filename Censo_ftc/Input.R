@@ -139,13 +139,16 @@ f.tratamento <- function(ds_param, arq_output = "xput_l.txt", fast_output = "Y")
       merge(., ds_orig_trans[,c(1,3)], by.x = "CPF", by.y = "CPF")
     
     for (i in 1:nrow(ds_orig_trans)) {
-      ds_main_cl[which((ds_main_cl[,3] == ds_orig_trans[i, 3]) & (ds_main_cl[,66] == ds_orig_trans[i, 1])),7] <- ds_orig_trans[i, "NST"]
+      ds_main_cl[which((ds_main_cl[,3] == ds_orig_trans[i, 3]) & (ds_main_cl[,66] == ds_orig_trans[i, 1])),c(7,23)] <- c(ds_orig_trans[i, "NST"],"0")
     }
     
     for (i in 1:nrow(ds_dest_trans)) {
-      ds_main_cl[which((ds_main_cl[,3] == ds_dest_trans[i, 2]) & (ds_main_cl[,66] == ds_dest_trans[i, 1])),8] <- ds_dest_trans[i, "INEP_CURSO.y"]
+      ds_main_cl[which((ds_main_cl[,3] == ds_dest_trans[i, 2]) & (ds_main_cl[,66] == ds_dest_trans[i, 1])),c(8,23)] <- c(ds_dest_trans[i, "INEP_CURSO.y"],"0")
     }
   }  
+  
+  ds_main_cl[which((is.na(ds_main_cl[,23])) & (ds_main_cl[,1]=="42")), 23] <- "0"
+  
 ############################################################################
   
   if (fast_output == "Y") {
