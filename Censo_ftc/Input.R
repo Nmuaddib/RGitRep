@@ -219,11 +219,11 @@ ds_transfint <- read_excel(paste0(mpath,"transfint.xlsx"))
 
 ### FTC-SALVADOR
 ##ds_sal <- read_delim(paste0(mpath,"FTC-SALVADOR/04SSA08042019.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sal")
-# ds_sal1 <- read_delim(paste0(mpath,"FTC-SALVADOR/04SSA08042019_1.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sal1")
-# ds_sal1_c <- f.tratamento(ds_sal1,paste0(mpath,"FTC-SALVADOR/04SSA08042019_1_t.txt"), fwrt)
-# 
-# ds_sal2 <- read_delim(paste0(mpath,"FTC-SALVADOR/04SSA08042019_2.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sal2")
-# ds_sal2_c <- f.tratamento(ds_sal2,paste0(mpath,"FTC-SALVADOR/04SSA08042019_2_t.txt"), fwrt)
+ds_sal1 <- read_delim(paste0(mpath,"FTC-SALVADOR/04SSA_20190416_1.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sal1")
+ds_sal1_c <- f.tratamento(ds_sal1,paste0(mpath,"FTC-SALVADOR/04SSA_20190416_1_t.txt"), fwrt)
+
+ds_sal2 <- read_delim(paste0(mpath,"FTC-SALVADOR/04SSA_20190416_2.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sal2")
+ds_sal2_c <- f.tratamento(ds_sal2,paste0(mpath,"FTC-SALVADOR/04SSA_20190416_2_t.txt"), fwrt)
 
 ### FTC-VCA
 ##ds_vca <- read_delim(paste0(mpath,"FTC-VCA/05FTC-VCA08042019.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "vca")
@@ -234,23 +234,23 @@ ds_transfint <- read_excel(paste0(mpath,"transfint.xlsx"))
 # ds_vca2_c <- f.tratamento(ds_vca2,paste0(mpath,"FTC-VCA/FTCVIC02-15042019_2_t.txt"), fwrt)
 
 ### OTE-ITABUNA
-ds_ita1 <- read_delim(paste0(mpath,"OTE-ITABUNA/07ITA_20190415_1.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "ita")
-ds_ita1_c <- f.tratamento(ds_ita1,paste0(mpath,"OTE-ITABUNA/07ITA_20190415_1_t.txt"), fwrt)
-
-ds_ita2 <- read_delim(paste0(mpath,"OTE-ITABUNA/07ITA_20190415_2.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "ita")
-ds_ita2_c <- f.tratamento(ds_ita2,paste0(mpath,"OTE-ITABUNA/07ITA_20190415_2_t.txt"), fwrt)
+# ds_ita1 <- read_delim(paste0(mpath,"OTE-ITABUNA/07ITA_20190415_1.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "ita")
+# ds_ita1_c <- f.tratamento(ds_ita1,paste0(mpath,"OTE-ITABUNA/07ITA_20190415_1_t.txt"), fwrt)
+# 
+# ds_ita2 <- read_delim(paste0(mpath,"OTE-ITABUNA/07ITA_20190415_2.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "ita")
+# ds_ita2_c <- f.tratamento(ds_ita2,paste0(mpath,"OTE-ITABUNA/07ITA_20190415_2_t.txt"), fwrt)
 
 ### OTE-JUA
-#ds_jua <- read_delim(paste0(mpath,"OTE-JUA/21OTEJUA_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "jua")
-#ds_jua_c <- f.tratamento(ds_jua,paste0(mpath,"OTE-JUA/21OTEJUA_20190408_t.txt"), fwrt)
+ds_jua <- read_delim(paste0(mpath,"OTE-JUA/21JUA_20190416.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "jua")
+ds_jua_c <- f.tratamento(ds_jua,paste0(mpath,"OTE-JUA/21JUA_20190416_t.txt"), fwrt)
 
 ### OTE-PETROLINA
-#ds_pet <- read_delim(paste0(mpath,"OTE-PETROLINA/22OTEPET_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "pet")
-#ds_pet_c <- f.tratamento(ds_pet,paste0(mpath,"OTE-PETROLINA/22OTEPET_20190408_t.txt"), fwrt)
+ds_pet <- read_delim(paste0(mpath,"OTE-PETROLINA/22PET_20190416.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "pet")
+ds_pet_c <- f.tratamento(ds_pet,paste0(mpath,"OTE-PETROLINA/22PET_20190416_t.txt"), fwrt)
 
 ### OTE-SP
-#ds_sp <- read_delim(paste0(mpath,"OTE-SP/20_OTESP_20190408.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sp")
-#ds_sp_c <- f.tratamento(ds_sp,paste0(mpath,"OTE-SP/20_OTESP_20190408_t.txt"), fwrt)
+ds_sp <- read_delim(paste0(mpath,"OTE-SP/20SP_20190416.txt"),"|", col_names = nvector, col_types = tvector) %>% mutate(ID = "sp")
+ds_sp_c <- f.tratamento(ds_sp,paste0(mpath,"OTE-SP/20SP_201904168_t.txt"), fwrt)
 
 ########
 
