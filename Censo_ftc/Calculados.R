@@ -81,4 +81,13 @@ ds_main %<>% select(-c(92:100))
 
 names(ds_main)[91] <- "SERIE_IDEAL_CH"
 
+ds_back <- ds_main
+#ds_main <- ds_back
+
+ds_main %<>% mutate(STATUS_ENTRADA = if_else(.$SERIE != .$SERIE_IDEAL, "Não semestralizado", "OK"),
+                    STATUS_DISCIPLINA = if_else(.$SERIE != .$SERIE_IDEAL_DISC, "Não semestralizado", "OK"),
+                    STATUS_CH = if_else(.$SERIE != .$SERIE_IDEAL_CH, "Não semestralizado", "OK")) %>% 
+                    select(1:8, 10:12, 9, 89:94, 85:88, 13:84)
+
+write_excel_csv2(ds_main, "Relatório Semestralização Medicina.csv")
 
