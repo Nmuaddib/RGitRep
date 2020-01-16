@@ -96,3 +96,7 @@ ds_qt_disprjfrm <- ds_disprjfrm %>%
            nome_curso_formacao) %>% 
   summarise(QT_VINC = n()) %>% 
   arrange(desc(QT_VINC))
+
+write.csv2(ds_qt_disprjfrm, "Qt_Vinculos por membro de projeto.csv")
+write.csv2(ds_disprjfrm, "Membros_projetos_formação.csv")
+
