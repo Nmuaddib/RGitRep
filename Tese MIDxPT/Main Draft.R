@@ -197,5 +197,78 @@ write.csv2(ds_disprjfrm, "Membros_projetos_formação.csv")
 # ls(ds_frmdoc)
 # view(names(ds_frmdoc))
 
+ls(ds_temp)
 
+ds_temp <- ds_MbrPrjFrm %>% select(ID_PROJETO, AN_BASE.x, NM_MEMBRO_PROJETO, nome_curso_formacao)
 
+ds_MbrPrjFrm_grp <- ds_MbrPrjFrm %>% 
+  group_by(ID_PESSOA,
+           NM_MEMBRO_PROJETO,
+           ID_PROJETO,
+           NM_PROJETO,
+           nome_curso_formacao,  
+           DS_TIPO_MEMBRO,
+           AN_INICIO_PROGRAMA = AN_INICIO_PROGRAMA.x,
+           ano_fim_formacao,
+           ano_inicio_formacao,
+           ANO_PRJ,
+           area_basica,
+           area_curso_formacao,
+           CD_PROGRAMA_IES,
+           cod_area_curso_formacao,
+           DH_INICIO,
+           DH_INICIO_LINHA,
+           DS_CATEGORIA_MEMBRO_PROJETO,
+           DS_PROJETO,
+           DT_FIM_VINCULO,
+           DT_INICIO_VINCULO,
+           DT_SITUACAO_ATUAL,
+           dta_fim,
+           formacao_concluida,
+           grande_area_basica,
+           grande_area_curso_formacao,
+           # ID_ADD_CONTEXTO = ID_ADD_CONTEXTO.x,
+           # ID_ADD_DISCENTE,
+           # ID_ADD_DOCENTE,
+           # ID_ADD_FOTO_PROGRAMA = ID_ADD_FOTO_PROGRAMA.x,
+           # ID_ADD_FOTO_PROGRAMA_IES = ID_ADD_FOTO_PROGRAMA_IES.x,
+           # ID_ADD_MEMBRO_PROJETO,
+           # ID_ADD_PARTICIPANTE_EXTERNO,
+           ID_AREA_AVALIACAO,
+           IN_BOLSA,
+           IN_OUTRO_AUXILIO,
+           IN_RESPONSAVEL_PROJETO,
+           nivel_formacao,
+           NM_AREA_AVALIACAO,
+           NM_AREA_CONCENTRACAO,
+           NM_ENTIDADE_ENSINO,
+           NM_LINHA_PESQUISA,
+           NM_MODALIDADE_PROGRAMA,
+           NM_NATUREZA_PROJETO,
+           NM_PAIS_NACIONALIDADE_MEMBRO,
+           NM_PROGRAMA_IES,
+           NM_TIPO_SITUACAO_ATUAL,
+           nme_area_avaliacao,
+           nme_instituicao,
+           nme_programa,
+           nome_cvlattes,
+           nome_ies_formacao,
+           nome_sucupira,
+           nro_id_cnpq,
+           nro_nota_doutorado,
+           nro_nota_mestrado,
+           nro_nota_mestrado_prof,
+           seq_area_basica,
+           seq_pessoa_fisica,
+           seq_tipo_categoria_vinculo,
+           SG_ENTIDADE_ENSINO,
+           sgl_instituicao,
+           sigla_ies_formacao,
+           sigla_pais_ies_formacao,
+           sigla_uf_ies_formacao,
+           TP_SEXO_MEMBRO) %>% 
+  summarise(ULTIMO_ANO = max(AN_BASE.x))
+
+write.csv2(ds_MbrPrjFrm_grp, "Membros_Projetos_Formação.csv")
+
+view(ls(ds_MbrPrjFrm))
