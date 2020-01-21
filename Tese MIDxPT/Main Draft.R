@@ -271,9 +271,25 @@ ds_MbrPrjFrm_grp <- ds_MbrPrjFrm %>%
 # %>%
 # filter(ID_PROJETO == 240953)
 
+ds_temp <- ds_membros_13_16 %>% 
+  group_by(CD_PROGRAMA_IES,
+           NM_PROGRAMA_IES,
+           DS_TIPO_MEMBRO,
+           DS_CATEGORIA_MEMBRO_PROJETO) %>% 
+  summarise(QT = n())
+
+ds_temp2 <- ds_MbrPrjFrm_grp %>% 
+  group_by(CD_PROGRAMA_IES,
+           NM_PROGRAMA_IES,
+           DS_TIPO_MEMBRO,
+           DS_CATEGORIA_MEMBRO_PROJETO,
+           NM_AREA_AVALIACAO,
+           nome_curso_formacao,) %>% 
+  summarise(QT = n())
+
 write.csv2(ds_MbrPrjFrm_grp, "Membros_Projetos_Formação.csv")
 
-•view(ls(ds_MbrPrjFrm))
+view(ls(ds_MbrPrjFrm_grp))
 
 # Id Projeto:
 # •	250672
@@ -285,3 +301,6 @@ write.csv2(ds_MbrPrjFrm_grp, "Membros_Projetos_Formação.csv")
 # ISABELA ALMEIDA PORDEUS
 # 173258 172810
 # "-"(173258,172810)
+
+ls(ds_membros_13_16)
+ls(ds_MbrPrjFrm_grp)
