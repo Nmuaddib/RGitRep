@@ -11,7 +11,7 @@ library("modelr")
 library("purrr")
 library("forcats")
 
-#ds_aratdo <- read_excel('Areas_de_atuacao_docentes_25_06_2019.xlsx)'
+ds_aratdo <- read_excel('Areas_de_atuacao_docentes_25_06_2019.xlsx')
 # ds_appprg <- read_excel("Dados Aplicativos com Programa.xlsx")
 # ds_patprg <- read_excel("Dados Patentes com Programa.xlsx")
 # ds_prdprg <- read_excel("Dados Produtos com Programa.xlsx")
@@ -237,7 +237,6 @@ ds_MbrPrjFrm_grp <- ds_MbrPrjFrm %>%
            ID_AREA_AVALIACAO,
            IN_BOLSA,
            IN_OUTRO_AUXILIO,
-           IN_RESPONSAVEL_PROJETO,
            nivel_formacao,
            NM_AREA_AVALIACAO,
            NM_AREA_CONCENTRACAO,
@@ -267,18 +266,22 @@ ds_MbrPrjFrm_grp <- ds_MbrPrjFrm %>%
            sigla_pais_ies_formacao,
            sigla_uf_ies_formacao,
            TP_SEXO_MEMBRO) %>% 
-  summarise(ULTIMO_ANO = max(AN_BASE.x)) 
-%>%
-  filter(ID_PROJETO == 240953)
+  summarise(ULTIMO_ANO = max(AN_BASE.x),
+            IN_RESPONSAVEL_PROJETO = max(IN_RESPONSAVEL_PROJETO))
+# %>%
+# filter(ID_PROJETO == 240953)
 
 write.csv2(ds_MbrPrjFrm_grp, "Membros_Projetos_Formação.csv")
 
-view(ls(ds_MbrPrjFrm))
+•view(ls(ds_MbrPrjFrm))
 
-# Id Projeto: 
+# Id Projeto:
 # •	250672
 # •	272449
 # •	255310
 # •	359139
 # •	359227
 # •	240953 - (3X nome das pessoas)
+# ISABELA ALMEIDA PORDEUS
+# 173258 172810
+# "-"(173258,172810)
