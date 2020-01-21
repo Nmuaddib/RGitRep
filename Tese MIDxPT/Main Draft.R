@@ -87,7 +87,12 @@ ds_membros_13_16 <- rbind(ds_prj013, ds_prj014) %>%
 
 #ds_frmdic_grad <- ds_frmdic %>% filter(nivel_formacao == "Graduação")
 
-ds_frmdic <- read_excel("Formação dos discentes 2013-2016 - Tese.xlsx")
+ds_frmdic <- read_excel("Formação dos discentes 2013-2016 - Tese.xlsx") %>% 
+  mutate(nro_id_cnpq = str_pad(as.character(nro_id_cnpq), 
+                               width =  16, 
+                               side = "left", 
+                               pad = "0"),
+         seq_pessoa_fisica = as.character(seq_pessoa_fisica))
 
 ds_frmdic %<>% select(nro_id_cnpq,
                       seq_pessoa_fisica,
@@ -197,9 +202,9 @@ write.csv2(ds_disprjfrm, "Membros_projetos_formação.csv")
 # ls(ds_frmdoc)
 # view(names(ds_frmdoc))
 
-ls(ds_temp)
+# ls(ds_temp)
 
-ds_temp <- ds_MbrPrjFrm %>% select(ID_PROJETO, AN_BASE.x, NM_MEMBRO_PROJETO, nome_curso_formacao)
+# ds_temp <- ds_MbrPrjFrm %>% select(ID_PROJETO, AN_BASE.x, NM_MEMBRO_PROJETO, nome_curso_formacao)
 
 ds_MbrPrjFrm_grp <- ds_MbrPrjFrm %>% 
   group_by(ID_PESSOA,
@@ -304,3 +309,19 @@ view(ls(ds_MbrPrjFrm_grp))
 
 ls(ds_membros_13_16)
 ls(ds_MbrPrjFrm_grp)
+ls(ds_aratdo)
+
+max(str_count(ds_frmdoc$nro_id_cnpq))
+min(str_count(ds_frmdoc$nro_id_cnpq))
+max(str_count(ds_frmdoc$seq_pessoa_fisica))
+min(str_count(ds_frmdoc$seq_pessoa_fisica))
+
+max(str_count(ds_frmdic$nro_id_cnpq))
+min(str_count(ds_frmdic$nro_id_cnpq))
+max(str_count(ds_frmdic$seq_pessoa_fisica))
+min(str_count(ds_frmdic$seq_pessoa_fisica))
+
+max(str_count(ds_aratdo$nro_id_cnpq))
+min(str_count(ds_aratdo$nro_id_cnpq))
+max(str_count(ds_aratdo$seq_pessoa_fisica))
+min(str_count(ds_aratdo$seq_pessoa_fisica))
