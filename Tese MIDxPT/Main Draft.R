@@ -52,6 +52,8 @@ ds_prjppg_13_16 <- ds_prjppg %>%
   mutate(ANO_PRJ = str_sub(.$DH_INICIO, 1, 4)) %>%
   filter(ANO_PRJ >= 2013)
 
+rm(ds_prgppg, ds_prjppg)
+
 ##### Filtro de membros discentes, docentes e junção com Projetos
 
 ds_prj013 <- read_excel("Membros dos projetos 2013.xlsx") %>%
@@ -77,6 +79,8 @@ ds_prj016 <- read_excel("Membros dos projetos 2016.xlsx") %>%
 ds_membros_13_16 <- rbind(ds_prj013, ds_prj014) %>% 
   rbind(., ds_prj015) %>% 
   rbind(., ds_prj016)
+
+rm(ds_prj013, ds_prj014, ds_prj015, ds_prj016)
 
 # ls(ds_prj013_dis)
 # ls(ds_frmdic)
@@ -160,9 +164,14 @@ ds_frmdoc %<>% select(nro_id_cnpq,
                       area_curso_formacao) %>% 
   mutate(doc_ou_disc = "DOCENTE")
 
-ds_formacao <- rbind(ds_frmdic, ds_frmdoc) %>% 
+ds_formacao_grd <- rbind(ds_frmdic, ds_frmdoc) %>% 
   filter(nivel_formacao == "Graduação")
 
+ds_formacao_doc <- rbind(ds_frmdic, ds_frmdoc) %>% 
+  filter(nivel_formacao == "Doutorado")
+
+ds_formacao_mst <- rbind(ds_frmdic, ds_frmdoc) %>% 
+  filter(nivel_formacao == "Mestrado")
 
 ##### Junção de Formação (graduação) com membros de projeto por Nome+ID Programa+tipo de membro
 
@@ -170,7 +179,15 @@ ds_formacao <- rbind(ds_frmdic, ds_frmdoc) %>%
 #                       by.x = c("CD_PROGRAMA_IES", "NM_MEMBRO_PROJETO"), 
 #                       by.y = c("cod_programa", "nome_filtro_cvlattes"))
 
-ds_MbrPrjFrm <- merge(ds_membros_13_16, ds_formacao, 
+ds_MbrPrj_grd <- merge(ds_membros_13_16, ds_formacao_grd, 
+                      by.x = c("CD_PROGRAMA_IES", "NM_MEMBRO_PROJETO", "DS_TIPO_MEMBRO"), 
+                      by.y = c("cod_programa", "nome_filtro_cvlattes", "doc_ou_disc"))
+
+ds_MbrPrj_doc <- merge(ds_membros_13_16, ds_formacao_doc, 
+                      by.x = c("CD_PROGRAMA_IES", "NM_MEMBRO_PROJETO", "DS_TIPO_MEMBRO"), 
+                      by.y = c("cod_programa", "nome_filtro_cvlattes", "doc_ou_disc"))
+
+ds_MbrPrj_mst <- merge(ds_membros_13_16, ds_formacao_mst, 
                       by.x = c("CD_PROGRAMA_IES", "NM_MEMBRO_PROJETO", "DS_TIPO_MEMBRO"), 
                       by.y = c("cod_programa", "nome_filtro_cvlattes", "doc_ou_disc"))
 
@@ -182,19 +199,19 @@ ds_MbrPrjFrm <- merge(ds_membros_13_16, ds_formacao,
 
 ##### Quantidade de vinculos por Membro/Formação (Projetos??)
 
-ds_qt_disprjfrm <- ds_disprjfrm %>% 
-  group_by(AN_BASE.x,
-           NM_AREA_AVALIACAO,
-           nivel_formacao,
-           CD_PROGRAMA_IES, 
-           NM_PROGRAMA_IES, 
-           NM_MEMBRO_PROJETO,
-           nome_curso_formacao) %>% 
-  summarise(QT_VINC = n()) %>% 
-  arrange(desc(QT_VINC))
-
-write.csv2(ds_qt_disprjfrm, "Qt_Vinculos por membro de projeto.csv")
-write.csv2(ds_disprjfrm, "Membros_projetos_formação.csv")
+# ds_qt_disprjfrm <- ds_disprjfrm %>% 
+#   group_by(AN_BASE.x,
+#            NM_AREA_AVALIACAO,
+#            nivel_formacao,
+#            CD_PROGRAMA_IES, 
+#            NM_PROGRAMA_IES, 
+#            NM_MEMBRO_PROJETO,
+#            nome_curso_formacao) %>% 
+#   summarise(QT_VINC = n()) %>% 
+#   arrange(desc(QT_VINC))
+# 
+# write.csv2(ds_qt_disprjfrm, "Qt_Vinculos por membro de projeto.csv")
+# write.csv2(ds_disprjfrm, "Membros_projetos_formação.csv")
  
 # ls(ds_appprg$NM_FINANCIADOR)
 # ds_appprg$NM_FINANCIADOR
@@ -206,91 +223,111 @@ write.csv2(ds_disprjfrm, "Membros_projetos_formação.csv")
 
 # ds_temp <- ds_MbrPrjFrm %>% select(ID_PROJETO, AN_BASE.x, NM_MEMBRO_PROJETO, nome_curso_formacao)
 
-ds_MbrPrjFrm_grp <- ds_MbrPrjFrm %>% 
-  group_by(ID_PESSOA,
-           NM_MEMBRO_PROJETO,
-           ID_PROJETO,
-           NM_PROJETO,
-           nome_curso_formacao,  
-           DS_TIPO_MEMBRO,
-           AN_INICIO_PROGRAMA = AN_INICIO_PROGRAMA.x,
-           ano_fim_formacao,
-           ano_inicio_formacao,
-           ANO_PRJ,
-           area_basica,
-           area_curso_formacao,
-           CD_PROGRAMA_IES,
-           cod_area_curso_formacao,
-           DH_INICIO,
-           DH_INICIO_LINHA,
-           DS_CATEGORIA_MEMBRO_PROJETO,
-           DS_PROJETO,
-           #DT_FIM_VINCULO,
-           #DT_INICIO_VINCULO,
-           DT_SITUACAO_ATUAL,
-           dta_fim,
-           formacao_concluida,
-           grande_area_basica,
-           grande_area_curso_formacao,
-           # ID_ADD_CONTEXTO = ID_ADD_CONTEXTO.x,
-           # ID_ADD_DISCENTE,
-           # ID_ADD_DOCENTE,
-           # ID_ADD_FOTO_PROGRAMA = ID_ADD_FOTO_PROGRAMA.x,
-           # ID_ADD_FOTO_PROGRAMA_IES = ID_ADD_FOTO_PROGRAMA_IES.x,
-           # ID_ADD_MEMBRO_PROJETO,
-           # ID_ADD_PARTICIPANTE_EXTERNO,
-           ID_AREA_AVALIACAO,
-           IN_BOLSA,
-           IN_OUTRO_AUXILIO,
-           nivel_formacao,
-           NM_AREA_AVALIACAO,
-           NM_AREA_CONCENTRACAO,
-           NM_ENTIDADE_ENSINO,
-           NM_LINHA_PESQUISA,
-           NM_MODALIDADE_PROGRAMA,
-           NM_NATUREZA_PROJETO,
-           NM_PAIS_NACIONALIDADE_MEMBRO,
-           NM_PROGRAMA_IES,
-           NM_TIPO_SITUACAO_ATUAL,
-           nme_area_avaliacao,
-           nme_instituicao,
-           nme_programa,
-           nome_cvlattes,
-           nome_ies_formacao,
-           nome_sucupira,
-           nro_id_cnpq,
-           nro_nota_doutorado,
-           nro_nota_mestrado,
-           nro_nota_mestrado_prof,
-           seq_area_basica,
-           seq_pessoa_fisica,
-           seq_tipo_categoria_vinculo,
-           SG_ENTIDADE_ENSINO,
-           sgl_instituicao,
-           sigla_ies_formacao,
-           sigla_pais_ies_formacao,
-           sigla_uf_ies_formacao,
-           TP_SEXO_MEMBRO) %>% 
-  summarise(ULTIMO_ANO = max(AN_BASE.x),
-            IN_RESPONSAVEL_PROJETO = max(IN_RESPONSAVEL_PROJETO))
+f.sum_frm <- function(ds){
+  
+  ds %<>% group_by(ID_PESSOA,
+                   NM_MEMBRO_PROJETO,
+                   ID_PROJETO,
+                   NM_PROJETO,
+                   nome_curso_formacao,  
+                   DS_TIPO_MEMBRO,
+                   AN_INICIO_PROGRAMA = AN_INICIO_PROGRAMA.x,
+                   ano_fim_formacao,
+                   ano_inicio_formacao,
+                   ANO_PRJ,
+                   area_basica,
+                   area_curso_formacao,
+                   CD_PROGRAMA_IES,
+                   cod_area_curso_formacao,
+                   DH_INICIO,
+                   DH_INICIO_LINHA,
+                   DS_CATEGORIA_MEMBRO_PROJETO,
+                   DS_PROJETO,
+                   DT_SITUACAO_ATUAL,
+                   dta_fim,
+                   formacao_concluida,
+                   grande_area_basica,
+                   grande_area_curso_formacao,
+                   ID_AREA_AVALIACAO,
+                   IN_BOLSA,
+                   IN_OUTRO_AUXILIO,
+                   nivel_formacao,
+                   NM_AREA_AVALIACAO,
+                   NM_AREA_CONCENTRACAO,
+                   NM_ENTIDADE_ENSINO,
+                   NM_LINHA_PESQUISA,
+                   NM_MODALIDADE_PROGRAMA,
+                   NM_NATUREZA_PROJETO,
+                   NM_PAIS_NACIONALIDADE_MEMBRO,
+                   NM_PROGRAMA_IES,
+                   NM_TIPO_SITUACAO_ATUAL,
+                   nme_area_avaliacao,
+                   nme_instituicao,
+                   nme_programa,
+                   nome_cvlattes,
+                   nome_ies_formacao,
+                   nome_sucupira,
+                   nro_id_cnpq,
+                   nro_nota_doutorado,
+                   nro_nota_mestrado,
+                   nro_nota_mestrado_prof,
+                   seq_area_basica,
+                   seq_pessoa_fisica,
+                   seq_tipo_categoria_vinculo,
+                   SG_ENTIDADE_ENSINO,
+                   sgl_instituicao,
+                   sigla_ies_formacao,
+                   sigla_pais_ies_formacao,
+                   sigla_uf_ies_formacao,
+                   TP_SEXO_MEMBRO
+                   # DT_FIM_VINCULO,
+                   # DT_INICIO_VINCULO,                   
+                   # ID_ADD_CONTEXTO = ID_ADD_CONTEXTO.x,
+                   # ID_ADD_DISCENTE,
+                   # ID_ADD_DOCENTE,
+                   # ID_ADD_FOTO_PROGRAMA = ID_ADD_FOTO_PROGRAMA.x,
+                   # ID_ADD_FOTO_PROGRAMA_IES = ID_ADD_FOTO_PROGRAMA_IES.x,
+                   # ID_ADD_MEMBRO_PROJETO,
+                   # ID_ADD_PARTICIPANTE_EXTERNO,                   
+                   ) %>% 
+          summarise(ULTIMO_ANO = max(AN_BASE.x),
+                    IN_RESPONSAVEL_PROJETO = max(IN_RESPONSAVEL_PROJETO))
+  
+  return(ds)
+  
+}
+
+rm(ds_Mbr_sum_grd, ds_Mbr_sum_doc, ds_Mbr_sum_mst)
+
+ds_Mbr_sum_grd <- f.sum_frm(ds_MbrPrj_grd)
+ds_Mbr_sum_doc <- f.sum_frm(ds_MbrPrj_doc)
+ds_Mbr_sum_mst <- f.sum_frm(ds_MbrPrj_mst)
+
 # %>%
 # filter(ID_PROJETO == 240953)
 
-ds_temp <- ds_membros_13_16 %>% 
+ds_general <- ds_membros_13_16 %>% 
   group_by(CD_PROGRAMA_IES,
            NM_PROGRAMA_IES,
            DS_TIPO_MEMBRO,
            DS_CATEGORIA_MEMBRO_PROJETO) %>% 
   summarise(QT = n())
 
-ds_temp2 <- ds_MbrPrjFrm_grp %>% 
-  group_by(CD_PROGRAMA_IES,
-           NM_PROGRAMA_IES,
-           DS_TIPO_MEMBRO,
-           DS_CATEGORIA_MEMBRO_PROJETO,
-           NM_AREA_AVALIACAO,
-           nome_curso_formacao,) %>% 
-  summarise(QT = n())
+f.ind <- function(ds){
+  ds %<>% group_by(CD_PROGRAMA_IES,
+                   NM_PROGRAMA_IES,
+                   DS_TIPO_MEMBRO,
+                   DS_CATEGORIA_MEMBRO_PROJETO,
+                   NM_AREA_AVALIACAO,
+                   nome_curso_formacao,) %>% 
+          summarise(QT = n())
+  
+  return(ds)
+}
+
+ds_ind_grd <- f.ind(ds_Mbr_sum_grd)
+ds_ind_doc <- f.ind(ds_Mbr_sum_doc)
+ds_ind_mst <- f.ind(ds_Mbr_sum_mst)
 
 write.csv2(ds_MbrPrjFrm_grp, "Membros_Projetos_Formação.csv")
 
