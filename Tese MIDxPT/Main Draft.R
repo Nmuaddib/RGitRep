@@ -18,6 +18,10 @@ ds_aratdo <- read_excel('Areas_de_atuacao_docentes_25_06_2019.xlsx')
 ds_prgppg <- read_excel("Programas PPG 2016.xlsx")
 ds_prjppg <- read_excel("Projetos PPG 2016.xlsx")
 
+ ds_appprg <- read_excel("Produtos_tese.xlsx")
+ ds_patprg <- read_excel("Patentes_tese.xlsx")
+ ds_prdprg <- read_excel("Aplicativos_tese.xlsx")
+
 # ls(ds_prgppg)
 # ls(ds_prjppg)
 
@@ -191,29 +195,53 @@ ds_QFDPG <- ds_frmdoc %>%
   group_by(cod_programa) %>% 
   summarise(QFDPG = n()) 
 
-ds_FADo <- merge(ds_QFDPD, ds_QFDPM, by = "cod_programa", all.x = T) %>% 
+ds_FCDo <- merge(ds_QFDPD, ds_QFDPM, by = "cod_programa", all.x = T) %>% 
   merge(., ds_QFDPG, by = "cod_programa", all.x = T) %>% 
   merge(., ds_QPPP, by = "cod_programa", all.x = T) %>% 
   mutate(DFDDo = QFDPD/QPPP,
          DFDM = QFDPM/QPPP,
          DFDG = QFDPG/QPPP) %>% 
-  mutate(FADo = (DFDDo + DFDM + DFDG)/3)
+  mutate(FCDo = (DFDDo + DFDM + DFDG)/3)
 
-write.csv2(ds_FADo, "FADo.csv")
+write.csv2(ds_FCDo, "FCDo.csv")
 
+ds_QDDP <- ds_frmdic %>% 
+  group_by(cod_programa, nome_filtro_cvlattes) %>% 
+  summarise(QT = n()) %>% 
+  group_by(cod_programa) %>% 
+  summarise(QDDP = n())
 
+ds_QFMDi <- ds_frmdic %>% 
+  filter(nivel_formacao == "Mestrado") %>% 
+  group_by(cod_programa, nome_curso_formacao) %>% 
+  summarise(QT = n()) %>%   
+  group_by(cod_programa) %>% 
+  summarise(QFMDi = n()) 
 
-?cbind
+ds_QFGDi <- ds_frmdic %>% 
+  filter(nivel_formacao == "Graduação") %>% 
+  group_by(cod_programa, nome_curso_formacao) %>% 
+  summarise(QT = n()) %>%   
+  group_by(cod_programa) %>% 
+  summarise(QFGDi = n()) 
 
+ds_FCDi <- merge(ds_QFMDi, ds_QFGDi, by = "cod_programa", all.y = T) %>% 
+  merge(., ds_QDDP, by = "cod_programa", all.x = T) %>% 
+  mutate(DFMDi = QFMDi/QDDP,
+         DFGDi = QFGDi/QDDP) %>% 
+  mutate(FCDi = (DFMDi + DFGDi)/2)
 
+write.csv2(ds_FCDi, "FCDi.csv")
+
+##### --------------------------------------------------------
 ds_formacao_grd <- rbind(ds_frmdic, ds_frmdoc) %>% 
   filter(nivel_formacao == "Graduação")
 
-ds_formacao_doc <- rbind(ds_frmdic, ds_frmdoc) %>% 
-  filter(nivel_formacao == "Doutorado")
-
-ds_formacao_mst <- rbind(ds_frmdic, ds_frmdoc) %>% 
-  filter(nivel_formacao == "Mestrado")
+# ds_formacao_doc <- rbind(ds_frmdic, ds_frmdoc) %>% 
+#   filter(nivel_formacao == "Doutorado")
+# 
+# ds_formacao_mst <- rbind(ds_frmdic, ds_frmdoc) %>% 
+#   filter(nivel_formacao == "Mestrado")
 
 ##### Junção de Formação (graduação) com membros de projeto por Nome+ID Programa+tipo de membro
 
@@ -225,13 +253,13 @@ ds_MbrPrj_grd <- merge(ds_membros_13_16, ds_formacao_grd,
                       by.x = c("CD_PROGRAMA_IES", "NM_MEMBRO_PROJETO", "DS_TIPO_MEMBRO"), 
                       by.y = c("cod_programa", "nome_filtro_cvlattes", "doc_ou_disc"))
 
-ds_MbrPrj_doc <- merge(ds_membros_13_16, ds_formacao_doc, 
-                      by.x = c("CD_PROGRAMA_IES", "NM_MEMBRO_PROJETO", "DS_TIPO_MEMBRO"), 
-                      by.y = c("cod_programa", "nome_filtro_cvlattes", "doc_ou_disc"))
-
-ds_MbrPrj_mst <- merge(ds_membros_13_16, ds_formacao_mst, 
-                      by.x = c("CD_PROGRAMA_IES", "NM_MEMBRO_PROJETO", "DS_TIPO_MEMBRO"), 
-                      by.y = c("cod_programa", "nome_filtro_cvlattes", "doc_ou_disc"))
+# ds_MbrPrj_doc <- merge(ds_membros_13_16, ds_formacao_doc, 
+#                       by.x = c("CD_PROGRAMA_IES", "NM_MEMBRO_PROJETO", "DS_TIPO_MEMBRO"), 
+#                       by.y = c("cod_programa", "nome_filtro_cvlattes", "doc_ou_disc"))
+# 
+# ds_MbrPrj_mst <- merge(ds_membros_13_16, ds_formacao_mst, 
+#                       by.x = c("CD_PROGRAMA_IES", "NM_MEMBRO_PROJETO", "DS_TIPO_MEMBRO"), 
+#                       by.y = c("cod_programa", "nome_filtro_cvlattes", "doc_ou_disc"))
 
 # ls(ds_membros_13_16)
 # ls(ds_formacao)
@@ -342,8 +370,8 @@ f.sum_frm <- function(ds){
 rm(ds_Mbr_sum_grd, ds_Mbr_sum_doc, ds_Mbr_sum_mst)
 
 ds_Mbr_sum_grd <- f.sum_frm(ds_MbrPrj_grd)
-ds_Mbr_sum_doc <- f.sum_frm(ds_MbrPrj_doc)
-ds_Mbr_sum_mst <- f.sum_frm(ds_MbrPrj_mst)
+# ds_Mbr_sum_doc <- f.sum_frm(ds_MbrPrj_doc)
+# ds_Mbr_sum_mst <- f.sum_frm(ds_MbrPrj_mst)
 
 # %>%
 # filter(ID_PROJETO == 240953)
@@ -368,8 +396,8 @@ f.ind <- function(ds){
 }
 
 ds_ind_grd <- f.ind(ds_Mbr_sum_grd)
-ds_ind_doc <- f.ind(ds_Mbr_sum_doc)
-ds_ind_mst <- f.ind(ds_Mbr_sum_mst)
+# ds_ind_doc <- f.ind(ds_Mbr_sum_doc)
+# ds_ind_mst <- f.ind(ds_Mbr_sum_mst)
 
 write.csv2(ds_MbrPrjFrm_grp, "Membros_Projetos_Formação.csv")
 
