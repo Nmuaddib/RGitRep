@@ -164,6 +164,48 @@ ds_frmdoc %<>% select(nro_id_cnpq,
                       area_curso_formacao) %>% 
   mutate(doc_ou_disc = "DOCENTE")
 
+ds_QPPP <- ds_frmdoc %>% 
+  group_by(cod_programa, nome_filtro_cvlattes) %>% 
+  summarise(QT = n()) %>% 
+  group_by(cod_programa) %>% 
+  summarise(QPPP = n())
+
+ds_QFDPD <- ds_frmdoc %>% 
+  filter(nivel_formacao == "Doutorado") %>% 
+  group_by(cod_programa, nome_curso_formacao) %>% 
+  summarise(QT = n()) %>%   
+  group_by(cod_programa) %>% 
+  summarise(QFDPD = n()) 
+
+ds_QFDPM <- ds_frmdoc %>% 
+  filter(nivel_formacao == "Mestrado") %>% 
+  group_by(cod_programa, nome_curso_formacao) %>% 
+  summarise(QT = n()) %>%   
+  group_by(cod_programa) %>% 
+  summarise(QFDPM = n()) 
+
+ds_QFDPG <- ds_frmdoc %>% 
+  filter(nivel_formacao == "Graduação") %>% 
+  group_by(cod_programa, nome_curso_formacao) %>% 
+  summarise(QT = n()) %>%   
+  group_by(cod_programa) %>% 
+  summarise(QFDPG = n()) 
+
+ds_FADo <- merge(ds_QFDPD, ds_QFDPM, by = "cod_programa", all.x = T) %>% 
+  merge(., ds_QFDPG, by = "cod_programa", all.x = T) %>% 
+  merge(., ds_QPPP, by = "cod_programa", all.x = T) %>% 
+  mutate(DFDDo = QFDPD/QPPP,
+         DFDM = QFDPM/QPPP,
+         DFDG = QFDPG/QPPP) %>% 
+  mutate(FADo = (DFDDo + DFDM + DFDG)/3)
+
+write.csv2(ds_FADo, "FADo.csv")
+
+
+
+?cbind
+
+
 ds_formacao_grd <- rbind(ds_frmdic, ds_frmdoc) %>% 
   filter(nivel_formacao == "Graduação")
 
@@ -317,7 +359,7 @@ f.ind <- function(ds){
   ds %<>% group_by(CD_PROGRAMA_IES,
                    NM_PROGRAMA_IES,
                    DS_TIPO_MEMBRO,
-                   DS_CATEGORIA_MEMBRO_PROJETO,
+                   #DS_CATEGORIA_MEMBRO_PROJETO,
                    NM_AREA_AVALIACAO,
                    nome_curso_formacao,) %>% 
           summarise(QT = n())
