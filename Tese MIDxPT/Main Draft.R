@@ -297,9 +297,9 @@ ds_DFCP <- merge(ds_QACP, ds_QPP, by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>%
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(QACP = mean(QACP),
             QPP = mean(QPP),
-            DFCP = mean(ds_DFCP))
+            DFCP = mean(DFCP))
 
-  write.csv2(ds_DFCP, "ds_DFCP.csv")  
+  write.csv2(ds_DFCP, "DFCP.csv")  
   
 
 ##### -------------------------------------------------------------------------------------------
