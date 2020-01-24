@@ -292,18 +292,21 @@ ds_QPP <- ds_MbrPrj_grd %>%
   # group_by(CD_PROGRAMA_IES) %>%  
   # summarise(QPP = sum(QPP))
 
-ds_DIPP <- merge(ds_QACP, ds_QPP, by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>% 
-  mutate(DIPP = QACP/QPP) %>% 
+ds_DFCP <- merge(ds_QACP, ds_QPP, by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>% 
+  mutate(DFCP = QACP/QPP) %>% 
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(QACP = mean(QACP),
             QPP = mean(QPP),
-            DIPP = mean(DIPP))
+            DFCP = mean(ds_DFCP))
+
+  write.csv2(ds_DFCP, "ds_DFCP.csv")  
+  
 
 ##### -------------------------------------------------------------------------------------------
 
 ds_CC <- merge(ds_QIP, ds_QPV, by = "CD_PROGRAMA_IES", all.x = T) %>% 
-  merge(., ds_DIPP, by = "CD_PROGRAMA_IES", all.x = T) %>% 
-  mutate(DFCP = QIP/QPV) %>% 
+  merge(., ds_DFCP, by = "CD_PROGRAMA_IES", all.x = T) %>% 
+  mutate(DIPP = QIP/QPV) %>% 
   mutate(CC = (DFCP + DIPP)/2)
 
 write.csv2(ds_CC, "CC.csv")
