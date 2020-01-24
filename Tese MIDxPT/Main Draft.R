@@ -249,9 +249,100 @@ ds_formacao_grd <- rbind(ds_frmdic, ds_frmdoc) %>%
 #                       by.x = c("CD_PROGRAMA_IES", "NM_MEMBRO_PROJETO"), 
 #                       by.y = c("cod_programa", "nome_filtro_cvlattes"))
 
+ds_fin13 <- read_excel("Financiadores de proejtos 2013.xlsx")
+ds_fin14 <- read_excel("Financiadores de projetos 2014.xlsx")
+ds_fin15 <- read_excel("Financiadores de projetos 2015.xlsx")
+ds_fin16 <- read_excel("Financiadores de proejtos 2016.xlsx")
+
+ds_fin <- rbind(ds_fin13, ds_fin14, ds_fin15, ds_fin16)
+
+ls(ds_fin)
+
+ds_QIP <- ds_fin %>% 
+  group_by(CD_PROGRAMA_IES, NM_FINANCIADOR) %>% 
+  summarise(QT = n()) %>% 
+  group_by(CD_PROGRAMA_IES) %>% 
+  summarise(QIP = n())
+
+ds_QPV <- ds_fin %>% 
+  group_by(CD_PROGRAMA_IES, ID_PROJETO) %>% 
+  summarise(QT = n()) %>% 
+  group_by(CD_PROGRAMA_IES) %>% 
+  summarise(QPV = n())
+
 ds_MbrPrj_grd <- merge(ds_membros_13_16, ds_formacao_grd, 
                       by.x = c("CD_PROGRAMA_IES", "NM_MEMBRO_PROJETO", "DS_TIPO_MEMBRO"), 
                       by.y = c("cod_programa", "nome_filtro_cvlattes", "doc_ou_disc"))
+
+ls(ds_MbrPrj_grd)
+
+ds_QACP <- ds_MbrPrj_grd %>% 
+  group_by(CD_PROGRAMA_IES, ID_PROJETO, nome_curso_formacao) %>% 
+  summarise(QT = n()) %>% 
+  group_by(CD_PROGRAMA_IES, ID_PROJETO) %>% 
+  summarise(QACP = n()) #%>% 
+  # group_by(CD_PROGRAMA_IES) %>% 
+  # summarise(QACP = n())
+
+ds_QPP <- ds_MbrPrj_grd %>% 
+  group_by(CD_PROGRAMA_IES, ID_PROJETO, NM_MEMBRO_PROJETO) %>% 
+  summarise(QT = n()) %>% 
+  group_by(CD_PROGRAMA_IES, ID_PROJETO) %>% 
+  summarise(QPP = n()) #%>% 
+  # group_by(CD_PROGRAMA_IES) %>%  
+  # summarise(QPP = sum(QPP))
+
+ds_DIPP <- merge(ds_QACP, ds_QPP, by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>% 
+  mutate(DIPP = QACP/QPP) %>% 
+  group_by(CD_PROGRAMA_IES) %>% 
+  summarise(QACP = mean(QACP),
+            QPP = mean(QPP),
+            DIPP = mean(DIPP))
+
+##### -------------------------------------------------------------------------------------------
+
+ds_CC <- merge(ds_QIP, ds_QPV, by = "CD_PROGRAMA_IES", all.x = T) %>% 
+  merge(., ds_DIPP, by = "CD_PROGRAMA_IES", all.x = T) %>% 
+  mutate(DFCP = QIP/QPV) %>% 
+  mutate(CC = (DFCP + DIPP)/2)
+
+write.csv2(ds_CC, "CC.csv")
+
+# 10001018012P7 - DIPP acima de 1.0 -------------------------------------------------------------
+
+ds_QAI <- ds_aratdo %>% 
+  mutate(espec_doc = paste0(grande_area, nome_area, sub_area, especialidade)) %>% 
+  group_by(cod_programa, nome_filtro_cvlattes, espec_doc) %>% 
+  summarise(QT = n()) %>% 
+  group_by(cod_programa, nome_filtro_cvlattes) %>% 
+  summarise(QAI = n())
+
+ds_DGAD <- ds_aratdo %>%
+  group_by(cod_programa, nome_filtro_cvlattes, grande_area) %>% 
+  summarise(QT = n()) %>% 
+  group_by(cod_programa, nome_filtro_cvlattes) %>% 
+  summarise(DGAD = n())
+
+ds_DACD <- ds_aratdo %>%
+  group_by(cod_programa, nome_filtro_cvlattes, nome_area) %>% 
+  summarise(QT = n()) %>% 
+  group_by(cod_programa, nome_filtro_cvlattes) %>% 
+  summarise(DACD = n())
+
+ds_CP <- merge(ds_DGAD, ds_DACD, by = c("cod_programa","nome_filtro_cvlattes"), all.x = T) %>% 
+  merge(., ds_QAI, by = c("cod_programa","nome_filtro_cvlattes"), all.x = T) %>% 
+  mutate(DGAC = DGAD/QAI,
+         DAC = DACD/QAI) %>% 
+  mutate(CP = (DGAC + DAC)/2) 
+
+ds_CP_pgr <- ds_CP %>% 
+  group_by(cod_programa) %>% 
+  summarise(CP = mean(CP))
+
+write.csv2(ds_CP_pgr, "CP_programa.csv")
+write.csv2(ds_CC, "CP_docente.csv")
+
+ls(ds_aratdo)
 
 # ds_MbrPrj_doc <- merge(ds_membros_13_16, ds_formacao_doc, 
 #                       by.x = c("CD_PROGRAMA_IES", "NM_MEMBRO_PROJETO", "DS_TIPO_MEMBRO"), 
@@ -432,3 +523,31 @@ max(str_count(ds_aratdo$nro_id_cnpq))
 min(str_count(ds_aratdo$nro_id_cnpq))
 max(str_count(ds_aratdo$seq_pessoa_fisica))
 min(str_count(ds_aratdo$seq_pessoa_fisica))
+
+ds_model <- merge(ds_FCDo, ds_FCDi, by = "cod_programa") %>% 
+  select(FCDo, FCDi) %>% 
+  as.tibble() #%>% 
+  cor(., method = "pearson", use = "complete.obs")
+
+o_cor <- symnum(ds_model); o_cor
+
+f.lm_checkin <- function(ds, modl) {
+  lm.x <- lm(modl, data = ds)
+  print(summary(lm.x))
+  print(confint(lm.x, level=0.99))
+  for (i in c(1:3,5)) {
+    plot(lm.x, which = i)
+  }
+  return(lm.x)
+}
+
+lm.FC <- f.lm_checkin(ds_model, 'FCDi ~ FCDo')
+
+#### Incluir conluna com valores previstos ------------------
+ds_model %<>% add_predictions(lm.FC) #modelr
+#### Gráfico do modelo --------------------------------------
+ggplot(ds_model, aes(y = FCDo)) +
+  geom_point(aes(x = FCDi), color = "blue", alpha = 0.5, size = 3) +
+  geom_line(aes(x = pred),color = "red", size = 1.2) +
+  labs(title = 'Modelo proposto', 
+       x = 'FCDi', y = 'FCDo')
