@@ -164,7 +164,7 @@ ds_IMI1_FCDo <- merge(ds_IMI1_QFDPD, ds_IMI1_QFDPM, by = "cod_programa", all.x =
   mutate(FCDo = (DFDDo + DFDM + DFDG)/3)
 
 # rm(ds_IMI1_QPPP, ds_IMI1_QFDPD, ds_IMI1_QFDPM, ds_IMI1_QFDPG, ds_IMI1_FCDo)
-# write.csv2(ds_IMI1_FCDo, "FCDo.csv")
+# write.csv2(ds_IMI1_FCDo, "~/RGitRep/Tese MIDxPT/Analises/FCDo.csv")
 
 ##### -------------------------------------------------------------------------------------------
 
@@ -195,7 +195,7 @@ ds_IMI2_FCDi <- merge(ds_IMI2_QFMDi, ds_IMI2_QFGDi, by = "cod_programa", all.y =
   mutate(FCDi = (DFMDi + DFGDi)/2)
 
 # rm(ds_IMI2_QDDP, ds_IMI2_QFMDi, ds_IMI2_QFGDi, ds_IMI2_FCDi)
-# write.csv2(ds_FCDi, "FCDi.csv")
+# write.csv2(ds_FCDi, "~/RGitRep/Tese MIDxPT/Analises/FCDi.csv")
 
 ##### -------------------------------------------------------------------------------------------
 
@@ -248,7 +248,7 @@ ds_IMI3_DFCP <- merge(ds_IMI3_QACP, ds_IMI3_QPP, by = c("CD_PROGRAMA_IES", "ID_P
 
  ds_DFCP <- merge(ds_QACP, ds_QPP, by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>% 
    mutate(DFCP = QACP/QPP)
-# write.csv2(ds_DFCP, "DFCP.csv")  
+# write.csv2(ds_DFCP, "~/RGitRep/Tese MIDxPT/Analises/DFCP.csv")  
 
 ds_IMI3_CC <- merge(ds_IMI3_QIP, ds_IMI3_QPV, by = "CD_PROGRAMA_IES", all.x = T) %>% 
   merge(., ds_IMI3_DFCP, by = "CD_PROGRAMA_IES", all.x = T) %>% 
@@ -258,7 +258,7 @@ ds_IMI3_CC <- merge(ds_IMI3_QIP, ds_IMI3_QPV, by = "CD_PROGRAMA_IES", all.x = T)
 ds_IMI3_CC <-  ds_IMI3_CC[,c(1:3, 7, 4:6, 8)]
 
 # rm(ds_IMI3_QIP, ds_IMI3_QPV, ds_IMI3_QACP, ds_IMI3_QPP, ds_IMI3_DFCP, ds_IMI3_CC)
-# write.csv2(ds_IMI3_CC, "CC.csv")
+# write.csv2(ds_IMI3_CC, "~/RGitRep/Tese MIDxPT/Analises/CC.csv")
 
 # 10001018012P7 - DIPP acima de 1.0 -------------------------------------------------------------
 ##### -------------------------------------------------------------------------------------------
@@ -293,8 +293,8 @@ ds_IMI4_CP_pgr <- ds_IMI4_CP %>%
   summarise(CP = mean(CP))
 
 # rm(ds_IMI4_QAI, ds_IMI4_DGAD, ds_IMI4_DACD, ds_IMI4_CP, ds_IMI4_CP_pgr)
-# write.csv2(ds_IMI4_CP_pgr, "CP_programa.csv")
-# write.csv2(ds_IMI4_CC, "CP_docente.csv")
+# write.csv2(ds_IMI4_CP_pgr, "~/RGitRep/Tese MIDxPT/Analises/CP_programa.csv")
+# write.csv2(ds_IMI4_CC, "~/RGitRep/Tese MIDxPT/Analises/CP_docente.csv")
 
 ds_IMI_1 <- merge(ds_IMI1_FCDo[,c(1,9)], ds_IMI2_FCDi[,c(1,7)], by = "cod_programa", all = T) %>% 
   merge(., ds_IMI3_CC[,c(1,8)], by.x = "cod_programa", by.y = "CD_PROGRAMA_IES", all = T) %>% 
@@ -319,11 +319,14 @@ ds_IMI_2 <- ds_IMI_2[complete.cases(ds_IMI_2),]
 
 ds_IMI_2 %<>% mutate(IMI = (FCDo + CC + CP)/3)
 
+write.csv2(ds_IMI_1, "~/RGitRep/Tese MIDxPT/Analises/IMI_1.csv")
+write.csv2(ds_IMI_2, "~/RGitRep/Tese MIDxPT/Analises/IMI_2.csv")
+
 ## IPT ## ---------------------------------------------------------------------------------------
 
-ds_PT_appprg <- read_excel("Produtos_tese.xlsx")
+ds_PT_appprg <- read_excel("Aplicativos_tese.xlsx")
 ds_PT_patprg <- read_excel("Patentes com Programas.xlsx")
-ds_PT_prdprg <- read_excel("Aplicativos_tese.xlsx")
+ds_PT_prdprg <- read_excel("Produtos_tese.xlsx")
 
 # rm(ds_PT_appprg, ds_PT_patprg, ds_PT_prdprg)
 
@@ -335,19 +338,33 @@ min(ds_PT_appprg$AN_BASE_PRODUCAO)
 min(ds_PT_patprg$AN_BASE)
 min(ds_PT_prdprg$AN_BASE_PRODUCAO)
 
-CD_PROGRAMA_IES
+# CD_PROGRAMA_IES
+
+
+
+ds_PT_patprg <- ds_PT_patprg[complete.cases(ds_PT_patprg[,8]),]
 
 ds_IPT1_SPPAP <- ds_PT_patprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(SPPAP = n())
 
+# nm_produção
+
+ds_PT_prdprg <- ds_PT_prdprg[complete.cases(ds_PT_prdprg[,12]),]
+
 ds_IPT2_QPPr <- ds_PT_prdprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(QPPr = n())
 
+# ds_finalidade_tratada
+
+ds_PT_appprg <- ds_PT_appprg[complete.cases(ds_PT_appprg[,22]),]
+
 ds_IPT3_QPA <- ds_PT_appprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(QPA = n())
+
+# ds_finalidade
 
 ds_IPT <- merge(ds_IMI1_QPPP, ds_IPT1_SPPAP, by.x = "cod_programa", by.y = "CD_PROGRAMA_IES", all.x = T) %>% 
   select(CD_PROGRAMA_IES = cod_programa, QPPP, SPPAP) %>% 
@@ -362,23 +379,34 @@ ds_IPT %<>% mutate(iQPP = SPPAP/QPPP,
                    IPT = (iQPP+iQPPr+iQPA)/3) %>% 
   rename(cod_programa = CD_PROGRAMA_IES)
 
+write.csv2(ds_IPT, "~/RGitRep/Tese MIDxPT/Analises/IPT.csv")
+
 ## COR ## ---------------------------------------------------------------------------------------
 
 ds_COR_1 <- merge(ds_IMI_1[,c(1,6)], ds_IPT[,c(1,9)], by = "cod_programa", all = T)
 
 ds_COR_1 <- ds_COR_1[complete.cases(ds_COR_1),]
 
-ds_COR_1 %<>% filter(IPT > 0) %>% 
-  select(-cod_programa) #%>% 
+ds_COR_1 %<>% filter(IPT > 0) 
+
+ds_COR_1_p <- ds_COR_1 %>% 
+  select(-cod_programa) %>% 
   cor(., method = "pearson")
 
 ds_COR_2 <- merge(ds_IMI_2[,c(1,5)], ds_IPT[,c(1,9)], by = "cod_programa", all = T)
 
 ds_COR_2 <- ds_COR_2[complete.cases(ds_COR_2),]
 
-ds_COR_2 %<>% filter(IPT > 0) %>% 
-  select(-cod_programa) #%>% 
+ds_COR_2 %<>% filter(IPT > 0) 
+
+ds_COR_2_p <- ds_COR_2 %>% 
+  select(-cod_programa) %>% 
   cor(., method = "pearson")
+
+write.csv2(ds_COR_1, "~/RGitRep/Tese MIDxPT/Analises/COR_1.csv")
+write.csv2(ds_COR_1_p, "~/RGitRep/Tese MIDxPT/Analises/COR_1_p.csv")
+write.csv2(ds_COR_2, "~/RGitRep/Tese MIDxPT/Analises/COR_2.csv")
+write.csv2(ds_COR_2_p, "~/RGitRep/Tese MIDxPT/Analises/COR_2_p.csv")
 
 ##### -------------------------------------------------------------------------------------------
 
