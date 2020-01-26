@@ -340,13 +340,13 @@ min(ds_PT_prdprg$AN_BASE_PRODUCAO)
 
 # CD_PROGRAMA_IES
 
-
-
 ds_PT_patprg <- ds_PT_patprg[complete.cases(ds_PT_patprg[,8]),]
 
 ds_IPT1_SPPAP <- ds_PT_patprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(SPPAP = n())
+
+write.csv2(ds_IPT1_SPPAP, "~/RGitRep/Tese MIDxPT/Analises/SPPAP.csv")
 
 # nm_produção
 
@@ -356,6 +356,8 @@ ds_IPT2_QPPr <- ds_PT_prdprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(QPPr = n())
 
+write.csv2(ds_IPT2_QPPr, "~/RGitRep/Tese MIDxPT/Analises/QPPr.csv")
+
 # ds_finalidade_tratada
 
 ds_PT_appprg <- ds_PT_appprg[complete.cases(ds_PT_appprg[,22]),]
@@ -363,6 +365,8 @@ ds_PT_appprg <- ds_PT_appprg[complete.cases(ds_PT_appprg[,22]),]
 ds_IPT3_QPA <- ds_PT_appprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(QPA = n())
+
+write.csv2(ds_IPT3_QPA, "~/RGitRep/Tese MIDxPT/Analises/QPA.csv")
 
 # ds_finalidade
 
