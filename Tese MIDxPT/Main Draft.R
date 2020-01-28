@@ -3,13 +3,13 @@ library("dplyr")
 library("ggplot2")
 library("readr")
 library("tibble")
-library("tidyr")
-library("reshape2")
 library("magrittr")
 library("readxl")
 library("modelr")
-library("purrr")
-library("forcats")
+#library("purrr")
+#library("forcats")
+#library("tidyr")
+#library("reshape2")
 
 ds_aratdo <- read_excel('Areas_de_atuacao_docentes_25_06_2019.xlsx')
 ds_prgppg <- read_excel("Programas PPG 2016.xlsx")
@@ -21,7 +21,7 @@ ds_prjppg_13_16 <- ds_prjppg %>%
   mutate(ANO_PRJ = str_sub(.$DH_INICIO, 1, 4)) %>%
   filter(ANO_PRJ >= 2013)
 
-rm(ds_prgppg, ds_prjppg)
+rm(ds_prjppg)
 
 ##### Filtro de membros discentes, docentes e junção com Projetos
 
@@ -519,9 +519,9 @@ write.csv2(ds_COR_2_p, "~/RGitRep/Tese MIDxPT/Analises/COR_2_p.csv")
 
 ##### -------------------------------------------------------------------------------------------
 
-ds_model <- merge(ds_FCDo, ds_FCDi, by = "cod_programa") %>% 
+ds_model <- merge(ds_IMI1_FCDo, ds_IMI2_FCDi, by = "cod_programa") %>% 
   select(FCDo, FCDi) %>% 
-  as.tibble() #%>% 
+  as_tibble() #%>% 
   cor(., method = "pearson", use = "complete.obs")
 
 o_cor <- symnum(ds_model); o_cor
@@ -536,15 +536,51 @@ f.lm_checkin <- function(ds, modl) {
   return(lm.x)
 }
 
-lm.FC <- f.lm_checkin(ds_model, 'FCDi ~ FCDo')
+ls(ds_IMI_1)
+names(ds_IMI_1)
+
+#lm.FC <- f.lm_checkin(ds_model, 'FCDi ~ FCDo')
+ds_IMI_Models <- ds_IMI_1 %>% 
+  mutate(model1 = (FCDo+CC+CP)/3,
+         model2 = (FCDo+CC)/2,
+         model3 = (FCDo+CP)/2,
+         model4 = (CC+CP)/2)
+
+lm.FC <- f.lm_checkin(ds_IMI_Models, 'FCDi ~ model1')
+ds_IMI_Models %<>% mutate(model = model1)
+
+lm.FC <- f.lm_checkin(ds_IMI_Models, 'FCDi ~ model2')
+ds_IMI_Models %<>% mutate(model = model2)
+
+lm.FC <- f.lm_checkin(ds_IMI_Models, 'FCDi ~ model3')
+ds_IMI_Models %<>% mutate(model = model3)
+
+lm.FC <- f.lm_checkin(ds_IMI_Models, 'FCDi ~ poly(model4, 1, raw = T)')
+ds_IMI_Models %<>% mutate(model = model4)
+
+
+lm.FC <- lm(data = ds_IMI_Models, formula = FCDi ~ poly(FCDo, 2, raw = T))
+summary(lm.FC)
+ds_IMI_Models %<>% mutate(model = FCDo)
+
+
+lm.FC <- f.lm_checkin(ds_IMI_Models, 'FCDi ~ poly(FCDo, 6, raw = T)')
+lm.FC <- f.lm_checkin(ds_IMI_Models, 'FCDi ~ FCDo')
+ds_IMI_Models %<>% mutate(model = FCDo)
+
+lm.FC <- f.lm_checkin(ds_IMI_Models, 'FCDi ~ CC')
+ds_IMI_Models %<>% mutate(model = CC)
+
+lm.FC <- f.lm_checkin(ds_IMI_Models, 'FCDi ~ CP')
+ds_IMI_Models %<>% mutate(model = CP)
 
 #### Incluir conluna com valores previstos ------------------
-ds_model %<>% add_predictions(lm.FC) #modelr
+ds_IMI_Models %<>% add_predictions(lm.FC) #modelr
 #### Gráfico do modelo --------------------------------------
-ggplot(ds_model, aes(y = FCDo)) +
+ggplot(ds_IMI_Models, aes(y = model)) +
   geom_point(aes(x = FCDi), color = "blue", alpha = 0.5, size = 3) +
   geom_line(aes(x = pred),color = "red", size = 1.2) +
   labs(title = 'Modelo proposto', 
-       x = 'FCDi', y = 'FCDo')
+       x = 'FCDi', y = 'Model')
 
 ##### -------------------------------------------------------------------------------------------
