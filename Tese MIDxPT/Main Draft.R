@@ -407,20 +407,22 @@ ds_COR_1 <- merge(ds_IMI_1[,c(1,12)], ds_IPT[,c(1,15)], by = "CD_PROGRAMA_IES", 
 
 ds_COR_1 <- ds_COR_1[complete.cases(ds_COR_1),]
 
-ds_COR_1 %<>% filter(IPT > 0) 
+ds_COR_1 %<>% filter(IPT > 0)%>% 
+  merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T) 
 
 ds_COR_1_p <- ds_COR_1 %>% 
-  select(-CD_PROGRAMA_IES) %>% 
+  select(IMI, IPT) %>% 
   cor(., method = "pearson")
 
 ds_COR_2 <- merge(ds_IMI_2[,c(1,11)], ds_IPT[,c(1,15)], by = "CD_PROGRAMA_IES", all = T)
 
 ds_COR_2 <- ds_COR_2[complete.cases(ds_COR_2),]
 
-ds_COR_2 %<>% filter(IPT > 0) 
+ds_COR_2 %<>% filter(IPT > 0)%>% 
+  merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T) 
 
 ds_COR_2_p <- ds_COR_2 %>% 
-  select(-CD_PROGRAMA_IES) %>% 
+  select(IMI, IPT) %>% 
   cor(., method = "pearson")
 
 write.csv2(ds_COR_1, "~/RGitRep/Tese MIDxPT/Analises/COR_1.csv")
