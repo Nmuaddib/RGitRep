@@ -68,7 +68,46 @@ ds_frmdic <- read_excel("Formação dos discentes 2013-2016 - Tese.xlsx") %>%
                                pad = "0"),
          seq_pessoa_fisica = as.character(seq_pessoa_fisica))
 
+ds_frmdic_mestrado <- read_excel("Dicentes mestrado.xlsx") %>% 
+  mutate(nro_id_cnpq = str_pad(as.character(nro_id_cnpq), 
+                               width =  16, 
+                               side = "left", 
+                               pad = "0"),
+         seq_pessoa_fisica = as.character(seq_pessoa_fisica))
+
 ds_frmdic %<>% select(nro_id_cnpq,
+                      seq_pessoa_fisica,
+                      nome_sucupira,
+                      nome_cvlattes,
+                      nome_filtro_cvlattes,
+                      sgl_instituicao,
+                      nme_instituicao,
+                      cod_programa,
+                      nme_programa,
+                      nme_area_avaliacao,
+                      seq_area_basica,
+                      area_basica,
+                      grande_area_basica,
+                      nro_nota_doutorado,
+                      nro_nota_mestrado,
+                      nro_nota_mestrado_prof,
+                      dta_fim,
+                      seq_tipo_categoria_vinculo,
+                      nivel_formacao,
+                      ano_inicio_formacao,
+                      ano_fim_formacao,
+                      formacao_concluida,
+                      sigla_pais_ies_formacao,
+                      sigla_uf_ies_formacao,
+                      sigla_ies_formacao,
+                      nome_ies_formacao,
+                      nome_curso_formacao,
+                      cod_area_curso_formacao,
+                      grande_area_curso_formacao,
+                      area_curso_formacao) %>% 
+  mutate(doc_ou_disc = "DISCENTE")
+
+ds_frmdic_mestrado %<>% select(nro_id_cnpq,
                       seq_pessoa_fisica,
                       nome_sucupira,
                       nome_cvlattes,
@@ -201,7 +240,38 @@ ds_IMI2_FCDi <- merge(ds_IMI2_QFMDi, ds_IMI2_QFGDi, by = "cod_programa", all.y =
   merge(., ds_IMI2_QDDP, by = "cod_programa", all.x = T) %>% 
   mutate(DFMDi = QFMDi/QDDP,
          DFGDi = QFGDi/QDDP) %>% 
-  mutate(FCDi = (DFMDi + DFGDi)/2) %>% 
+  mutate(FCDi = (DFMDi + DFGDi)/2)
+  
+ds_IMI2_QDDPm <- ds_frmdic_mestrado %>% 
+  group_by(cod_programa, nome_filtro_cvlattes) %>% 
+  summarise(QT = n()) %>% 
+  group_by(cod_programa) %>% 
+  summarise(QDDPm = n())
+  
+ds_IMI2_QFGDim <- ds_frmdic_mestrado %>% 
+  filter(nivel_formacao == "Graduação") %>% 
+  group_by(cod_programa, nome_curso_formacao) %>% 
+  summarise(QT = n()) %>%   
+  group_by(cod_programa) %>% 
+  summarise(QFGDim = n())
+
+ds_IMI2_FCDim <- merge(ds_IMI2_QDDPm, ds_IMI2_QFGDim, by = "cod_programa", all = T) %>% 
+  mutate(DFGDim = QFGDim/QDDPm) %>% 
+  mutate(FCDim = DFGDim)
+  
+ds_IMI2_FCDi_inter <- merge(ds_IMI2_FCDim, ds_IMI2_FCDi, by = "cod_programa", all = T)
+
+ds_IMI2_FCDi_inter <- ds_IMI2_FCDi_inter[is.na(ds_IMI2_FCDi_inter$FCDi),]
+
+ds_IMI2_FCDi_inter %<>% select(cod_programa,
+                               QFMDi,
+                               QFGDi = QFGDim,
+                               QDDP = QDDPm,
+                               DFMDi,
+                               DFGDi = DFGDim,
+                               FCDi = FCDim)
+
+ds_IMI2_FCDi %<>% rbind(., ds_IMI2_FCDi_inter) %>% 
   merge(ds_prg, ., by.x = "CD_PROGRAMA_IES", by.y = "cod_programa", all.y = T)
 
 # rm(ds_IMI2_QDDP, ds_IMI2_QFMDi, ds_IMI2_QFGDi, ds_IMI2_FCDi)
@@ -362,7 +432,7 @@ ds_IPT1_SPPAP <- ds_PT_patprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(SPPAP = n())
 
-write.csv2(ds_IPT1_SPPAP, "~/RGitRep/Tese MIDxPT/Analises/SPPAP.csv")
+# write.csv2(ds_IPT1_SPPAP, "~/RGitRep/Tese MIDxPT/Analises/SPPAP.csv")
 
 # nm_produção
 
@@ -372,7 +442,7 @@ ds_IPT2_QPPr <- ds_PT_prdprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(QPPr = n())
 
-write.csv2(ds_IPT2_QPPr, "~/RGitRep/Tese MIDxPT/Analises/QPPr.csv")
+# write.csv2(ds_IPT2_QPPr, "~/RGitRep/Tese MIDxPT/Analises/QPPr.csv")
 
 # ds_finalidade_tratada
 
@@ -382,7 +452,7 @@ ds_IPT3_QPA <- ds_PT_appprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(QPA = n())
 
-write.csv2(ds_IPT3_QPA, "~/RGitRep/Tese MIDxPT/Analises/QPA.csv")
+# write.csv2(ds_IPT3_QPA, "~/RGitRep/Tese MIDxPT/Analises/QPA.csv")
 
 # ds_finalidade
 
