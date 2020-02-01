@@ -6,7 +6,7 @@ library("tibble")
 library("magrittr")
 library("readxl")
 library("modelr")
-#library("purrr")
+library("purrr")
 #library("forcats")
 #library("tidyr")
 #library("reshape2")
@@ -22,6 +22,16 @@ ds_prg <- ds_prgppg %>% select(CD_PROGRAMA_IES,
                                ANO_INICIO_PROGRAMA,
                                NM_MODALIDADE_PROGRAMA,
                                CD_CONCEITO_PROGRAMA)
+
+# ds_prg[is.na(ds_prg)] <- 'Não identificado'
+# 
+# ds_prg %<>% select(CD_PROGRAMA_IES,
+#                    NM_AREA_AVALIACAO = factor("NM_AREA_AVALIACAO"),
+#                    CS_STATUS_JURIDICO = factor("CS_STATUS_JURIDICO"),
+#                    DS_DEPENDENCIA_ADMINISTRATIVA = factor("DS_DEPENDENCIA_ADMINISTRATIVA"),
+#                    ANO_INICIO_PROGRAMA = ANO_INICIO_PROGRAMA,
+#                    NM_MODALIDADE_PROGRAMA = factor("NM_MODALIDADE_PROGRAMA"),
+#                    CD_CONCEITO_PROGRAMA = factor("CD_CONCEITO_PROGRAMA"))
 
 ##### Filtro projetos de 2013-2016
 
@@ -208,6 +218,7 @@ ds_IMI1_FCDo <- merge(ds_IMI1_QFDPD, ds_IMI1_QFDPM, by = "cod_programa", all.x =
   mutate(DFDDo = QFDPD/QPPP,
          DFDM = QFDPM/QPPP,
          DFDG = QFDPG/QPPP) %>% 
+  filter(DFDDo <= 1, DFDM <= 1, DFDG <= 1) %>%
   mutate(FCDo = (DFDDo + DFDM + DFDG)/3) %>% 
   merge(ds_prg, ., by.x = "CD_PROGRAMA_IES", by.y = "cod_programa", all.y = T)
 
@@ -240,6 +251,7 @@ ds_IMI2_FCDi <- merge(ds_IMI2_QFMDi, ds_IMI2_QFGDi, by = "cod_programa", all.y =
   merge(., ds_IMI2_QDDP, by = "cod_programa", all.x = T) %>% 
   mutate(DFMDi = QFMDi/QDDP,
          DFGDi = QFGDi/QDDP) %>% 
+  filter(DFMDi <= 1, DFGDi <= 1) %>% 
   mutate(FCDi = (DFMDi + DFGDi)/2)
   
 ds_IMI2_QDDPm <- ds_frmdic_mestrado %>% 
@@ -256,7 +268,8 @@ ds_IMI2_QFGDim <- ds_frmdic_mestrado %>%
   summarise(QFGDim = n())
 
 ds_IMI2_FCDim <- merge(ds_IMI2_QDDPm, ds_IMI2_QFGDim, by = "cod_programa", all = T) %>% 
-  mutate(DFGDim = QFGDim/QDDPm) %>% 
+  mutate(DFGDim = QFGDim/QDDPm) %>%
+  filter(DFGDim <= 1) %>% 
   mutate(FCDim = DFGDim)
   
 ds_IMI2_FCDi_inter <- merge(ds_IMI2_FCDim, ds_IMI2_FCDi, by = "cod_programa", all = T)
@@ -320,20 +333,23 @@ ds_IMI3_QPP <- ds_MbrPrj_grd %>%
   summarise(QPP = n()) 
 
 ds_IMI3_DFCP <- merge(ds_IMI3_DFPP, ds_IMI3_QPP, by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>% 
-  mutate(DFCP = DFPP/QPP) %>% 
+  mutate(DFCP = DFPP/QPP) %>%
+  filter(DFCP <= 1) %>% 
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(DFPP = mean(DFPP),
             QPP = mean(QPP),
             DFCP = mean(DFCP))
 
  ds_DFCP <- merge(ds_IMI3_DFPP, ds_IMI3_QPP , by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>% 
-   mutate(DFCP = DFPP/QPP)
+   mutate(DFCP = DFPP/QPP) %>% 
+   filter(DFCP <= 1)
  
  write.csv2(ds_DFCP, "~/RGitRep/Tese MIDxPT/Analises/DFCP.csv")  
 
 ds_IMI3_CC <- merge(ds_IMI3_QIP, ds_IMI3_QPV, by = "CD_PROGRAMA_IES", all.x = T) %>% 
   merge(., ds_IMI3_DFCP, by = "CD_PROGRAMA_IES", all.x = T) %>% 
   mutate(DIPP = QIP/QPV) %>% 
+  filter(DIPP <= 1) %>% 
   mutate(CC = (DFCP + DIPP)/2) 
   
 ds_IMI3_CC <-  ds_IMI3_CC[,c(1:3, 7, 4:6, 8)]
@@ -369,6 +385,7 @@ ds_IMI4_CP <- merge(ds_IMI4_DGAD, ds_IMI4_DACD, by = c("cod_programa","nome_filt
   merge(., ds_IMI4_QE, by = c("cod_programa","nome_filtro_cvlattes"), all.x = T) %>% 
   mutate(DGAC = DGAD/QE,
          DAC = DACD/QE) %>% 
+  filter(DGAC <= 1, DAC <= 1) %>% 
   mutate(CP = (DGAC + DAC)/2) 
 
 ds_IMI4_CP_pgr <- ds_IMI4_CP %>% 
@@ -500,6 +517,75 @@ write.csv2(ds_COR_1_p, "~/RGitRep/Tese MIDxPT/Analises/COR_1_p.csv")
 write.csv2(ds_COR_2, "~/RGitRep/Tese MIDxPT/Analises/COR_2.csv")
 write.csv2(ds_COR_2_p, "~/RGitRep/Tese MIDxPT/Analises/COR_2_p.csv")
 
+##### -------------------------------------------------------------------------------------------
+f.corr <- function(df, mtd = "pearson"){
+  df %<>% select(IMI,IPT) %>% 
+    cor(., method = mtd)
+  return(df)
+}
+
+f.print_corr <- function(df){
+  dfo <- tibble(cat = as.character(), cor = as.double())
+  for (i in seq_along(df)) {
+    print(paste0(names(df[i]), '|', df[[i]][1,2]))
+    dfo[i,] <- c(names(df[i]), df[[i]][1,2])
+  }
+  return(dfo)
+}
+##### ---------------------------------------------------------------------------------------
+ano_f <- factor(ds_COR_1$ANO_INICIO_PROGRAMA)
+
+ds_COR_ano <- ds_COR_1 %>% select(ANO_INICIO_PROGRAMA,IMI,IPT) %>% 
+  split(ano_f, drop = T) %>%
+  map(f.corr)
+
+ds_COR_ano <- f.print_corr(ds_COR_ano)
+write.csv2(ds_COR_ano, "~/RGitRep/Tese MIDxPT/Analises/COR_ano.csv")
+##### ---------------------------------------------------------------------------------------
+conceito_f <- factor(ds_COR_1$CD_CONCEITO_PROGRAMA)
+
+ds_COR_conceito <- ds_COR_1 %>% select(CD_CONCEITO_PROGRAMA,IMI,IPT) %>% 
+  split(conceito_f, drop = T) %>%
+  map(f.corr)
+
+ds_COR_conceito <- f.print_corr(ds_COR_conceito)
+write.csv2(ds_COR_conceito, "~/RGitRep/Tese MIDxPT/Analises/COR_conceito.csv")
+##### ---------------------------------------------------------------------------------------
+dependencia_f <- factor(ds_COR_1$DS_DEPENDENCIA_ADMINISTRATIVA)
+
+ds_COR_dependencia <- ds_COR_1 %>% select(DS_DEPENDENCIA_ADMINISTRATIVA,IMI,IPT) %>% 
+  split(dependencia_f, drop = T) %>%
+  map(f.corr)
+
+ds_COR_dependencia <- f.print_corr(ds_COR_dependencia)
+write.csv2(ds_COR_dependencia, "~/RGitRep/Tese MIDxPT/Analises/COR_dependencia.csv")
+##### ---------------------------------------------------------------------------------------
+area_f <- factor(ds_COR_1$NM_AREA_AVALIACAO)
+
+ds_COR_area <- ds_COR_1 %>% select(NM_AREA_AVALIACAO,IMI,IPT) %>% 
+  split(area_f, drop = T) %>%
+  map(f.corr)
+
+ds_COR_area <- f.print_corr(ds_COR_area)
+write.csv2(ds_COR_area, "~/RGitRep/Tese MIDxPT/Analises/COR_area.csv")
+##### -------------------------------------------------------------------------------------------
+status_f <- factor(ds_COR_1$CS_STATUS_JURIDICO)
+
+ds_COR_status <- ds_COR_1 %>% select(CS_STATUS_JURIDICO,IMI,IPT) %>% 
+  split(status_f, drop = T) %>%
+  map(f.corr)
+
+ds_COR_status <- f.print_corr(ds_COR_status)
+write.csv2(ds_COR_status, "~/RGitRep/Tese MIDxPT/Analises/COR_status.csv")
+##### -------------------------------------------------------------------------------------------
+modalidade_f <- factor(ds_COR_1$NM_MODALIDADE_PROGRAMA)
+
+ds_COR_modalidade <- ds_COR_1 %>% select(NM_MODALIDADE_PROGRAMA,IMI,IPT) %>% 
+  split(modalidade_f, drop = T) %>%
+  map(f.corr)
+
+ds_COR_modalidade <- f.print_corr(ds_COR_modalidade)
+write.csv2(ds_COR_modalidade, "~/RGitRep/Tese MIDxPT/Analises/COR_modalidade.csv")
 ##### -------------------------------------------------------------------------------------------
 
 # f.sum_frm <- function(ds){
