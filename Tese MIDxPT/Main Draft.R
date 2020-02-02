@@ -293,7 +293,14 @@ ds_IMI2_FCDi %<>% rbind(., ds_IMI2_FCDi_inter) %>%
 ##### -------------------------------------------------------------------------------------------
 
 ds_formacao_grd <- rbind(ds_frmdic, ds_frmdoc, ds_frmdic_mestrado) %>% 
-  filter(nivel_formacao == "Graduação")
+  filter(nivel_formacao == "Graduação") %>% group_by(cod_programa, 
+                                                     nome_filtro_cvlattes, 
+                                                     doc_ou_disc,
+                                                     nome_curso_formacao) %>%
+                                            summarise(QT = n())
+ 
+# ds_formacao_grd_t <- ds_formacao_grd 
+                
 
 ds_fin13 <- read_excel("Financiadores de proejtos 2013.xlsx")
 ds_fin14 <- read_excel("Financiadores de projetos 2014.xlsx")
