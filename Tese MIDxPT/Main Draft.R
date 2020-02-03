@@ -1,15 +1,13 @@
 library("stringr")  # funções de manipulação de chars
 library("dplyr")    # gramática de wrangling
 library("ggplot2")  # apresentação gráfica
-#library("readr") 
 library("tibble")   # data sets melhorados
 library("magrittr") # semantica serializada de instruções
 library("readxl")   # leitor de arquivos excel
-#library("modelr")   # gerador de modelos
 library("purrr")    # programação funcional
 
-ds_prgppg <- read_excel("Programas PPG 2016.xlsx") %>% as_tibble()
-ds_prjppg <- read_excel("Projetos PPG 2016.xlsx") %>% as_tibble()
+ds_prgppg <- read_excel("Programas PPG 2016.xlsx")
+ds_prjppg <- read_excel("Projetos PPG 2016.xlsx")
 ds_prg <- ds_prgppg %>% select(CD_PROGRAMA_IES,
                                NM_AREA_AVALIACAO,
                                CS_STATUS_JURIDICO,
@@ -39,7 +37,7 @@ f.membros <- function(file){
 ds_membros_13_16 <- rbind(f.membros("Membros dos projetos 2013.xlsx"),
                           f.membros("Membros dos projetos 2014.xlsx"),
                           f.membros("Membros dos projetos 2015.xlsx"),
-                          f.membros("Membros dos projetos 2016.xlsx")) %>% as_tibble()
+                          f.membros("Membros dos projetos 2016.xlsx"))
 
 
 ##### -------------------------------------------------------------------------------------------
@@ -65,24 +63,21 @@ ds_frmdic <- read_excel("Formação dos discentes 2013-2016 - Tese.xlsx") %>%
                                width =  16, 
                                side = "left", 
                                pad = "0"),
-         seq_pessoa_fisica = as.character(seq_pessoa_fisica))
+         seq_pessoa_fisica = as.character(seq_pessoa_fisica)) %>% 
+  select(v_form_campos) %>% 
+  mutate(doc_ou_disc = "DISCENTE")
 
-ds_frmdic_mestrado <- read_excel("Dicentes mestrado.xlsx") %>% 
+ds_frmdic_mestrado <- read_excel("Dicentes mestrado tratada -tese.xlsx") %>% 
   mutate(nro_id_cnpq = str_pad(as.character(nro_id_cnpq), 
                                width =  16, 
                                side = "left", 
                                pad = "0"),
-         seq_pessoa_fisica = as.character(seq_pessoa_fisica))
-
-ds_frmdic %<>% select(v_form_campos) %>% 
+         seq_pessoa_fisica = as.character(seq_pessoa_fisica)) %>% 
+  select(v_form_campos) %>% 
   mutate(doc_ou_disc = "DISCENTE")
 
-ds_frmdic_mestrado %<>% select(v_form_campos) %>% 
-  mutate(doc_ou_disc = "DISCENTE")
-
-ds_frmdoc <- read_excel("Formação dos docentes tese.xlsx")
-
-ds_frmdoc %<>% select(v_form_campos) %>% 
+ds_frmdoc <- read_excel("Formação dos docentes tese.xlsx") %>% 
+  select(v_form_campos) %>% 
   mutate(doc_ou_disc = "DOCENTE")
 
 ## IMI ## ---------------------------------------------------------------------------------------
@@ -300,34 +295,22 @@ ds_IMI4_CP_pgr <- ds_IMI4_CP %>%
 # rm(ds_IMI4_QAI, ds_IMI4_DGAD, ds_IMI4_DACD, ds_IMI4_CP, ds_IMI4_CP_pgr)
  write.csv2(ds_IMI4_CP_pgr, "~/RGitRep/Tese MIDxPT/Analises/CP_programa.csv")
  write.csv2(ds_IMI4_CP, "~/RGitRep/Tese MIDxPT/Analises/CP_docente.csv")
+ 
+ ##### -------------------------------------------------------------------------------------------
+ 
+ds_IMI <- merge(ds_IMI1_FCDo[,c("CD_PROGRAMA_IES", "FCDo")], ds_IMI2_FCDi[,c("CD_PROGRAMA_IES", "FCDi" )], by = "CD_PROGRAMA_IES", all = T) %>% 
+  merge(., ds_IMI3_CC[,c("CD_PROGRAMA_IES","CC")], by = "CD_PROGRAMA_IES", all = T) %>% 
+  merge(., ds_IMI4_CP_pgr[,c("CD_PROGRAMA_IES","CP")], by = "CD_PROGRAMA_IES", all = T) 
 
-ds_IMI_1 <- merge(ds_IMI1_FCDo[,c(1,15)], ds_IMI2_FCDi[,c(1,13)], by = "CD_PROGRAMA_IES", all = T) %>% 
-  merge(., ds_IMI3_CC[,c(1,14)], by = "CD_PROGRAMA_IES", all = T) %>% 
-  merge(., ds_IMI4_CP_pgr[,c(1,8)], by = "CD_PROGRAMA_IES", all = T) 
+ds_IMI <- ds_IMI[complete.cases(ds_IMI),]
 
-ds_IMI_1 <- ds_IMI_1[complete.cases(ds_IMI_1),]
-
-ds_IMI_1 %<>% mutate(IMI = (FCDo + FCDi + CC + CP)/4,
+ds_IMI %<>% mutate(IMI = (FCDo + FCDi + CC + CP)/4,
                      IMI_nDi = (FCDo + CC + CP)/3,
                      DIF = IMI - IMI_nDi,
                      PRC_DIF = (DIF/IMI)*100) %>% 
   merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T)
 
-min(ds_IMI_1$PRC_DIF)
-max(ds_IMI_1$PRC_DIF)
-mean(ds_IMI_1$PRC_DIF)
-                  
-
-ds_IMI_2 <- merge(ds_IMI1_FCDo[,c(1,15)], ds_IMI3_CC[,c(1,14)], by = "CD_PROGRAMA_IES", all = T) %>% 
-  merge(., ds_IMI4_CP_pgr[,c(1,8)], by = "CD_PROGRAMA_IES", all = T)
-
-ds_IMI_2 <- ds_IMI_2[complete.cases(ds_IMI_2),]
-
-ds_IMI_2 %<>% mutate(IMI = (FCDo + CC + CP)/3) %>% 
-  merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T)
-
-write.csv2(ds_IMI_1, "~/RGitRep/Tese MIDxPT/Analises/IMI_1.csv")
-write.csv2(ds_IMI_2, "~/RGitRep/Tese MIDxPT/Analises/IMI_2.csv")
+write.csv2(ds_IMI, "~/RGitRep/Tese MIDxPT/Analises/IMI.csv")
 
 ## IPT ## ---------------------------------------------------------------------------------------
 
@@ -378,7 +361,7 @@ write.csv2(ds_IPT, "~/RGitRep/Tese MIDxPT/Analises/IPT.csv")
 
 ## COR ## ---------------------------------------------------------------------------------------
 
-ds_COR <- merge(ds_IMI_1[,c(1,12)], ds_IPT[,c(1,15)], by = "CD_PROGRAMA_IES", all = T)
+ds_COR <- merge(ds_IMI[,c(1,12)], ds_IPT[,c(1,15)], by = "CD_PROGRAMA_IES", all = T)
 
 ds_COR <- ds_COR[complete.cases(ds_COR),]
 
@@ -389,8 +372,8 @@ ds_COR_p <- ds_COR %>%
   select(IMI, IPT) %>% 
   cor(., method = "pearson")
 
-write.csv2(ds_COR, "~/RGitRep/Tese MIDxPT/Analises/COR_1.csv")
-write.csv2(ds_COR_p, "~/RGitRep/Tese MIDxPT/Analises/COR_1_p.csv")
+write.csv2(ds_COR, "~/RGitRep/Tese MIDxPT/Analises/COR.csv")
+write.csv2(ds_COR_p, "~/RGitRep/Tese MIDxPT/Analises/COR_p.csv")
 
 ##### -------------------------------------------------------------------------------------------
 f.corr <- function(df, mtd = "pearson"){

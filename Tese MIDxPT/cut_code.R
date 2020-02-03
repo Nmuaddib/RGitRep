@@ -1,3 +1,13 @@
+ds_IMI_2 <- merge(ds_IMI1_FCDo[,c(1,15)], ds_IMI3_CC[,c(1,14)], by = "CD_PROGRAMA_IES", all = T) %>% 
+   merge(., ds_IMI4_CP_pgr[,c(1,8)], by = "CD_PROGRAMA_IES", all = T)
+
+ds_IMI_2 <- ds_IMI_2[complete.cases(ds_IMI_2),]
+
+ds_IMI_2 %<>% mutate(IMI = (FCDo + CC + CP)/3) %>% 
+   merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T)
+
+write.csv2(ds_IMI_2, "~/RGitRep/Tese MIDxPT/Analises/IMI_2.csv")
+
  f.sum_frm <- function(ds){
 
    ds %<>% group_by(ID_PESSOA,
