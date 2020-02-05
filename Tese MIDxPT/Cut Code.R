@@ -1,3 +1,11 @@
+
+## print(paste0(names(df[i]), '|', df[[i]][1,2])) ## Print de linha a linha
+
+# ,
+# IMI_nDi = (FCDo + CC + CP)/3,
+# DIF = IMI - IMI_nDi,
+# PRC_DIF = (DIF/IMI)*100
+
 ds_IMI_2 <- merge(ds_IMI1_FCDo[,c(1,15)], ds_IMI3_CC[,c(1,14)], by = "CD_PROGRAMA_IES", all = T) %>% 
    merge(., ds_IMI4_CP_pgr[,c(1,8)], by = "CD_PROGRAMA_IES", all = T)
 

@@ -1,0 +1,652 @@
+---
+title: "Analise Quant./Doutorado - Vívian Costa Alves"
+author: "por Nelson Simões R. Jr."
+date: "2/4/2020"
+output:
+  html_document:
+    code_folding: show
+    theme: cerulean
+    highlight: espresso
+---
+
+
+***
+
+
+#### Setup e pacotes
+```{r Setup, message = FALSE, warning = FALSE}
+
+## Opções iniciais de configuração do ambiente --------------
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+#### --------------------------------------------------------
+library("stringr")  # funções de manipulação de chars
+library("dplyr")    # gramática de wrangling
+library("ggplot2")  # apresentação gráfica
+library("tibble")   # data sets melhorados
+library("magrittr") # semantica serializada de instruções
+library("readxl")   # leitor de arquivos excel
+library("purrr")    # programação funcional
+library("knitr")    # Uso de tabelas Kable para apresentação
+#### --------------------------------------------------------
+v_path_i <- "~/RGitRep/Tese MIDxPT/Dados originais/" ## Caminho para leitura de arquivos de input
+v_path_o <- "~/RGitRep/Tese MIDxPT/Analises/" ## Caminho para geração de arquivos de output
+```
+
+
+***
+
+
+## Programas e Projetos
+
+<p align="justify">Leitura de planilhas e criação de datasets para programas e projetos-PPG. Filtro de projetos com início de 2013 em diante. Também nesta etapa foi realizada a criação de dataset com as categorias utilizadas na apresentação dos dados (ds_prg).</p>
+
+```{r Carga de Programas e Projetos, message=FALSE, warning=FALSE}
+
+ds_prgppg <- read_excel(paste0(v_path_i, "Programas PPG 2016.xlsx"))
+ds_prjppg <- read_excel(paste0(v_path_i, "Projetos PPG 2016.xlsx"))
+ds_prg <- ds_prgppg %>% select(CD_PROGRAMA_IES,
+                               NM_AREA_AVALIACAO,
+                               CS_STATUS_JURIDICO,
+                               DS_DEPENDENCIA_ADMINISTRATIVA,
+                               ANO_INICIO_PROGRAMA,
+                               NM_MODALIDADE_PROGRAMA,
+                               CD_CONCEITO_PROGRAMA)
+
+ds_prjppg_13_16 <- ds_prjppg %>% 
+  mutate(ANO_PRJ = str_sub(.$DH_INICIO, 1, 4)) %>%
+  filter(ANO_PRJ >= 2013)
+
+rm(ds_prjppg) ## Limpeza de memória
+```
+
+## Membros de Projetos
+
+<p align="justify">Leitura de planilhas e criação de datasets com dados de membros de projetos entre 2013 e 2016.</p>
+
+```{r Membros de projetos 2013-2016, message=FALSE, warning=FALSE}
+
+f.membros <- function(file){
+  ds <- read_excel(file) %>%
+    arrange(DS_TIPO_MEMBRO) %>% 
+    filter(DS_TIPO_MEMBRO %in% c("DISCENTE","DOCENTE")) %>% 
+    merge(., ds_prjppg_13_16, by = "ID_PROJETO")
+  return(ds)
+}
+
+ds_membros_13_16 <- rbind(f.membros(paste0(v_path_i, "Membros dos projetos 2013.xlsx")),
+                          f.membros(paste0(v_path_i, "Membros dos projetos 2014.xlsx")),
+                          f.membros(paste0(v_path_i, "Membros dos projetos 2015.xlsx")),
+                          f.membros(paste0(v_path_i, "Membros dos projetos 2016.xlsx")))
+```
+
+## Formação discente e docente
+
+<p align="justify">Leitura de planilhas e criação de datasets para dados de formação de professores e alunos nos programas de mestrado e doutorado. Os campos comuns foram selecionados e padronizados para os três arquivos para facilitar relacionamento com indicadores.</p>
+
+```{r Formações, message=FALSE, warning=FALSE}
+
+v_form_campos <- c("nro_id_cnpq", "seq_pessoa_fisica",
+                   "nome_sucupira", "nome_cvlattes",
+                   "nome_filtro_cvlattes", "sgl_instituicao",
+                   "nme_instituicao", "cod_programa",
+                   "nme_programa", "nme_area_avaliacao",
+                   "seq_area_basica", "area_basica",
+                   "grande_area_basica", "nro_nota_doutorado",
+                   "nro_nota_mestrado", "nro_nota_mestrado_prof",
+                   "dta_fim", "seq_tipo_categoria_vinculo",
+                   "nivel_formacao", "ano_inicio_formacao",
+                   "ano_fim_formacao", "formacao_concluida",
+                   "sigla_pais_ies_formacao", "sigla_uf_ies_formacao",
+                   "sigla_ies_formacao", "nome_ies_formacao",
+                   "nome_curso_formacao", "cod_area_curso_formacao",
+                   "grande_area_curso_formacao", "area_curso_formacao")
+
+ds_frmdic <- read_excel(paste0(v_path_i, "Formação dos discentes 2013-2016 - Tese.xlsx")) %>% 
+  mutate(nro_id_cnpq = str_pad(as.character(nro_id_cnpq), 
+                               width =  16, 
+                               side = "left", 
+                               pad = "0"),
+         seq_pessoa_fisica = as.character(seq_pessoa_fisica)) %>% 
+  select(v_form_campos) %>% 
+  mutate(doc_ou_disc = "DISCENTE")
+
+ds_frmdic_mestrado <- read_excel(paste0(v_path_i, "Dicentes mestrado tratada -tese.xlsx")) %>% 
+  mutate(nro_id_cnpq = str_pad(as.character(nro_id_cnpq), 
+                               width =  16, 
+                               side = "left", 
+                               pad = "0"),
+         seq_pessoa_fisica = as.character(seq_pessoa_fisica)) %>% 
+  select(v_form_campos) %>% 
+  mutate(doc_ou_disc = "DISCENTE")
+
+ds_frmdoc <- read_excel(paste0(v_path_i, "Formação dos docentes tese.xlsx")) %>% 
+  select(v_form_campos) %>% 
+  mutate(doc_ou_disc = "DOCENTE")
+```
+
+# Indice de Multi/Interdisciplinaridade
+
+<p align="justify">Preparação, transformações e calculo de variáveis e indicadores que compõe o IMI - Indice de Multi/Inter disciplinaridade.</p>
+
+
+***
+
+
+## IMI 1 - Formação docente
+### FCDo - Diversidade da formação dos docentes nos PPG
+
+**Variáveis:** <br>
+**QPPP:**   Quantidade de professores permanentes do programa <br>
+**QFDPD:**  Quantidade das formações dos docentes permanentes no grau de doutorado <br>
+**QFDPM:**  Quantidade das formações dos docentes permanentes no grau de mestrado <br>
+**QFDPG:**  Quantidade das formações dos docentes permanentes no grau de graduação <br>
+
+**Indicadores:** <br>
+**DFDDo:**  Diversidade de formação do docente pelo grau de doutorado <br>
+**DFDM:**   Diversidade de formação do docente pelo grau de mestrado <br>
+**DFDG:**   Diversidade de formação do docente pelo grau de graduação <br>
+
+`OBS` *- Os agrupamentos e sumarizações abaixo são realizados em dois estágios progressivos para garantir contagens adequadas no calculo das variáveis.*
+
+```{r Formação docente, message=FALSE, warning=FALSE, paged.print=TRUE}
+
+ds_IMI1_QPPP <- ds_frmdoc %>% 
+  group_by(cod_programa, nome_filtro_cvlattes) %>% 
+  summarise(QT = n()) %>% 
+  group_by(cod_programa) %>% 
+  summarise(QPPP = n())
+
+ds_IMI1_QFDPD <- ds_frmdoc %>% 
+  filter(nivel_formacao == "Doutorado") %>% 
+  group_by(cod_programa, nome_curso_formacao) %>% 
+  summarise(QT = n()) %>%   
+  group_by(cod_programa) %>% 
+  summarise(QFDPD = n()) 
+
+ds_IMI1_QFDPM <- ds_frmdoc %>% 
+  filter(nivel_formacao == "Mestrado") %>% 
+  group_by(cod_programa, nome_curso_formacao) %>% 
+  summarise(QT = n()) %>%   
+  group_by(cod_programa) %>% 
+  summarise(QFDPM = n()) 
+
+ds_IMI1_QFDPG <- ds_frmdoc %>% 
+  filter(nivel_formacao == "Graduação") %>% 
+  group_by(cod_programa, nome_curso_formacao) %>% 
+  summarise(QT = n()) %>%   
+  group_by(cod_programa) %>% 
+  summarise(QFDPG = n()) 
+
+ds_IMI1_FCDo <- merge(ds_IMI1_QFDPD, ds_IMI1_QFDPM, by = "cod_programa", all.x = T) %>% 
+  merge(., ds_IMI1_QFDPG, by = "cod_programa", all.x = T) %>% 
+  merge(., ds_IMI1_QPPP, by = "cod_programa", all.x = T) %>% 
+  mutate(DFDDo = QFDPD/QPPP,
+         DFDM = QFDPM/QPPP,
+         DFDG = QFDPG/QPPP) %>% ## Fórmulas dos indicadores
+  filter(DFDDo <= 1, DFDM <= 1, DFDG <= 1) %>% ## Limpeza de ocorrências acima de 1.0
+  mutate(FCDo = (DFDDo + DFDM + DFDG)/3) %>% ## Fórmula do constructo
+  merge(ds_prg, ., by.x = "CD_PROGRAMA_IES", by.y = "cod_programa", all.y = T) ## Categorias
+
+ write.csv2(ds_IMI1_FCDo, paste0(v_path_o, "FCDo.csv"))
+ kable(ds_IMI1_FCDo[1:12, c(1,8:15)]) ## Amostra do arquivo gerado acima, sem as categorias
+```
+
+## IMI 2 - Formação discente
+### FCDi - Diversidade na formação dos discentes nos PPG
+
+**Variáveis:** <br>
+**QDDP:**   Quantidade de discentes de doutorado do programa <br>
+**QFMDi:**  Quantidade das formações dos discentes de doutorado no grau de mestrado <br>
+**QFGDi:**  Quantidade das formações dos discentes de doutorado no grau de graduação <br>
+**QDDPm:**  Quantidade de discentes de mestrado do programa <br>
+**QFGDim:** Quantidade das formações dos discentes de mestrado no grau de graduação <br>
+
+**Indicadores:** <br>
+**DFMDi:**  Diversidade de formação do discente de doutorado pelo grau de mestrado <br>
+**DFGDi:**  Diversidade de formação do discente de doutorado pelo grau de graduação <br>
+**DFGDim:** Diversidade de formação do discente de doutorado pelo grau de graduação <br>
+
+**Constructos:** <br>
+**FCDi**    Diversidade na formação dos discentes de doutorado nos PPG <br>
+**FCDim**   Diversidade na formação dos discentes de mestrado nos PPG <br>
+
+`OBS` *- Ao final das transformações de dados para formações de doutorado e mestrado de discentes, ambos os contructos são unificados em um único dataset, e caso um programa possua indicadores de doutorado e mestrado simultâneamente, apenas os valores de doutorado são considerados.*
+
+```{r Formação discente, message=FALSE, warning=FALSE, paged.print=TRUE}
+
+ds_IMI2_QDDP <- ds_frmdic %>% 
+  group_by(cod_programa, nome_filtro_cvlattes) %>% 
+  summarise(QT = n()) %>% 
+  group_by(cod_programa) %>% 
+  summarise(QDDP = n())
+
+ds_IMI2_QFMDi <- ds_frmdic %>% 
+  filter(nivel_formacao == "Mestrado") %>% 
+  group_by(cod_programa, nome_curso_formacao) %>% 
+  summarise(QT = n()) %>%   
+  group_by(cod_programa) %>% 
+  summarise(QFMDi = n()) 
+
+ds_IMI2_QFGDi <- ds_frmdic %>% 
+  filter(nivel_formacao == "Graduação") %>% 
+  group_by(cod_programa, nome_curso_formacao) %>% 
+  summarise(QT = n()) %>%   
+  group_by(cod_programa) %>% 
+  summarise(QFGDi = n()) 
+
+ds_IMI2_FCDi <- merge(ds_IMI2_QFMDi, ds_IMI2_QFGDi, by = "cod_programa", all.y = T) %>% 
+  merge(., ds_IMI2_QDDP, by = "cod_programa", all.x = T) %>% 
+  mutate(DFMDi = QFMDi/QDDP,
+         DFGDi = QFGDi/QDDP) %>% ## Fórmulas dos indicadores
+  filter(DFMDi <= 1, DFGDi <= 1) %>% ## Limpeza de ocorrências acima de 1.0
+  mutate(FCDi = (DFMDi + DFGDi)/2) ## Fórmula do constructo
+  
+ds_IMI2_QDDPm <- ds_frmdic_mestrado %>% 
+  group_by(cod_programa, nome_filtro_cvlattes) %>% 
+  summarise(QT = n()) %>% 
+  group_by(cod_programa) %>% 
+  summarise(QDDPm = n())
+  
+ds_IMI2_QFGDim <- ds_frmdic_mestrado %>% 
+  filter(nivel_formacao == "Graduação") %>% 
+  group_by(cod_programa, nome_curso_formacao) %>% 
+  summarise(QT = n()) %>%   
+  group_by(cod_programa) %>% 
+  summarise(QFGDim = n())
+
+ds_IMI2_FCDim <- merge(ds_IMI2_QDDPm, ds_IMI2_QFGDim, by = "cod_programa", all = T) %>% 
+  mutate(DFGDim = QFGDim/QDDPm) %>% ## Fórmula do indicador
+  filter(DFGDim <= 1) %>% ## Limpeza de ocorrências acima de 1.0
+  mutate(FCDim = DFGDim) ## Constructo
+
+#### Unificação de dados para Mestrado e Doutorado ----------------------------------------------
+ 
+ds_IMI2_FCDi_inter <- merge(ds_IMI2_FCDim, ds_IMI2_FCDi, by = "cod_programa", all = T)
+
+ds_IMI2_FCDi_inter <- ds_IMI2_FCDi_inter[is.na(ds_IMI2_FCDi_inter$FCDi),] ## Somente programas 
+                                                                          ## de mestrado
+
+ds_IMI2_FCDi_inter %<>% select(cod_programa,
+                               QFMDi,
+                               QFGDi = QFGDim,
+                               QDDP = QDDPm,
+                               DFMDi,
+                               DFGDi = DFGDim,
+                               FCDi = FCDim) ## Seleção de campo para formato do FCDi
+
+ds_IMI2_FCDi %<>% rbind(., ds_IMI2_FCDi_inter) %>% ## União de programas de mestrado e doutorado
+  merge(ds_prg, ., by.x = "CD_PROGRAMA_IES", by.y = "cod_programa", all.y = T) ## Categorias
+
+#### -------------------------------------------------------------------------------------------- 
+
+ write.csv2(ds_IMI2_FCDi, paste0(v_path_o, "FCDi.csv"))
+ kable(ds_IMI2_FCDi[1:12, c(1,8:13)]) ## Amostra do arquivo gerado acima, sem as categorias
+```
+
+## IMI 3 - Instituições participantes e membros de projetos
+### CC - Colaboração Científica
+
+**Variáveis:** <br>
+**QIP:**    Quantidade de instituições participantes no programa <br>
+**QPV:**    Quantidade de projetos no programa <br>
+
+#### Intituições
+```{r Instituições, message=FALSE, warning=FALSE, paged.print=TRUE}
+
+ds_fin <-  rbind(read_excel(paste0(v_path_i, "Financiadores de proejtos 2013.xlsx")),
+                 read_excel(paste0(v_path_i, "Financiadores de projetos 2014.xlsx")),
+                 read_excel(paste0(v_path_i, "Financiadores de projetos 2015.xlsx")),
+                 read_excel(paste0(v_path_i, "Financiadores de proejtos 2016.xlsx"))) ## Carga de Instituições
+
+ds_IMI3_QIP <- ds_fin %>% 
+  group_by(CD_PROGRAMA_IES, NM_FINANCIADOR) %>% 
+  summarise(QT = n()) %>% 
+  group_by(CD_PROGRAMA_IES) %>% 
+  summarise(QIP = n())
+
+ds_IMI3_QPV <- ds_fin %>% 
+  group_by(CD_PROGRAMA_IES, ID_PROJETO) %>% 
+  summarise(QT = n()) %>% 
+  group_by(CD_PROGRAMA_IES) %>% 
+  summarise(QPV = n())
+```
+
+**Variáveis:** <br>
+**DFPP:**   Diversidade formações dos participantes (graduação) dos projetos <br>
+**QPP:**    Quantidade de partipantes dos projetos <br>
+
+**Indicadores:** <br>
+**DFCP:**   Diversidade de formações que colaboram por meio de projetos <br>
+
+`OBS` *- As variáveis e indicadores abaixo são consolidadas no nível de projeto e depois sumarizadas por média em programas para possibilitar cruzamento com demais constructos.*
+
+#### Colaboração
+```{r Formações de colaboradores, message=FALSE, warning=FALSE, paged.print=TRUE}
+
+ds_formacao_grd <- rbind(ds_frmdic, ds_frmdoc, ds_frmdic_mestrado) %>% 
+  filter(nivel_formacao == "Graduação") %>% 
+  group_by(cod_programa, 
+           nome_filtro_cvlattes, 
+           doc_ou_disc,
+           nome_curso_formacao) %>%
+  summarise(QT = n()) ## Junção de formações de todos os membros e filtro de graduação
+
+ds_MbrPrj_grd <- merge(ds_membros_13_16, ds_formacao_grd, 
+                       by.x = c("CD_PROGRAMA_IES", "NM_MEMBRO_PROJETO", "DS_TIPO_MEMBRO"), 
+                       by.y = c("cod_programa", "nome_filtro_cvlattes", "doc_ou_disc")) #@ Junção de 
+                                                                                        ## membros e formações
+
+ds_IMI3_DFPP <- ds_MbrPrj_grd %>% 
+  group_by(CD_PROGRAMA_IES, ID_PROJETO, nome_curso_formacao) %>% 
+  summarise(QT = n()) %>% 
+  group_by(CD_PROGRAMA_IES, ID_PROJETO) %>% 
+  summarise(DFPP = n()) 
+
+ds_IMI3_QPP <- ds_MbrPrj_grd %>% 
+  group_by(CD_PROGRAMA_IES, ID_PROJETO, NM_MEMBRO_PROJETO) %>% 
+  summarise(QT = n()) %>% 
+  group_by(CD_PROGRAMA_IES, ID_PROJETO) %>% 
+  summarise(QPP = n()) 
+
+#### Geração de arquivo de colaboração no nível de projetos para conferência de dados -----------
+
+ds_DFCP <- merge(ds_IMI3_DFPP, ds_IMI3_QPP , by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>% 
+  mutate(DFCP = DFPP/QPP) %>% 
+  filter(DFCP <= 1)
+ 
+ write.csv2(ds_DFCP, paste0(v_path_o, "DFCP.csv"))
+#### --------------------------------------------------------------------------------------------
+kable(ds_DFCP[1:12, ]) ## Amostra do arquivo gerado acima
+
+ds_IMI3_DFCP <- merge(ds_IMI3_DFPP, ds_IMI3_QPP, by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>% 
+  mutate(DFCP = DFPP/QPP) %>% ## Fórmula do indicador
+  filter(DFCP <= 1) %>% ## Limpeza de ocorrências acima de 1.0
+  group_by(CD_PROGRAMA_IES) %>% 
+  summarise(DFPP = mean(DFPP),
+            QPP = mean(QPP),
+            DFCP = mean(DFCP)) ## Consolidação de variáveis e indicador
+```
+
+**Indicadores:** <br>
+**DIPP:**   Diversidade de instituições que que colaboram por meio dos projetos <br>
+
+#### Consolidação da Colaboração Científica
+```{r Constructo completo, message=FALSE, warning=FALSE, paged.print=TRUE}
+
+ds_IMI3_CC <- merge(ds_IMI3_QIP, ds_IMI3_QPV, by = "CD_PROGRAMA_IES", all.x = T) %>% 
+  merge(., ds_IMI3_DFCP, by = "CD_PROGRAMA_IES", all.x = T) %>% ## Junção com indicador de
+                                                                ## diversidade de formações 
+                                                                ## de colaboradores
+  mutate(DIPP = QIP/QPV) %>% ## Fórmula do indicador
+  filter(DIPP <= 1) %>% ## Limpeza de ocorrências acima de 1.0
+  mutate(CC = (DFCP + DIPP)/2) ## Fórmula do constructo
+  
+ds_IMI3_CC <-  ds_IMI3_CC[,c(1:3, 7, 4:6, 8)] ## Reordenação de campos
+
+ds_IMI3_CC %<>% merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T) ## Categorias
+
+ write.csv2(ds_IMI3_CC, paste0(v_path_o, "CC.csv"))
+ kable(ds_IMI3_CC[1:12, c(1,8:14)]) ## Amostra do arquivo gerado acima, sem as categorias
+```
+
+## IMI 4 - Áreas de atuação de docentes
+### CP - Contexto Profissional
+
+**Variáveis:** <br>
+**QE:**     Quantidade de áreas informadas <br>
+**DGAD:**   Diversidade de grande áreas de conhecimento que o docente atua <br>
+**DACD:**   Diversidade de áreas do conhecimento que o docente atua <br>
+
+**Indicadores:** <br>
+**DGAC:**   Diversidade de grande áreas do conhecimento que o docente atua <br>
+**DAC:**    Diversidade de áreas ddo conhecimento que o docente atua <br>
+
+```{r Contexto Profissional, message=FALSE, warning=FALSE, paged.print=TRUE}
+ds_aratdo <- read_excel(paste0(v_path_i, 'Areas_de_atuacao_docentes_25_06_2019.xlsx'))
+
+ds_IMI4_QE <- ds_aratdo %>% 
+  mutate(espec_doc = paste0(grande_area, nome_area, sub_area, especialidade)) %>% 
+  group_by(cod_programa, nome_filtro_cvlattes, espec_doc) %>% 
+  summarise(QT = n()) %>% 
+  group_by(cod_programa, nome_filtro_cvlattes) %>% 
+  summarise(QE = n())
+
+ds_IMI4_DGAD <- ds_aratdo %>%
+  group_by(cod_programa, nome_filtro_cvlattes, grande_area) %>% 
+  summarise(QT = n()) %>% 
+  group_by(cod_programa, nome_filtro_cvlattes) %>% 
+  summarise(DGAD = n())
+
+ds_IMI4_DACD <- ds_aratdo %>%
+  group_by(cod_programa, nome_filtro_cvlattes, nome_area) %>% 
+  summarise(QT = n()) %>% 
+  group_by(cod_programa, nome_filtro_cvlattes) %>% 
+  summarise(DACD = n())
+
+ds_IMI4_CP <- merge(ds_IMI4_DGAD, ds_IMI4_DACD, by = c("cod_programa","nome_filtro_cvlattes"), all.x = T) %>% 
+  merge(., ds_IMI4_QE, by = c("cod_programa","nome_filtro_cvlattes"), all.x = T) %>% 
+  mutate(DGAC = DGAD/QE,
+         DAC = DACD/QE) %>% ## Fórmulas dos indicadores
+  filter(DGAC <= 1, DAC <= 1) %>% ## Limpeza de ocorrências acima de 1.0
+  mutate(CP = (DGAC + DAC)/2) ## Fórmula do constructo
+
+ write.csv2(ds_IMI4_CP, paste0(v_path_o, "CP_docente.csv"))
+ kable(ds_IMI4_CP[1:12, ]) ## Amostra do arquivo gerado acima
+
+ds_IMI4_CP_pgr <- ds_IMI4_CP %>% 
+  group_by(cod_programa) %>% 
+  summarise(CP = mean(CP)) %>% ## Consolidação por programa
+  merge(ds_prg, ., by.x = "CD_PROGRAMA_IES", by.y = "cod_programa", all.y = T) ## Categorias
+
+ write.csv2(ds_IMI4_CP_pgr, paste0(v_path_o, "CP_programa.csv"))
+ kable(ds_IMI4_CP_pgr[1:12, c(1,8)]) ## Amostra do arquivo gerado acima, sem as categorias
+```
+
+## Consolidação final do IMI
+
+<p align="justify">Junção de todos os constructos, limpeza de casos imcompletos e geração de output.</p>
+
+```{r Calculo final do IMI, message=FALSE, warning=FALSE, paged.print=TRUE}
+ds_IMI <- merge(ds_IMI1_FCDo[,c("CD_PROGRAMA_IES", "FCDo")], 
+                ds_IMI2_FCDi[,c("CD_PROGRAMA_IES", "FCDi" )], 
+                by = "CD_PROGRAMA_IES", all = T) %>% 
+  merge(., ds_IMI3_CC[,c("CD_PROGRAMA_IES","CC")], 
+        by = "CD_PROGRAMA_IES", all = T) %>% 
+  merge(., ds_IMI4_CP_pgr[,c("CD_PROGRAMA_IES","CP")], 
+        by = "CD_PROGRAMA_IES", all = T) 
+
+ds_IMI <- ds_IMI[complete.cases(ds_IMI),] ## Casos completos
+
+ds_IMI %<>% mutate(IMI = (FCDo + FCDi + CC + CP)/4) %>% 
+  merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T) ## Categorias
+
+ write.csv2(ds_IMI, paste0(v_path_o, "IMI.csv"))
+ kable(ds_IMI[1:12, c(1,8:12)]) ## Amostra do arquivo gerado acima, sem as categorias
+```
+
+
+***
+
+
+# Indice de Produção Tecnologica
+
+<p align="justify">Preparação, transformações e calculo de variáveis e indicadores que compõe o IPT - Indice de Produção Tecnologica.</p>
+
+**Variáveis:** <br>
+**SPPAP:**  Soma de patentes produzidos por programa <br>
+**QPPr:**   Soma de produtos produzidos por programa <br>
+**QPA:**    Soma de aplicativos produzidos por programa <br>
+**QPPP:**   Quantidade de professores permanentes do programa <br>
+
+**Indicadores:** <br>
+**iQPP:**   Quantitativo de produção de patentes por Programa <br>
+**iQPPr:**  Quantitativo de produção de produtos por Programa <br>
+**iQPA:**   Quantitativo de produção de aplicativos por Programa <br>
+
+```{r IPT, message=FALSE, warning=FALSE, paged.print=TRUE}
+
+#### Carga de Aplicativos, patentes e PRodutos a partir de planilhas ----------------------------
+
+ds_PT_appprg <- read_excel(paste0(v_path_i, "Aplicativos_tese.xlsx"))
+ds_PT_patprg <- read_excel(paste0(v_path_i, "Patentes com Programas.xlsx"))
+ds_PT_prdprg <- read_excel(paste0(v_path_i, "Produtos_tese.xlsx"))
+
+#### --------------------------------------------------------------------------------------------
+
+ds_PT_patprg <- ds_PT_patprg[complete.cases(ds_PT_patprg[,"NM_PRODUCAO"]),] ## Filtro de produção valida
+
+ds_IPT1_SPPAP <- ds_PT_patprg %>%
+  group_by(CD_PROGRAMA_IES) %>% 
+  summarise(SPPAP = n())
+
+#### --------------------------------------------------------------------------------------------
+
+ds_PT_prdprg <- ds_PT_prdprg[complete.cases(ds_PT_prdprg[,"DSFINALIDADE_TRATADA"]),] ## Filtro de produção valida
+
+ds_IPT2_QPPr <- ds_PT_prdprg %>%
+  group_by(CD_PROGRAMA_IES) %>% 
+  summarise(QPPr = n())
+
+#### --------------------------------------------------------------------------------------------
+
+ds_PT_appprg <- ds_PT_appprg[complete.cases(ds_PT_appprg[,"DS_FINALIDADE"]),] ## Filtro de produção valida
+
+ds_IPT3_QPA <- ds_PT_appprg %>%
+  group_by(CD_PROGRAMA_IES) %>% 
+  summarise(QPA = n())
+
+#### --------------------------------------------------------------------------------------------
+
+ds_IPT <- merge(ds_IMI1_QPPP, ds_IPT1_SPPAP, by.x = "cod_programa", by.y = "CD_PROGRAMA_IES", all.x = T) %>% 
+  select(CD_PROGRAMA_IES = cod_programa, QPPP, SPPAP) %>% 
+  merge(., ds_IPT2_QPPr, by = "CD_PROGRAMA_IES", all.x = T) %>% 
+  merge(., ds_IPT3_QPA, by = "CD_PROGRAMA_IES", all.x = T)
+
+ds_IPT[is.na(ds_IPT)] <- 0 ### Conversão de NA para 0
+
+ds_IPT %<>% mutate(iQPP = SPPAP/QPPP,
+                   iQPPr = QPPr/QPPP,
+                   iQPA = QPA/QPPP) %>% ## Fórmulas dos indicadores
+  filter(iQPP <= 1, iQPPr <= 1, iQPA <= 1) %>% ## Limpeza de ocorrências acima de 1.0
+  mutate(IPT = (iQPP+iQPPr+iQPA)/3) %>% ## Fórmula do indice
+  merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T) ## Categorias
+
+ write.csv2(ds_IPT, paste0(v_path_o, "IPT.csv"))
+ kable(ds_IPT[1:12, c(1,8:15)]) ## Amostra do arquivo gerado acima, sem as categorias
+```
+
+
+***
+
+
+# Tabela base de indices completos e correlação geral
+
+<p align="justify">União de indices por programa, filtro de cassos completos, categorização e calculo de correlação geral.</p>
+
+```{r Base de correlações e correlação geral, message=FALSE, warning=FALSE, paged.print=TRUE}
+ds_COR <- merge(ds_IMI[,c(1,12)], ds_IPT[,c(1,15)], by = "CD_PROGRAMA_IES", all = T) ## União de indices
+
+ds_COR <- ds_COR[complete.cases(ds_COR),] ## Filtro de casos completos
+
+ds_COR %<>% filter(IPT > 0)%>% ## Filtro de projetos com produção tecnologica
+  merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T) ## Categorias
+
+ write.csv2(ds_COR, paste0(v_path_o, "COR.csv"))
+ kable(ds_COR[1:12, c(1,8:9)]) ## Amostra do arquivo gerado acima, sem as categorias
+ 
+ds_COR_p <- ds_COR %>% 
+  select(IMI, IPT) %>% 
+  cor(., method = "pearson") ## Correlação geral
+
+ write.csv2(ds_COR_p, paste0(v_path_o, "COR_p.csv"))
+ as_tibble(ds_COR_p) ## Tabela de correlação Geral
+```
+
+
+***
+
+
+# Correlação por categoria
+
+<p align="justify">Segmentação de tabela base de indice por cada categoria: Ano, Conceito, Dependencia, Area, Status e Modalidade. Geração de todos os outputs.</p>
+
+```{r Correlação por categoria, message=FALSE, warning=FALSE, paged.print=TRUE}
+##### ---------------------------------------------------------------------------------------
+f.corr <- function(df, mtd = "pearson"){
+  df %<>% select(IMI,IPT) %>% 
+    cor(., method = mtd)
+  return(df)
+} ## Função para aplicação de correlação em cada sessão do split por categoria
+
+f.print_corr <- function(df){
+  dfo <- tibble(cat = as.character(), cor = as.double())
+  for (i in seq_along(df)) {
+    dfo[i,] <- c(names(df[i]), df[[i]][1,2])
+  }
+  return(dfo)
+} ## Função para criação de dataset com correlação por item de categoria
+
+##### ---------------------------------------------------------------------------------------
+ano_f <- factor(ds_COR$ANO_INICIO_PROGRAMA) ## Fator para split de categoria
+
+ds_COR_ano <- ds_COR %>% select(ANO_INICIO_PROGRAMA,IMI,IPT) %>% 
+  split(ano_f, drop = T) %>% ## Separação por ano
+  map(f.corr) ## Calculo de correlação para cada segmento
+
+ ds_COR_ano <- f.print_corr(ds_COR_ano)
+ write.csv2(ds_COR_ano, paste0(v_path_o, "COR_ano.csv"))
+ kable(ds_COR_ano)
+##### ---------------------------------------------------------------------------------------
+conceito_f <- factor(ds_COR$CD_CONCEITO_PROGRAMA) ## Fator para split de categoria
+
+ds_COR_conceito <- ds_COR %>% select(CD_CONCEITO_PROGRAMA,IMI,IPT) %>% 
+  split(conceito_f, drop = T) %>% ## Separação por conceito
+  map(f.corr) ## Calculo de correlação para cada segmento
+
+ ds_COR_conceito <- f.print_corr(ds_COR_conceito)
+ write.csv2(ds_COR_conceito, paste0(v_path_o, "COR_conceito.csv"))
+ kable(ds_COR_conceito)
+##### ---------------------------------------------------------------------------------------
+dependencia_f <- factor(ds_COR$DS_DEPENDENCIA_ADMINISTRATIVA) ## Fator para split de categoria
+
+ds_COR_dependencia <- ds_COR %>% select(DS_DEPENDENCIA_ADMINISTRATIVA,IMI,IPT) %>% 
+  split(dependencia_f, drop = T) %>% ## Separação por dependencia
+  map(f.corr) ## Calculo de correlação para cada segmento
+
+ ds_COR_dependencia <- f.print_corr(ds_COR_dependencia)
+ write.csv2(ds_COR_dependencia, paste0(v_path_o, "COR_dependencia.csv"))
+ kable(ds_COR_dependencia)
+##### ---------------------------------------------------------------------------------------
+area_f <- factor(ds_COR$NM_AREA_AVALIACAO) ## Fator para split de categoria
+
+ds_COR_area <- ds_COR %>% select(NM_AREA_AVALIACAO,IMI,IPT) %>% 
+  split(area_f, drop = T) %>% ## Separação por area
+  map(f.corr) ## Calculo de correlação para cada segmento
+
+ ds_COR_area <- f.print_corr(ds_COR_area)
+ write.csv2(ds_COR_area, paste0(v_path_o, "COR_area.csv"))
+ kable(ds_COR_area)
+##### ---------------------------------------------------------------------------------------
+status_f <- factor(ds_COR$CS_STATUS_JURIDICO) ## Fator para split de categoria
+
+ds_COR_status <- ds_COR %>% select(CS_STATUS_JURIDICO,IMI,IPT) %>% 
+  split(status_f, drop = T) %>% ## Separação por status
+  map(f.corr) ## Calculo de correlação para cada segmento
+
+ ds_COR_status <- f.print_corr(ds_COR_status)
+ write.csv2(ds_COR_status, paste0(v_path_o, "COR_status.csv"))
+ kable(ds_COR_status)
+##### ---------------------------------------------------------------------------------------
+modalidade_f <- factor(ds_COR$NM_MODALIDADE_PROGRAMA) ## Fator para split de categoria
+
+ds_COR_modalidade <- ds_COR %>% select(NM_MODALIDADE_PROGRAMA,IMI,IPT) %>% 
+  split(modalidade_f, drop = T) %>% ## Separação por modalidade
+  map(f.corr) ## Calculo de correlação para cada segmento
+
+ ds_COR_modalidade <- f.print_corr(ds_COR_modalidade)
+ write.csv2(ds_COR_modalidade, paste0(v_path_o, "COR_modalidade.csv"))
+ kable(ds_COR_modalidade)
+##### ---------------------------------------------------------------------------------------
+```
+
