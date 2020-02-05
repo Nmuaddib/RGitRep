@@ -5,10 +5,6 @@ library("tibble")   # data sets melhorados
 library("magrittr") # semantica serializada de instruções
 library("readxl")   # leitor de arquivos excel
 library("purrr")    # programação funcional
-library("knitr")
-
-## breezedark
-## espresso
 
 ds_prgppg <- read_excel("Programas PPG 2016.xlsx")
 ds_prjppg <- read_excel("Projetos PPG 2016.xlsx")
@@ -123,6 +119,7 @@ ds_IMI1_FCDo <- merge(ds_IMI1_QFDPD, ds_IMI1_QFDPM, by = "cod_programa", all.x =
   mutate(FCDo = (DFDDo + DFDM + DFDG)/3) %>% 
   merge(ds_prg, ., by.x = "CD_PROGRAMA_IES", by.y = "cod_programa", all.y = T)
 
+# rm(ds_IMI1_QPPP, ds_IMI1_QFDPD, ds_IMI1_QFDPM, ds_IMI1_QFDPG, ds_IMI1_FCDo)
  write.csv2(ds_IMI1_FCDo, "~/RGitRep/Tese MIDxPT/Analises/FCDo.csv")
 
 ##### -------------------------------------------------------------------------------------------
@@ -307,7 +304,10 @@ ds_IMI <- merge(ds_IMI1_FCDo[,c("CD_PROGRAMA_IES", "FCDo")], ds_IMI2_FCDi[,c("CD
 
 ds_IMI <- ds_IMI[complete.cases(ds_IMI),]
 
-ds_IMI %<>% mutate(IMI = (FCDo + FCDi + CC + CP)/4) %>% 
+ds_IMI %<>% mutate(IMI = (FCDo + FCDi + CC + CP)/4,
+                     IMI_nDi = (FCDo + CC + CP)/3,
+                     DIF = IMI - IMI_nDi,
+                     PRC_DIF = (DIF/IMI)*100) %>% 
   merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T)
 
 write.csv2(ds_IMI, "~/RGitRep/Tese MIDxPT/Analises/IMI.csv")
@@ -353,9 +353,8 @@ ds_IPT[is.na(ds_IPT)] <- 0
 
 ds_IPT %<>% mutate(iQPP = SPPAP/QPPP,
                    iQPPr = QPPr/QPPP,
-                   iQPA = QPA/QPPP) %>% 
-  filter(iQPP <= 1, iQPPr <= 1, iQPA <= 1) %>% ## Limpeza de ocorrências acima de 1.0
-  mutate(IPT = (iQPP+iQPPr+iQPA)/3) %>% 
+                   iQPA = QPA/QPPP,
+                   IPT = (iQPP+iQPPr+iQPA)/3) %>% 
   merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T)
 
 write.csv2(ds_IPT, "~/RGitRep/Tese MIDxPT/Analises/IPT.csv")
@@ -376,7 +375,7 @@ ds_COR_p <- ds_COR %>%
 write.csv2(ds_COR, "~/RGitRep/Tese MIDxPT/Analises/COR.csv")
 write.csv2(ds_COR_p, "~/RGitRep/Tese MIDxPT/Analises/COR_p.csv")
 
-##### ----------------------------------------------------------------------------------------
+##### -------------------------------------------------------------------------------------------
 f.corr <- function(df, mtd = "pearson"){
   df %<>% select(IMI,IPT) %>% 
     cor(., method = mtd)
@@ -427,7 +426,7 @@ ds_COR_area <- ds_COR %>% select(NM_AREA_AVALIACAO,IMI,IPT) %>%
 
 ds_COR_area <- f.print_corr(ds_COR_area)
 write.csv2(ds_COR_area, "~/RGitRep/Tese MIDxPT/Analises/COR_area.csv")
-##### ---------------------------------------------------------------------------------------
+##### -------------------------------------------------------------------------------------------
 status_f <- factor(ds_COR$CS_STATUS_JURIDICO)
 
 ds_COR_status <- ds_COR %>% select(CS_STATUS_JURIDICO,IMI,IPT) %>% 
@@ -436,7 +435,7 @@ ds_COR_status <- ds_COR %>% select(CS_STATUS_JURIDICO,IMI,IPT) %>%
 
 ds_COR_status <- f.print_corr(ds_COR_status)
 write.csv2(ds_COR_status, "~/RGitRep/Tese MIDxPT/Analises/COR_status.csv")
-##### ---------------------------------------------------------------------------------------
+##### -------------------------------------------------------------------------------------------
 modalidade_f <- factor(ds_COR$NM_MODALIDADE_PROGRAMA)
 
 ds_COR_modalidade <- ds_COR %>% select(NM_MODALIDADE_PROGRAMA,IMI,IPT) %>% 
@@ -445,6 +444,4 @@ ds_COR_modalidade <- ds_COR %>% select(NM_MODALIDADE_PROGRAMA,IMI,IPT) %>%
 
 ds_COR_modalidade <- f.print_corr(ds_COR_modalidade)
 write.csv2(ds_COR_modalidade, "~/RGitRep/Tese MIDxPT/Analises/COR_modalidade.csv")
-##### ---------------------------------------------------------------------------------------
-
-kable(ds_IMI1_FCDo[1:10,])
+##### -------------------------------------------------------------------------------------------

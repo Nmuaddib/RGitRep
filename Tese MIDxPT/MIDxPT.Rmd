@@ -31,6 +31,7 @@ library("knitr")    # Uso de tabelas Kable para apresentação
 #### --------------------------------------------------------
 v_path_i <- "~/RGitRep/Tese MIDxPT/Dados originais/" ## Caminho para leitura de arquivos de input
 v_path_o <- "~/RGitRep/Tese MIDxPT/Analises/" ## Caminho para geração de arquivos de output
+v_path_inter <- "~/RGitRep/Tese MIDxPT/Resultados intermediarios/" ## Caminho para geração de arquivos intermediarios
 ```
 
 
@@ -53,9 +54,13 @@ ds_prg <- ds_prgppg %>% select(CD_PROGRAMA_IES,
                                NM_MODALIDADE_PROGRAMA,
                                CD_CONCEITO_PROGRAMA)
 
+ write.csv2(ds_prg, paste0(v_path_inter, "ds_prg.csv"))
+
 ds_prjppg_13_16 <- ds_prjppg %>% 
   mutate(ANO_PRJ = str_sub(.$DH_INICIO, 1, 4)) %>%
   filter(ANO_PRJ >= 2013)
+
+ write.csv2(ds_prjppg_13_16, paste0(v_path_inter, "ds_prjppg_13_16.csv"))
 
 rm(ds_prjppg) ## Limpeza de memória
 ```
@@ -78,6 +83,8 @@ ds_membros_13_16 <- rbind(f.membros(paste0(v_path_i, "Membros dos projetos 2013.
                           f.membros(paste0(v_path_i, "Membros dos projetos 2014.xlsx")),
                           f.membros(paste0(v_path_i, "Membros dos projetos 2015.xlsx")),
                           f.membros(paste0(v_path_i, "Membros dos projetos 2016.xlsx")))
+
+ write.csv2(ds_membros_13_16, paste0(v_path_inter, "ds_membros_13_16.csv"))
 ```
 
 ## Formação discente e docente
@@ -111,6 +118,8 @@ ds_frmdic <- read_excel(paste0(v_path_i, "Formação dos discentes 2013-2016 - T
   select(v_form_campos) %>% 
   mutate(doc_ou_disc = "DISCENTE")
 
+ write.csv2(ds_frmdic, paste0(v_path_inter, "ds_frmdic.csv"))
+
 ds_frmdic_mestrado <- read_excel(paste0(v_path_i, "Dicentes mestrado tratada -tese.xlsx")) %>% 
   mutate(nro_id_cnpq = str_pad(as.character(nro_id_cnpq), 
                                width =  16, 
@@ -120,9 +129,13 @@ ds_frmdic_mestrado <- read_excel(paste0(v_path_i, "Dicentes mestrado tratada -te
   select(v_form_campos) %>% 
   mutate(doc_ou_disc = "DISCENTE")
 
+ write.csv2(ds_frmdic_mestrado, paste0(v_path_inter, "ds_frmdic_mestrado.csv"))
+
 ds_frmdoc <- read_excel(paste0(v_path_i, "Formação dos docentes tese.xlsx")) %>% 
   select(v_form_campos) %>% 
   mutate(doc_ou_disc = "DOCENTE")
+
+ write.csv2(ds_frmdoc, paste0(v_path_inter, "ds_frmdoc.csv"))
 ```
 
 # Indice de Multi/Interdisciplinaridade
@@ -157,12 +170,16 @@ ds_IMI1_QPPP <- ds_frmdoc %>%
   group_by(cod_programa) %>% 
   summarise(QPPP = n())
 
+ write.csv2(ds_IMI1_QPPP, paste0(v_path_inter, "ds_IMI1_QPPP.csv"))
+
 ds_IMI1_QFDPD <- ds_frmdoc %>% 
   filter(nivel_formacao == "Doutorado") %>% 
   group_by(cod_programa, nome_curso_formacao) %>% 
   summarise(QT = n()) %>%   
   group_by(cod_programa) %>% 
   summarise(QFDPD = n()) 
+
+ write.csv2(ds_IMI1_QFDPD, paste0(v_path_inter, "ds_IMI1_QFDPD.csv"))
 
 ds_IMI1_QFDPM <- ds_frmdoc %>% 
   filter(nivel_formacao == "Mestrado") %>% 
@@ -171,12 +188,16 @@ ds_IMI1_QFDPM <- ds_frmdoc %>%
   group_by(cod_programa) %>% 
   summarise(QFDPM = n()) 
 
+ write.csv2(ds_IMI1_QFDPM, paste0(v_path_inter, "ds_IMI1_QFDPM.csv"))
+
 ds_IMI1_QFDPG <- ds_frmdoc %>% 
   filter(nivel_formacao == "Graduação") %>% 
   group_by(cod_programa, nome_curso_formacao) %>% 
   summarise(QT = n()) %>%   
   group_by(cod_programa) %>% 
   summarise(QFDPG = n()) 
+
+ write.csv2(ds_IMI1_QFDPG, paste0(v_path_inter, "ds_IMI1_QFDPG.csv"))
 
 ds_IMI1_FCDo <- merge(ds_IMI1_QFDPD, ds_IMI1_QFDPM, by = "cod_programa", all.x = T) %>% 
   merge(., ds_IMI1_QFDPG, by = "cod_programa", all.x = T) %>% 
@@ -221,6 +242,8 @@ ds_IMI2_QDDP <- ds_frmdic %>%
   group_by(cod_programa) %>% 
   summarise(QDDP = n())
 
+ write.csv2(ds_IMI2_QDDP, paste0(v_path_inter, "ds_IMI2_QDDP.csv"))
+
 ds_IMI2_QFMDi <- ds_frmdic %>% 
   filter(nivel_formacao == "Mestrado") %>% 
   group_by(cod_programa, nome_curso_formacao) %>% 
@@ -228,12 +251,16 @@ ds_IMI2_QFMDi <- ds_frmdic %>%
   group_by(cod_programa) %>% 
   summarise(QFMDi = n()) 
 
+ write.csv2(ds_IMI2_QFMDi, paste0(v_path_inter, "ds_IMI2_QFMDi.csv"))
+
 ds_IMI2_QFGDi <- ds_frmdic %>% 
   filter(nivel_formacao == "Graduação") %>% 
   group_by(cod_programa, nome_curso_formacao) %>% 
   summarise(QT = n()) %>%   
   group_by(cod_programa) %>% 
   summarise(QFGDi = n()) 
+
+ write.csv2(ds_IMI2_QFGDi, paste0(v_path_inter, "ds_IMI2_QFGDi.csv"))
 
 ds_IMI2_FCDi <- merge(ds_IMI2_QFMDi, ds_IMI2_QFGDi, by = "cod_programa", all.y = T) %>% 
   merge(., ds_IMI2_QDDP, by = "cod_programa", all.x = T) %>% 
@@ -247,6 +274,8 @@ ds_IMI2_QDDPm <- ds_frmdic_mestrado %>%
   summarise(QT = n()) %>% 
   group_by(cod_programa) %>% 
   summarise(QDDPm = n())
+
+ write.csv2(ds_IMI2_QDDPm, paste0(v_path_inter, "ds_IMI2_QDDPm.csv"))
   
 ds_IMI2_QFGDim <- ds_frmdic_mestrado %>% 
   filter(nivel_formacao == "Graduação") %>% 
@@ -255,10 +284,14 @@ ds_IMI2_QFGDim <- ds_frmdic_mestrado %>%
   group_by(cod_programa) %>% 
   summarise(QFGDim = n())
 
+ write.csv2(ds_IMI2_QFGDim, paste0(v_path_inter, "ds_IMI2_QFGDim.csv"))
+
 ds_IMI2_FCDim <- merge(ds_IMI2_QDDPm, ds_IMI2_QFGDim, by = "cod_programa", all = T) %>% 
   mutate(DFGDim = QFGDim/QDDPm) %>% ## Fórmula do indicador
   filter(DFGDim <= 1) %>% ## Limpeza de ocorrências acima de 1.0
   mutate(FCDim = DFGDim) ## Constructo
+
+ write.csv2(ds_IMI2_FCDim, paste0(v_path_inter, "ds_IMI2_FCDim.csv"))
 
 #### Unificação de dados para Mestrado e Doutorado ----------------------------------------------
  
@@ -305,11 +338,15 @@ ds_IMI3_QIP <- ds_fin %>%
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(QIP = n())
 
+ write.csv2(ds_IMI3_QIP, paste0(v_path_inter, "ds_IMI3_QIP.csv"))
+
 ds_IMI3_QPV <- ds_fin %>% 
   group_by(CD_PROGRAMA_IES, ID_PROJETO) %>% 
   summarise(QT = n()) %>% 
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(QPV = n())
+
+ write.csv2(ds_IMI3_QPV, paste0(v_path_inter, "ds_IMI3_QPV.csv"))
 ```
 
 **Variáveis:** <br>
@@ -332,10 +369,14 @@ ds_formacao_grd <- rbind(ds_frmdic, ds_frmdoc, ds_frmdic_mestrado) %>%
            nome_curso_formacao) %>%
   summarise(QT = n()) ## Junção de formações de todos os membros e filtro de graduação
 
+ write.csv2(ds_formacao_grd, paste0(v_path_inter, "ds_formacao_grd.csv"))
+
 ds_MbrPrj_grd <- merge(ds_membros_13_16, ds_formacao_grd, 
                        by.x = c("CD_PROGRAMA_IES", "NM_MEMBRO_PROJETO", "DS_TIPO_MEMBRO"), 
                        by.y = c("cod_programa", "nome_filtro_cvlattes", "doc_ou_disc")) #@ Junção de 
                                                                                         ## membros e formações
+
+ write.csv2(ds_MbrPrj_grd, paste0(v_path_inter, "ds_MbrPrj_grd.csv"))
 
 ds_IMI3_DFPP <- ds_MbrPrj_grd %>% 
   group_by(CD_PROGRAMA_IES, ID_PROJETO, nome_curso_formacao) %>% 
@@ -343,11 +384,15 @@ ds_IMI3_DFPP <- ds_MbrPrj_grd %>%
   group_by(CD_PROGRAMA_IES, ID_PROJETO) %>% 
   summarise(DFPP = n()) 
 
+ write.csv2(ds_IMI3_DFPP, paste0(v_path_inter, "ds_IMI3_DFPP.csv"))
+
 ds_IMI3_QPP <- ds_MbrPrj_grd %>% 
   group_by(CD_PROGRAMA_IES, ID_PROJETO, NM_MEMBRO_PROJETO) %>% 
   summarise(QT = n()) %>% 
   group_by(CD_PROGRAMA_IES, ID_PROJETO) %>% 
   summarise(QPP = n()) 
+
+ write.csv2(ds_IMI3_QPP, paste0(v_path_inter, "ds_IMI3_QPP.csv"))
 
 #### Geração de arquivo de colaboração no nível de projetos para conferência de dados -----------
 
@@ -366,6 +411,8 @@ ds_IMI3_DFCP <- merge(ds_IMI3_DFPP, ds_IMI3_QPP, by = c("CD_PROGRAMA_IES", "ID_P
   summarise(DFPP = mean(DFPP),
             QPP = mean(QPP),
             DFCP = mean(DFCP)) ## Consolidação de variáveis e indicador
+
+ write.csv2(ds_IMI3_DFCP, paste0(v_path_inter, "ds_IMI3_DFCP.csv"))
 ```
 
 **Indicadores:** <br>
@@ -412,17 +459,23 @@ ds_IMI4_QE <- ds_aratdo %>%
   group_by(cod_programa, nome_filtro_cvlattes) %>% 
   summarise(QE = n())
 
+ write.csv2(ds_IMI4_QE, paste0(v_path_inter, "ds_IMI4_QE.csv"))
+
 ds_IMI4_DGAD <- ds_aratdo %>%
   group_by(cod_programa, nome_filtro_cvlattes, grande_area) %>% 
   summarise(QT = n()) %>% 
   group_by(cod_programa, nome_filtro_cvlattes) %>% 
   summarise(DGAD = n())
 
+ write.csv2(ds_IMI4_DGAD, paste0(v_path_inter, "ds_IMI4_DGAD.csv"))
+
 ds_IMI4_DACD <- ds_aratdo %>%
   group_by(cod_programa, nome_filtro_cvlattes, nome_area) %>% 
   summarise(QT = n()) %>% 
   group_by(cod_programa, nome_filtro_cvlattes) %>% 
   summarise(DACD = n())
+
+ write.csv2(ds_IMI4_DACD, paste0(v_path_inter, "ds_IMI4_DACD.csv"))
 
 ds_IMI4_CP <- merge(ds_IMI4_DGAD, ds_IMI4_DACD, by = c("cod_programa","nome_filtro_cvlattes"), all.x = T) %>% 
   merge(., ds_IMI4_QE, by = c("cod_programa","nome_filtro_cvlattes"), all.x = T) %>% 
@@ -500,6 +553,8 @@ ds_IPT1_SPPAP <- ds_PT_patprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(SPPAP = n())
 
+ write.csv2(ds_IPT1_SPPAP, paste0(v_path_inter, "ds_IPT1_SPPAP.csv"))
+
 #### --------------------------------------------------------------------------------------------
 
 ds_PT_prdprg <- ds_PT_prdprg[complete.cases(ds_PT_prdprg[,"DSFINALIDADE_TRATADA"]),] ## Filtro de produção valida
@@ -508,6 +563,8 @@ ds_IPT2_QPPr <- ds_PT_prdprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(QPPr = n())
 
+ write.csv2(ds_IPT2_QPPr, paste0(v_path_inter, "ds_IPT2_QPPr.csv"))
+
 #### --------------------------------------------------------------------------------------------
 
 ds_PT_appprg <- ds_PT_appprg[complete.cases(ds_PT_appprg[,"DS_FINALIDADE"]),] ## Filtro de produção valida
@@ -515,6 +572,8 @@ ds_PT_appprg <- ds_PT_appprg[complete.cases(ds_PT_appprg[,"DS_FINALIDADE"]),] ##
 ds_IPT3_QPA <- ds_PT_appprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(QPA = n())
+
+ write.csv2(ds_IPT3_QPA, paste0(v_path_inter, "ds_IPT3_QPA.csv"))
 
 #### --------------------------------------------------------------------------------------------
 
