@@ -835,29 +835,27 @@ Preparação, transformações e calculo de variáveis e indicadores que compõe
 <h2>IMI 2 - Formação discente</h2>
 <div id="fcdi---diversidade-na-formação-dos-discentes-nos-ppg" class="section level3">
 <h3>FCDi - Diversidade na formação dos discentes nos PPG</h3>
-<p><strong>Variáveis:</strong> <br> <strong>QDDP:</strong> Quantidade de discentes de doutorado do programa <br> <strong>QFMDi:</strong> Quantidade das formações dos discentes de doutorado no grau de mestrado <br> <strong>QFGDi:</strong> Quantidade das formações dos discentes de doutorado no grau de graduação <br> <strong>QDDPm:</strong> Quantidade de discentes de mestrado do programa <br> <strong>QFGDim:</strong> Quantidade das formações dos discentes de mestrado no grau de graduação <br></p>
-<p><strong>Indicadores:</strong> <br> <strong>DFMDi:</strong> Diversidade de formação do discente de doutorado pelo grau de mestrado <br> <strong>DFGDi:</strong> Diversidade de formação do discente de doutorado pelo grau de graduação <br> <strong>DFGDim:</strong> Diversidade de formação do discente de doutorado pelo grau de graduação <br></p>
-<p><strong>Constructos:</strong> <br> <strong>FCDi</strong> Diversidade na formação dos discentes de doutorado nos PPG <br> <strong>FCDim</strong> Diversidade na formação dos discentes de mestrado nos PPG <br></p>
-<p><code>OBS</code> <em>- Ao final das transformações de dados para formações de doutorado e mestrado de discentes, ambos os contructos são unificados em um único dataset, e caso um programa possua indicadores de doutorado e mestrado simultâneamente, apenas os valores de doutorado são considerados.</em></p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">ds_IMI2_QDDP &lt;-<span class="st"> </span>ds_frmdic <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(cod_programa, nome_filtro_cvlattes) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QT =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-4" title="4"><span class="st">  </span><span class="kw">group_by</span>(cod_programa) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-5" title="5"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QDDP =</span> <span class="kw">n</span>())</a>
-<a class="sourceLine" id="cb6-6" title="6"></a>
-<a class="sourceLine" id="cb6-7" title="7"> <span class="kw">write.csv2</span>(ds_IMI2_QDDP, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI2_QDDP.csv&quot;</span>))</a>
+<p><strong>Variáveis:</strong> <br> <strong>QFGDi:</strong> Quantidade das formações dos discentes no grau de graduação <br> <strong>QDP:</strong> Quantidade de discentes do programa <br></p>
+<p><strong>Indicadores:</strong> <br> <strong>DFGDi:</strong> Diversidade de formação do discente pelo grau de graduação <br></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">ds_frmdic_ttl &lt;-<span class="st"> </span><span class="kw">rbind</span>(ds_frmdic, ds_frmdic_mestrado) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb6-2" title="2"><span class="st">  </span><span class="kw">filter</span>(nivel_formacao <span class="op">==</span><span class="st"> &quot;Graduação&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb6-3" title="3"><span class="st">  </span><span class="kw">group_by</span>(cod_programa, </a>
+<a class="sourceLine" id="cb6-4" title="4">           nome_filtro_cvlattes, </a>
+<a class="sourceLine" id="cb6-5" title="5">           doc_ou_disc,</a>
+<a class="sourceLine" id="cb6-6" title="6">           nome_curso_formacao) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb6-7" title="7"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QT =</span> <span class="kw">n</span>()) <span class="co">## Junção de formações de discentes e filtro de graduação</span></a>
 <a class="sourceLine" id="cb6-8" title="8"></a>
-<a class="sourceLine" id="cb6-9" title="9">ds_IMI2_QFMDi &lt;-<span class="st"> </span>ds_frmdic <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-10" title="10"><span class="st">  </span><span class="kw">filter</span>(nivel_formacao <span class="op">==</span><span class="st"> &quot;Mestrado&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-11" title="11"><span class="st">  </span><span class="kw">group_by</span>(cod_programa, nome_curso_formacao) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-12" title="12"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QT =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st">   </span></a>
-<a class="sourceLine" id="cb6-13" title="13"><span class="st">  </span><span class="kw">group_by</span>(cod_programa) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-14" title="14"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QFMDi =</span> <span class="kw">n</span>()) </a>
-<a class="sourceLine" id="cb6-15" title="15"></a>
-<a class="sourceLine" id="cb6-16" title="16"> <span class="kw">write.csv2</span>(ds_IMI2_QFMDi, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI2_QFMDi.csv&quot;</span>))</a>
-<a class="sourceLine" id="cb6-17" title="17"></a>
-<a class="sourceLine" id="cb6-18" title="18">ds_IMI2_QFGDi &lt;-<span class="st"> </span>ds_frmdic <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-19" title="19"><span class="st">  </span><span class="kw">filter</span>(nivel_formacao <span class="op">==</span><span class="st"> &quot;Graduação&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb6-9" title="9"> <span class="kw">write.csv2</span>(ds_frmdic_ttl, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_frmdic_ttl.csv&quot;</span>))</a>
+<a class="sourceLine" id="cb6-10" title="10"></a>
+<a class="sourceLine" id="cb6-11" title="11">ds_IMI2_QDP &lt;-<span class="st"> </span>ds_frmdic_ttl <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb6-12" title="12"><span class="st">  </span><span class="kw">group_by</span>(cod_programa, nome_filtro_cvlattes) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb6-13" title="13"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QT =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb6-14" title="14"><span class="st">  </span><span class="kw">group_by</span>(cod_programa) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb6-15" title="15"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QDP =</span> <span class="kw">n</span>())</a>
+<a class="sourceLine" id="cb6-16" title="16"></a>
+<a class="sourceLine" id="cb6-17" title="17"> <span class="kw">write.csv2</span>(ds_IMI2_QDP, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI2_QDP.csv&quot;</span>))</a>
+<a class="sourceLine" id="cb6-18" title="18"></a>
+<a class="sourceLine" id="cb6-19" title="19">ds_IMI2_QFGDi &lt;-<span class="st"> </span>ds_frmdic_ttl <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb6-20" title="20"><span class="st">  </span><span class="kw">group_by</span>(cod_programa, nome_curso_formacao) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb6-21" title="21"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QT =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st">   </span></a>
 <a class="sourceLine" id="cb6-22" title="22"><span class="st">  </span><span class="kw">group_by</span>(cod_programa) <span class="op">%&gt;%</span><span class="st"> </span></a>
@@ -865,67 +863,20 @@ Preparação, transformações e calculo de variáveis e indicadores que compõe
 <a class="sourceLine" id="cb6-24" title="24"></a>
 <a class="sourceLine" id="cb6-25" title="25"> <span class="kw">write.csv2</span>(ds_IMI2_QFGDi, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI2_QFGDi.csv&quot;</span>))</a>
 <a class="sourceLine" id="cb6-26" title="26"></a>
-<a class="sourceLine" id="cb6-27" title="27">ds_IMI2_FCDi &lt;-<span class="st"> </span><span class="kw">merge</span>(ds_IMI2_QFMDi, ds_IMI2_QFGDi, <span class="dt">by =</span> <span class="st">&quot;cod_programa&quot;</span>, <span class="dt">all.y =</span> T) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-28" title="28"><span class="st">  </span><span class="kw">merge</span>(., ds_IMI2_QDDP, <span class="dt">by =</span> <span class="st">&quot;cod_programa&quot;</span>, <span class="dt">all.x =</span> T) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-29" title="29"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">DFMDi =</span> QFMDi<span class="op">/</span>QDDP,</a>
-<a class="sourceLine" id="cb6-30" title="30">         <span class="dt">DFGDi =</span> QFGDi<span class="op">/</span>QDDP) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Fórmulas dos indicadores</span></a>
-<a class="sourceLine" id="cb6-31" title="31"><span class="st">  </span><span class="kw">filter</span>(DFMDi <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>, DFGDi <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Limpeza de ocorrências acima de 1.0</span></a>
-<a class="sourceLine" id="cb6-32" title="32"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">FCDi =</span> (DFMDi <span class="op">+</span><span class="st"> </span>DFGDi)<span class="op">/</span><span class="dv">2</span>) <span class="co">## Fórmula do constructo</span></a>
-<a class="sourceLine" id="cb6-33" title="33">  </a>
-<a class="sourceLine" id="cb6-34" title="34">ds_IMI2_QDDPm &lt;-<span class="st"> </span>ds_frmdic_mestrado <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-35" title="35"><span class="st">  </span><span class="kw">group_by</span>(cod_programa, nome_filtro_cvlattes) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-36" title="36"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QT =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-37" title="37"><span class="st">  </span><span class="kw">group_by</span>(cod_programa) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-38" title="38"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QDDPm =</span> <span class="kw">n</span>())</a>
-<a class="sourceLine" id="cb6-39" title="39"></a>
-<a class="sourceLine" id="cb6-40" title="40"> <span class="kw">write.csv2</span>(ds_IMI2_QDDPm, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI2_QDDPm.csv&quot;</span>))</a>
-<a class="sourceLine" id="cb6-41" title="41">  </a>
-<a class="sourceLine" id="cb6-42" title="42">ds_IMI2_QFGDim &lt;-<span class="st"> </span>ds_frmdic_mestrado <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-43" title="43"><span class="st">  </span><span class="kw">filter</span>(nivel_formacao <span class="op">==</span><span class="st"> &quot;Graduação&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-44" title="44"><span class="st">  </span><span class="kw">group_by</span>(cod_programa, nome_curso_formacao) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-45" title="45"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QT =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st">   </span></a>
-<a class="sourceLine" id="cb6-46" title="46"><span class="st">  </span><span class="kw">group_by</span>(cod_programa) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-47" title="47"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QFGDim =</span> <span class="kw">n</span>())</a>
-<a class="sourceLine" id="cb6-48" title="48"></a>
-<a class="sourceLine" id="cb6-49" title="49"> <span class="kw">write.csv2</span>(ds_IMI2_QFGDim, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI2_QFGDim.csv&quot;</span>))</a>
-<a class="sourceLine" id="cb6-50" title="50"></a>
-<a class="sourceLine" id="cb6-51" title="51">ds_IMI2_FCDim &lt;-<span class="st"> </span><span class="kw">merge</span>(ds_IMI2_QDDPm, ds_IMI2_QFGDim, <span class="dt">by =</span> <span class="st">&quot;cod_programa&quot;</span>, <span class="dt">all =</span> T) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-52" title="52"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">DFGDim =</span> QFGDim<span class="op">/</span>QDDPm) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Fórmula do indicador</span></a>
-<a class="sourceLine" id="cb6-53" title="53"><span class="st">  </span><span class="kw">filter</span>(DFGDim <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Limpeza de ocorrências acima de 1.0</span></a>
-<a class="sourceLine" id="cb6-54" title="54"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">FCDim =</span> DFGDim) <span class="co">## Constructo</span></a>
-<a class="sourceLine" id="cb6-55" title="55"></a>
-<a class="sourceLine" id="cb6-56" title="56"> <span class="kw">write.csv2</span>(ds_IMI2_FCDim, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI2_FCDim.csv&quot;</span>))</a>
-<a class="sourceLine" id="cb6-57" title="57"></a>
-<a class="sourceLine" id="cb6-58" title="58"><span class="co">#### Unificação de dados para Mestrado e Doutorado ----------------------------------------------</span></a>
-<a class="sourceLine" id="cb6-59" title="59"> </a>
-<a class="sourceLine" id="cb6-60" title="60">ds_IMI2_FCDi_inter &lt;-<span class="st"> </span><span class="kw">merge</span>(ds_IMI2_FCDim, ds_IMI2_FCDi, <span class="dt">by =</span> <span class="st">&quot;cod_programa&quot;</span>, <span class="dt">all =</span> T)</a>
-<a class="sourceLine" id="cb6-61" title="61"></a>
-<a class="sourceLine" id="cb6-62" title="62">ds_IMI2_FCDi_inter &lt;-<span class="st"> </span>ds_IMI2_FCDi_inter[<span class="kw">is.na</span>(ds_IMI2_FCDi_inter<span class="op">$</span>FCDi),] <span class="co">## Somente programas </span></a>
-<a class="sourceLine" id="cb6-63" title="63">                                                                          <span class="co">## de mestrado</span></a>
-<a class="sourceLine" id="cb6-64" title="64"></a>
-<a class="sourceLine" id="cb6-65" title="65">ds_IMI2_FCDi_inter <span class="op">%&lt;&gt;%</span><span class="st"> </span><span class="kw">select</span>(cod_programa,</a>
-<a class="sourceLine" id="cb6-66" title="66">                               QFMDi,</a>
-<a class="sourceLine" id="cb6-67" title="67">                               <span class="dt">QFGDi =</span> QFGDim,</a>
-<a class="sourceLine" id="cb6-68" title="68">                               <span class="dt">QDDP =</span> QDDPm,</a>
-<a class="sourceLine" id="cb6-69" title="69">                               DFMDi,</a>
-<a class="sourceLine" id="cb6-70" title="70">                               <span class="dt">DFGDi =</span> DFGDim,</a>
-<a class="sourceLine" id="cb6-71" title="71">                               <span class="dt">FCDi =</span> FCDim) <span class="co">## Seleção de campo para formato do FCDi</span></a>
-<a class="sourceLine" id="cb6-72" title="72"></a>
-<a class="sourceLine" id="cb6-73" title="73">ds_IMI2_FCDi <span class="op">%&lt;&gt;%</span><span class="st"> </span><span class="kw">rbind</span>(., ds_IMI2_FCDi_inter) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## União de programas de mestrado e doutorado</span></a>
-<a class="sourceLine" id="cb6-74" title="74"><span class="st">  </span><span class="kw">merge</span>(ds_prg, ., <span class="dt">by.x =</span> <span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="dt">by.y =</span> <span class="st">&quot;cod_programa&quot;</span>, <span class="dt">all.y =</span> T) <span class="co">## Categorias</span></a>
-<a class="sourceLine" id="cb6-75" title="75"></a>
-<a class="sourceLine" id="cb6-76" title="76"><span class="co">#### -------------------------------------------------------------------------------------------- </span></a>
-<a class="sourceLine" id="cb6-77" title="77"></a>
-<a class="sourceLine" id="cb6-78" title="78"> <span class="kw">write.csv2</span>(ds_IMI2_FCDi, <span class="kw">paste0</span>(v_path_o, <span class="st">&quot;FCDi.csv&quot;</span>))</a>
-<a class="sourceLine" id="cb6-79" title="79"> <span class="kw">kable</span>(ds_IMI2_FCDi[<span class="dv">1</span><span class="op">:</span><span class="dv">12</span>, <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">8</span><span class="op">:</span><span class="dv">13</span>)]) <span class="co">## Amostra do arquivo gerado acima, sem as categorias</span></a></code></pre></div>
+<a class="sourceLine" id="cb6-27" title="27">ds_IMI2_FCDi &lt;-<span class="st"> </span><span class="kw">merge</span>(ds_IMI2_QFGDi, ds_IMI2_QDP, <span class="dt">by =</span> <span class="st">&quot;cod_programa&quot;</span>, <span class="dt">all.x =</span> T) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb6-28" title="28"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">DFGDi =</span> QFGDi<span class="op">/</span>QDP) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Fórmula do indicador</span></a>
+<a class="sourceLine" id="cb6-29" title="29"><span class="st">  </span><span class="kw">filter</span>(DFGDi <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Limpeza de ocorrências acima de 1.0</span></a>
+<a class="sourceLine" id="cb6-30" title="30"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">FCDi =</span> DFGDi) <span class="op">%&gt;%</span><span class="st">  </span><span class="co">## Fórmula do constructo</span></a>
+<a class="sourceLine" id="cb6-31" title="31"><span class="st">  </span><span class="kw">merge</span>(ds_prg, ., <span class="dt">by.x =</span> <span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="dt">by.y =</span> <span class="st">&quot;cod_programa&quot;</span>, <span class="dt">all.y =</span> T) <span class="co">## Categorias</span></a>
+<a class="sourceLine" id="cb6-32" title="32"></a>
+<a class="sourceLine" id="cb6-33" title="33"> <span class="kw">write.csv2</span>(ds_IMI2_FCDi, <span class="kw">paste0</span>(v_path_o, <span class="st">&quot;FCDi.csv&quot;</span>))</a>
+<a class="sourceLine" id="cb6-34" title="34"> <span class="kw">kable</span>(ds_IMI2_FCDi[<span class="dv">1</span><span class="op">:</span><span class="dv">12</span>, <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">8</span><span class="op">:</span><span class="dv">11</span>)]) <span class="co">## Amostra do arquivo gerado acima, sem as categorias</span></a></code></pre></div>
 <table>
 <thead>
 <tr class="header">
 <th align="left">CD_PROGRAMA_IES</th>
-<th align="right">QFMDi</th>
 <th align="right">QFGDi</th>
-<th align="right">QDDP</th>
-<th align="right">DFMDi</th>
+<th align="right">QDP</th>
 <th align="right">DFGDi</th>
 <th align="right">FCDi</th>
 </tr>
@@ -933,109 +884,85 @@ Preparação, transformações e calculo de variáveis e indicadores que compõe
 <tbody>
 <tr class="odd">
 <td align="left">10001018002P1</td>
-<td align="right">7</td>
 <td align="right">8</td>
 <td align="right">29</td>
-<td align="right">0.2413793</td>
 <td align="right">0.2758621</td>
-<td align="right">0.2586207</td>
+<td align="right">0.2758621</td>
 </tr>
 <tr class="even">
 <td align="left">10001018004P4</td>
-<td align="right">13</td>
-<td align="right">13</td>
-<td align="right">16</td>
-<td align="right">0.8125000</td>
-<td align="right">0.8125000</td>
-<td align="right">0.8125000</td>
+<td align="right">25</td>
+<td align="right">41</td>
+<td align="right">0.6097561</td>
+<td align="right">0.6097561</td>
 </tr>
 <tr class="odd">
 <td align="left">10001018005P0</td>
-<td align="right">6</td>
 <td align="right">23</td>
-<td align="right">44</td>
-<td align="right">0.1363636</td>
-<td align="right">0.5227273</td>
-<td align="right">0.3295455</td>
+<td align="right">42</td>
+<td align="right">0.5476190</td>
+<td align="right">0.5476190</td>
 </tr>
 <tr class="even">
 <td align="left">10001018006P7</td>
-<td align="right">NA</td>
 <td align="right">22</td>
 <td align="right">48</td>
-<td align="right">NA</td>
 <td align="right">0.4583333</td>
 <td align="right">0.4583333</td>
 </tr>
 <tr class="odd">
 <td align="left">10001018009P6</td>
-<td align="right">NA</td>
 <td align="right">21</td>
 <td align="right">52</td>
-<td align="right">NA</td>
 <td align="right">0.4038462</td>
 <td align="right">0.4038462</td>
 </tr>
 <tr class="even">
 <td align="left">10001018010P4</td>
-<td align="right">NA</td>
 <td align="right">31</td>
 <td align="right">73</td>
-<td align="right">NA</td>
 <td align="right">0.4246575</td>
 <td align="right">0.4246575</td>
 </tr>
 <tr class="odd">
 <td align="left">10001018011P0</td>
-<td align="right">NA</td>
 <td align="right">25</td>
 <td align="right">63</td>
-<td align="right">NA</td>
 <td align="right">0.3968254</td>
 <td align="right">0.3968254</td>
 </tr>
 <tr class="even">
 <td align="left">10001018012P7</td>
-<td align="right">NA</td>
 <td align="right">31</td>
 <td align="right">46</td>
-<td align="right">NA</td>
 <td align="right">0.6739130</td>
 <td align="right">0.6739130</td>
 </tr>
 <tr class="odd">
 <td align="left">10001018016P2</td>
-<td align="right">NA</td>
 <td align="right">26</td>
 <td align="right">54</td>
-<td align="right">NA</td>
 <td align="right">0.4814815</td>
 <td align="right">0.4814815</td>
 </tr>
 <tr class="even">
 <td align="left">10001018017P9</td>
-<td align="right">NA</td>
 <td align="right">37</td>
 <td align="right">55</td>
-<td align="right">NA</td>
 <td align="right">0.6727273</td>
 <td align="right">0.6727273</td>
 </tr>
 <tr class="odd">
 <td align="left">10001018039P2</td>
-<td align="right">NA</td>
 <td align="right">24</td>
 <td align="right">42</td>
-<td align="right">NA</td>
 <td align="right">0.5714286</td>
 <td align="right">0.5714286</td>
 </tr>
 <tr class="even">
 <td align="left">10001018040P0</td>
-<td align="right">NA</td>
 <td align="right">12</td>
 <td align="right">12</td>
-<td align="right">NA</td>
 <td align="right">1.0000000</td>
 <td align="right">1.0000000</td>
 </tr>
@@ -1047,7 +974,7 @@ Preparação, transformações e calculo de variáveis e indicadores que compõe
 <h2>IMI 3 - Instituições participantes e membros de projetos</h2>
 <div id="cc---colaboração-científica" class="section level3">
 <h3>CC - Colaboração Científica</h3>
-<p><strong>Variáveis:</strong> <br> <strong>QIP:</strong> Quantidade de instituições participantes no programa <br> <strong>QPV:</strong> Quantidade de projetos no programa <br></p>
+<p><strong>Variáveis:</strong> <br> <strong>QIP:</strong> Quantidade de instituições participantes nos projetos <br> <strong>QPP:</strong> Quantidade de projetos no programa <br></p>
 <div id="intituições" class="section level4">
 <h4>Intituições</h4>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">ds_fin &lt;-<span class="st">  </span><span class="kw">rbind</span>(<span class="kw">read_excel</span>(<span class="kw">paste0</span>(v_path_i, <span class="st">&quot;Financiadores de proejtos 2013.xlsx&quot;</span>)),</a>
@@ -1063,14 +990,14 @@ Preparação, transformações e calculo de variáveis e indicadores que compõe
 <a class="sourceLine" id="cb7-11" title="11"></a>
 <a class="sourceLine" id="cb7-12" title="12"> <span class="kw">write.csv2</span>(ds_IMI3_QIP, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI3_QIP.csv&quot;</span>))</a>
 <a class="sourceLine" id="cb7-13" title="13"></a>
-<a class="sourceLine" id="cb7-14" title="14">ds_IMI3_QPV &lt;-<span class="st"> </span>ds_fin <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb7-14" title="14">ds_IMI3_QPP &lt;-<span class="st"> </span>ds_fin <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb7-15" title="15"><span class="st">  </span><span class="kw">group_by</span>(CD_PROGRAMA_IES, ID_PROJETO) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb7-16" title="16"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QT =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb7-17" title="17"><span class="st">  </span><span class="kw">group_by</span>(CD_PROGRAMA_IES) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb7-18" title="18"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QPV =</span> <span class="kw">n</span>())</a>
+<a class="sourceLine" id="cb7-18" title="18"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QPP =</span> <span class="kw">n</span>())</a>
 <a class="sourceLine" id="cb7-19" title="19"></a>
-<a class="sourceLine" id="cb7-20" title="20"> <span class="kw">write.csv2</span>(ds_IMI3_QPV, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI3_QPV.csv&quot;</span>))</a></code></pre></div>
-<p><strong>Variáveis:</strong> <br> <strong>DFPP:</strong> Diversidade formações dos participantes (graduação) dos projetos <br> <strong>QPP:</strong> Quantidade de partipantes dos projetos <br></p>
+<a class="sourceLine" id="cb7-20" title="20"> <span class="kw">write.csv2</span>(ds_IMI3_QPP, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI3_QPP.csv&quot;</span>))</a></code></pre></div>
+<p><strong>Variáveis:</strong> <br> <strong>DFPP:</strong> Diversidade formações dos participantes dos projetos (graduação). <br> <strong>QMP:</strong> Quantidade de membros dos projetos <br></p>
 <p><strong>Indicadores:</strong> <br> <strong>DFCP:</strong> Diversidade de formações que colaboram por meio de projetos <br></p>
 <p><code>OBS</code> <em>- As variáveis e indicadores abaixo são consolidadas no nível de projeto e depois sumarizadas por média em programas para possibilitar cruzamento com demais constructos.</em></p>
 </div>
@@ -1101,18 +1028,18 @@ Preparação, transformações e calculo de variáveis e indicadores que compõe
 <a class="sourceLine" id="cb8-23" title="23"></a>
 <a class="sourceLine" id="cb8-24" title="24"> <span class="kw">write.csv2</span>(ds_IMI3_DFPP, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI3_DFPP.csv&quot;</span>))</a>
 <a class="sourceLine" id="cb8-25" title="25"></a>
-<a class="sourceLine" id="cb8-26" title="26">ds_IMI3_QPP &lt;-<span class="st"> </span>ds_MbrPrj_grd <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb8-26" title="26">ds_IMI3_QMP &lt;-<span class="st"> </span>ds_MbrPrj_grd <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb8-27" title="27"><span class="st">  </span><span class="kw">group_by</span>(CD_PROGRAMA_IES, ID_PROJETO, NM_MEMBRO_PROJETO) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb8-28" title="28"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QT =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb8-29" title="29"><span class="st">  </span><span class="kw">group_by</span>(CD_PROGRAMA_IES, ID_PROJETO) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb8-30" title="30"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QPP =</span> <span class="kw">n</span>()) </a>
+<a class="sourceLine" id="cb8-30" title="30"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QMP =</span> <span class="kw">n</span>()) </a>
 <a class="sourceLine" id="cb8-31" title="31"></a>
-<a class="sourceLine" id="cb8-32" title="32"> <span class="kw">write.csv2</span>(ds_IMI3_QPP, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI3_QPP.csv&quot;</span>))</a>
+<a class="sourceLine" id="cb8-32" title="32"> <span class="kw">write.csv2</span>(ds_IMI3_QMP, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI3_QMP.csv&quot;</span>))</a>
 <a class="sourceLine" id="cb8-33" title="33"></a>
 <a class="sourceLine" id="cb8-34" title="34"><span class="co">#### Geração de arquivo de colaboração no nível de projetos para conferência de dados -----------</span></a>
 <a class="sourceLine" id="cb8-35" title="35"></a>
-<a class="sourceLine" id="cb8-36" title="36">ds_DFCP &lt;-<span class="st"> </span><span class="kw">merge</span>(ds_IMI3_DFPP, ds_IMI3_QPP , <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="st">&quot;ID_PROJETO&quot;</span>)) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb8-37" title="37"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">DFCP =</span> DFPP<span class="op">/</span>QPP) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb8-36" title="36">ds_DFCP &lt;-<span class="st"> </span><span class="kw">merge</span>(ds_IMI3_DFPP, ds_IMI3_QMP , <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="st">&quot;ID_PROJETO&quot;</span>)) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb8-37" title="37"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">DFCP =</span> DFPP<span class="op">/</span>QMP) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb8-38" title="38"><span class="st">  </span><span class="kw">filter</span>(DFCP <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>)</a>
 <a class="sourceLine" id="cb8-39" title="39"> </a>
 <a class="sourceLine" id="cb8-40" title="40"> <span class="kw">write.csv2</span>(ds_DFCP, <span class="kw">paste0</span>(v_path_o, <span class="st">&quot;DFCP.csv&quot;</span>))</a>
@@ -1124,7 +1051,7 @@ Preparação, transformações e calculo de variáveis e indicadores que compõe
 <th align="left">CD_PROGRAMA_IES</th>
 <th align="right">ID_PROJETO</th>
 <th align="right">DFPP</th>
-<th align="right">QPP</th>
+<th align="right">QMP</th>
 <th align="right">DFCP</th>
 </tr>
 </thead>
@@ -1215,12 +1142,12 @@ Preparação, transformações e calculo de variáveis e indicadores que compõe
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">ds_IMI3_DFCP &lt;-<span class="st"> </span><span class="kw">merge</span>(ds_IMI3_DFPP, ds_IMI3_QPP, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="st">&quot;ID_PROJETO&quot;</span>)) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb9-2" title="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">DFCP =</span> DFPP<span class="op">/</span>QPP) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Fórmula do indicador</span></a>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">ds_IMI3_DFCP &lt;-<span class="st"> </span><span class="kw">merge</span>(ds_IMI3_DFPP, ds_IMI3_QMP, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="st">&quot;ID_PROJETO&quot;</span>)) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb9-2" title="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">DFCP =</span> DFPP<span class="op">/</span>QMP) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Fórmula do indicador</span></a>
 <a class="sourceLine" id="cb9-3" title="3"><span class="st">  </span><span class="kw">filter</span>(DFCP <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Limpeza de ocorrências acima de 1.0</span></a>
 <a class="sourceLine" id="cb9-4" title="4"><span class="st">  </span><span class="kw">group_by</span>(CD_PROGRAMA_IES) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb9-5" title="5"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">DFPP =</span> <span class="kw">mean</span>(DFPP),</a>
-<a class="sourceLine" id="cb9-6" title="6">            <span class="dt">QPP =</span> <span class="kw">mean</span>(QPP),</a>
+<a class="sourceLine" id="cb9-6" title="6">            <span class="dt">QMP =</span> <span class="kw">mean</span>(QMP),</a>
 <a class="sourceLine" id="cb9-7" title="7">            <span class="dt">DFCP =</span> <span class="kw">mean</span>(DFCP)) <span class="co">## Consolidação de variáveis e indicador</span></a>
 <a class="sourceLine" id="cb9-8" title="8"></a>
 <a class="sourceLine" id="cb9-9" title="9"> <span class="kw">write.csv2</span>(ds_IMI3_DFCP, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI3_DFCP.csv&quot;</span>))</a></code></pre></div>
@@ -1228,11 +1155,11 @@ Preparação, transformações e calculo de variáveis e indicadores que compõe
 </div>
 <div id="consolidação-da-colaboração-científica" class="section level4">
 <h4>Consolidação da Colaboração Científica</h4>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">ds_IMI3_CC &lt;-<span class="st"> </span><span class="kw">merge</span>(ds_IMI3_QIP, ds_IMI3_QPV, <span class="dt">by =</span> <span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="dt">all.x =</span> T) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">ds_IMI3_CC &lt;-<span class="st"> </span><span class="kw">merge</span>(ds_IMI3_QIP, ds_IMI3_QPP, <span class="dt">by =</span> <span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="dt">all.x =</span> T) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb10-2" title="2"><span class="st">  </span><span class="kw">merge</span>(., ds_IMI3_DFCP, <span class="dt">by =</span> <span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="dt">all.x =</span> T) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Junção com indicador de</span></a>
 <a class="sourceLine" id="cb10-3" title="3"><span class="st">                                                                </span><span class="co">## diversidade de formações </span></a>
 <a class="sourceLine" id="cb10-4" title="4"><span class="st">                                                                </span><span class="co">## de colaboradores</span></a>
-<a class="sourceLine" id="cb10-5" title="5"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">DIPP =</span> QIP<span class="op">/</span>QPV) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Fórmula do indicador</span></a>
+<a class="sourceLine" id="cb10-5" title="5"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">DIPP =</span> QIP<span class="op">/</span>QPP) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Fórmula do indicador</span></a>
 <a class="sourceLine" id="cb10-6" title="6"><span class="st">  </span><span class="kw">filter</span>(DIPP <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Limpeza de ocorrências acima de 1.0</span></a>
 <a class="sourceLine" id="cb10-7" title="7"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">CC =</span> (DFCP <span class="op">+</span><span class="st"> </span>DIPP)<span class="op">/</span><span class="dv">2</span>) <span class="co">## Fórmula do constructo</span></a>
 <a class="sourceLine" id="cb10-8" title="8">  </a>
@@ -1247,10 +1174,10 @@ Preparação, transformações e calculo de variáveis e indicadores que compõe
 <tr class="header">
 <th align="left">CD_PROGRAMA_IES</th>
 <th align="right">QIP</th>
-<th align="right">QPV</th>
+<th align="right">QPP</th>
 <th align="right">DIPP</th>
 <th align="right">DFPP</th>
-<th align="right">QPP</th>
+<th align="right">QMP</th>
 <th align="right">DFCP</th>
 <th align="right">CC</th>
 </tr>
@@ -1385,39 +1312,39 @@ Preparação, transformações e calculo de variáveis e indicadores que compõe
 <h2>IMI 4 - Áreas de atuação de docentes</h2>
 <div id="cp---contexto-profissional" class="section level3">
 <h3>CP - Contexto Profissional</h3>
-<p><strong>Variáveis:</strong> <br> <strong>QE:</strong> Quantidade de áreas informadas <br> <strong>DGAD:</strong> Diversidade de grande áreas de conhecimento que o docente atua <br> <strong>DACD:</strong> Diversidade de áreas do conhecimento que o docente atua <br></p>
-<p><strong>Indicadores:</strong> <br> <strong>DGAC:</strong> Diversidade de grande áreas do conhecimento que o docente atua <br> <strong>DAC:</strong> Diversidade de áreas ddo conhecimento que o docente atua <br></p>
+<p><strong>Variáveis:</strong> <br> <strong>QCDI:</strong> Quantidade de combinações distintas informadas <br> <strong>QGAD:</strong> Quantidade de grande áreas de conhecimento que o docente atua <br> <strong>QACD:</strong> Quantidade de áreas do conhecimento que o docente atua <br></p>
+<p><strong>Indicadores:</strong> <br> <strong>DGAC:</strong> Diversidade de grande áreas do conhecimento que o docente atua <br> <strong>DAC:</strong> Diversidade de áreas do conhecimento que o docente atua <br></p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">ds_aratdo &lt;-<span class="st"> </span><span class="kw">read_excel</span>(<span class="kw">paste0</span>(v_path_i, <span class="st">&#39;Areas_de_atuacao_docentes_25_06_2019.xlsx&#39;</span>))</a>
 <a class="sourceLine" id="cb11-2" title="2"></a>
-<a class="sourceLine" id="cb11-3" title="3">ds_IMI4_QE &lt;-<span class="st"> </span>ds_aratdo <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb11-3" title="3">ds_IMI4_QCDI &lt;-<span class="st"> </span>ds_aratdo <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb11-4" title="4"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">espec_doc =</span> <span class="kw">paste0</span>(grande_area, nome_area, sub_area, especialidade)) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb11-5" title="5"><span class="st">  </span><span class="kw">group_by</span>(cod_programa, nome_filtro_cvlattes, espec_doc) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb11-6" title="6"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QT =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb11-7" title="7"><span class="st">  </span><span class="kw">group_by</span>(cod_programa, nome_filtro_cvlattes) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb11-8" title="8"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QE =</span> <span class="kw">n</span>())</a>
+<a class="sourceLine" id="cb11-8" title="8"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QCDI =</span> <span class="kw">n</span>())</a>
 <a class="sourceLine" id="cb11-9" title="9"></a>
-<a class="sourceLine" id="cb11-10" title="10"> <span class="kw">write.csv2</span>(ds_IMI4_QE, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI4_QE.csv&quot;</span>))</a>
+<a class="sourceLine" id="cb11-10" title="10"> <span class="kw">write.csv2</span>(ds_IMI4_QCDI, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI4_QCDI.csv&quot;</span>))</a>
 <a class="sourceLine" id="cb11-11" title="11"></a>
-<a class="sourceLine" id="cb11-12" title="12">ds_IMI4_DGAD &lt;-<span class="st"> </span>ds_aratdo <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb11-12" title="12">ds_IMI4_QGAD &lt;-<span class="st"> </span>ds_aratdo <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb11-13" title="13"><span class="st">  </span><span class="kw">group_by</span>(cod_programa, nome_filtro_cvlattes, grande_area) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb11-14" title="14"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QT =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb11-15" title="15"><span class="st">  </span><span class="kw">group_by</span>(cod_programa, nome_filtro_cvlattes) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb11-16" title="16"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">DGAD =</span> <span class="kw">n</span>())</a>
+<a class="sourceLine" id="cb11-16" title="16"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QGAD =</span> <span class="kw">n</span>())</a>
 <a class="sourceLine" id="cb11-17" title="17"></a>
-<a class="sourceLine" id="cb11-18" title="18"> <span class="kw">write.csv2</span>(ds_IMI4_DGAD, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI4_DGAD.csv&quot;</span>))</a>
+<a class="sourceLine" id="cb11-18" title="18"> <span class="kw">write.csv2</span>(ds_IMI4_QGAD, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI4_QGAD.csv&quot;</span>))</a>
 <a class="sourceLine" id="cb11-19" title="19"></a>
-<a class="sourceLine" id="cb11-20" title="20">ds_IMI4_DACD &lt;-<span class="st"> </span>ds_aratdo <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb11-20" title="20">ds_IMI4_QACD &lt;-<span class="st"> </span>ds_aratdo <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb11-21" title="21"><span class="st">  </span><span class="kw">group_by</span>(cod_programa, nome_filtro_cvlattes, nome_area) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb11-22" title="22"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QT =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb11-23" title="23"><span class="st">  </span><span class="kw">group_by</span>(cod_programa, nome_filtro_cvlattes) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb11-24" title="24"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">DACD =</span> <span class="kw">n</span>())</a>
+<a class="sourceLine" id="cb11-24" title="24"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QACD =</span> <span class="kw">n</span>())</a>
 <a class="sourceLine" id="cb11-25" title="25"></a>
-<a class="sourceLine" id="cb11-26" title="26"> <span class="kw">write.csv2</span>(ds_IMI4_DACD, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI4_DACD.csv&quot;</span>))</a>
+<a class="sourceLine" id="cb11-26" title="26"> <span class="kw">write.csv2</span>(ds_IMI4_QACD, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IMI4_QACD.csv&quot;</span>))</a>
 <a class="sourceLine" id="cb11-27" title="27"></a>
-<a class="sourceLine" id="cb11-28" title="28">ds_IMI4_CP &lt;-<span class="st"> </span><span class="kw">merge</span>(ds_IMI4_DGAD, ds_IMI4_DACD, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;cod_programa&quot;</span>,<span class="st">&quot;nome_filtro_cvlattes&quot;</span>), <span class="dt">all.x =</span> T) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb11-29" title="29"><span class="st">  </span><span class="kw">merge</span>(., ds_IMI4_QE, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;cod_programa&quot;</span>,<span class="st">&quot;nome_filtro_cvlattes&quot;</span>), <span class="dt">all.x =</span> T) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb11-30" title="30"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">DGAC =</span> DGAD<span class="op">/</span>QE,</a>
-<a class="sourceLine" id="cb11-31" title="31">         <span class="dt">DAC =</span> DACD<span class="op">/</span>QE) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Fórmulas dos indicadores</span></a>
+<a class="sourceLine" id="cb11-28" title="28">ds_IMI4_CP &lt;-<span class="st"> </span><span class="kw">merge</span>(ds_IMI4_QGAD, ds_IMI4_QACD, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;cod_programa&quot;</span>,<span class="st">&quot;nome_filtro_cvlattes&quot;</span>), <span class="dt">all.x =</span> T) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb11-29" title="29"><span class="st">  </span><span class="kw">merge</span>(., ds_IMI4_QCDI, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;cod_programa&quot;</span>,<span class="st">&quot;nome_filtro_cvlattes&quot;</span>), <span class="dt">all.x =</span> T) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb11-30" title="30"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">DGAC =</span> QGAD<span class="op">/</span>QCDI,</a>
+<a class="sourceLine" id="cb11-31" title="31">         <span class="dt">DAC =</span> QACD<span class="op">/</span>QCDI) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Fórmulas dos indicadores</span></a>
 <a class="sourceLine" id="cb11-32" title="32"><span class="st">  </span><span class="kw">filter</span>(DGAC <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>, DAC <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Limpeza de ocorrências acima de 1.0</span></a>
 <a class="sourceLine" id="cb11-33" title="33"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">CP =</span> (DGAC <span class="op">+</span><span class="st"> </span>DAC)<span class="op">/</span><span class="dv">2</span>) <span class="co">## Fórmula do constructo</span></a>
 <a class="sourceLine" id="cb11-34" title="34"></a>
@@ -1428,9 +1355,9 @@ Preparação, transformações e calculo de variáveis e indicadores que compõe
 <tr class="header">
 <th align="left">cod_programa</th>
 <th align="left">nome_filtro_cvlattes</th>
-<th align="right">DGAD</th>
-<th align="right">DACD</th>
-<th align="right">QE</th>
+<th align="right">QGAD</th>
+<th align="right">QACD</th>
+<th align="right">QCDI</th>
 <th align="right">DGAC</th>
 <th align="right">DAC</th>
 <th align="right">CP</th>
@@ -1661,26 +1588,26 @@ Junção de todos os constructos, limpeza de casos imcompletos e geração de ou
 <tr class="odd">
 <td align="left">10001018002P1</td>
 <td align="right">0.5333333</td>
-<td align="right">0.2586207</td>
+<td align="right">0.2758621</td>
 <td align="right">0.4461541</td>
 <td align="right">0.6157407</td>
-<td align="right">0.4634622</td>
+<td align="right">0.4677726</td>
 </tr>
 <tr class="even">
 <td align="left">10001018004P4</td>
 <td align="right">0.8222222</td>
-<td align="right">0.8125000</td>
+<td align="right">0.6097561</td>
 <td align="right">0.4516807</td>
 <td align="right">0.5246528</td>
-<td align="right">0.6527639</td>
+<td align="right">0.6020779</td>
 </tr>
 <tr class="odd">
 <td align="left">10001018005P0</td>
 <td align="right">0.3333333</td>
-<td align="right">0.3295455</td>
+<td align="right">0.5476190</td>
 <td align="right">0.5446429</td>
 <td align="right">0.5009804</td>
-<td align="right">0.4271255</td>
+<td align="right">0.4816439</td>
 </tr>
 <tr class="even">
 <td align="left">10001018006P7</td>
@@ -1733,10 +1660,10 @@ Junção de todos os constructos, limpeza de casos imcompletos e geração de ou
 <tr class="even">
 <td align="left">11001011004P7</td>
 <td align="right">0.4117647</td>
-<td align="right">0.1911765</td>
+<td align="right">0.2058824</td>
 <td align="right">0.3863636</td>
 <td align="right">0.4513889</td>
-<td align="right">0.3601734</td>
+<td align="right">0.3638499</td>
 </tr>
 <tr class="odd">
 <td align="left">11001011006P0</td>
@@ -1764,8 +1691,8 @@ Junção de todos os constructos, limpeza de casos imcompletos e geração de ou
 <p align="justify">
 Preparação, transformações e calculo de variáveis e indicadores que compõe o IPT - Indice de Produção Tecnologica.
 </p>
-<p><strong>Variáveis:</strong> <br> <strong>SPPAP:</strong> Soma de patentes produzidos por programa <br> <strong>QPPr:</strong> Soma de produtos produzidos por programa <br> <strong>QPA:</strong> Soma de aplicativos produzidos por programa <br> <strong>QPPP:</strong> Quantidade de professores permanentes do programa <br></p>
-<p><strong>Indicadores:</strong> <br> <strong>iQPP:</strong> Quantitativo de produção de patentes por Programa <br> <strong>iQPPr:</strong> Quantitativo de produção de produtos por Programa <br> <strong>iQPA:</strong> Quantitativo de produção de aplicativos por Programa <br></p>
+<p><strong>Variáveis:</strong> <br> <strong>SPPP:</strong> Soma de patentes produzidos por programa <br> <strong>SPPPr:</strong> Soma de produtos produzidos por programa <br> <strong>SAPP:</strong> Soma de aplicativos produzidos por programa <br> <strong>QPPP:</strong> Quantidade de professores permanentes do programa <br></p>
+<p><strong>Indicadores:</strong> <br> <strong>QPPa:</strong> Quantitativo de produção de patentes por Programa <br> <strong>QPPr:</strong> Quantitativo de produção de produtos por Programa <br> <strong>QPA:</strong> Quantitativo de produção de aplicativos por Programa <br></p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="co">#### Carga de Aplicativos, patentes e PRodutos a partir de planilhas ----------------------------</span></a>
 <a class="sourceLine" id="cb14-2" title="2"></a>
 <a class="sourceLine" id="cb14-3" title="3">ds_PT_appprg &lt;-<span class="st"> </span><span class="kw">read_excel</span>(<span class="kw">paste0</span>(v_path_i, <span class="st">&quot;Aplicativos_tese.xlsx&quot;</span>))</a>
@@ -1776,46 +1703,46 @@ Preparação, transformações e calculo de variáveis e indicadores que compõe
 <a class="sourceLine" id="cb14-8" title="8"></a>
 <a class="sourceLine" id="cb14-9" title="9">ds_PT_patprg &lt;-<span class="st"> </span>ds_PT_patprg[<span class="kw">complete.cases</span>(ds_PT_patprg[,<span class="st">&quot;NM_PRODUCAO&quot;</span>]),] <span class="co">## Filtro de produção valida</span></a>
 <a class="sourceLine" id="cb14-10" title="10"></a>
-<a class="sourceLine" id="cb14-11" title="11">ds_IPT1_SPPAP &lt;-<span class="st"> </span>ds_PT_patprg <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb14-11" title="11">ds_IPT1_SPPP&lt;-<span class="st"> </span>ds_PT_patprg <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb14-12" title="12"><span class="st">  </span><span class="kw">group_by</span>(CD_PROGRAMA_IES) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb14-13" title="13"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">SPPAP =</span> <span class="kw">n</span>())</a>
+<a class="sourceLine" id="cb14-13" title="13"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">SPPP =</span> <span class="kw">n</span>())</a>
 <a class="sourceLine" id="cb14-14" title="14"></a>
-<a class="sourceLine" id="cb14-15" title="15"> <span class="kw">write.csv2</span>(ds_IPT1_SPPAP, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IPT1_SPPAP.csv&quot;</span>))</a>
+<a class="sourceLine" id="cb14-15" title="15"> <span class="kw">write.csv2</span>(ds_IPT1_SPPP, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IPT1_SPPP.csv&quot;</span>))</a>
 <a class="sourceLine" id="cb14-16" title="16"></a>
 <a class="sourceLine" id="cb14-17" title="17"><span class="co">#### --------------------------------------------------------------------------------------------</span></a>
 <a class="sourceLine" id="cb14-18" title="18"></a>
 <a class="sourceLine" id="cb14-19" title="19">ds_PT_prdprg &lt;-<span class="st"> </span>ds_PT_prdprg[<span class="kw">complete.cases</span>(ds_PT_prdprg[,<span class="st">&quot;DSFINALIDADE_TRATADA&quot;</span>]),] <span class="co">## Filtro de produção valida</span></a>
 <a class="sourceLine" id="cb14-20" title="20"></a>
-<a class="sourceLine" id="cb14-21" title="21">ds_IPT2_QPPr &lt;-<span class="st"> </span>ds_PT_prdprg <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb14-21" title="21">ds_IPT2_SPPPr &lt;-<span class="st"> </span>ds_PT_prdprg <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb14-22" title="22"><span class="st">  </span><span class="kw">group_by</span>(CD_PROGRAMA_IES) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb14-23" title="23"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QPPr =</span> <span class="kw">n</span>())</a>
+<a class="sourceLine" id="cb14-23" title="23"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">SPPPr =</span> <span class="kw">n</span>())</a>
 <a class="sourceLine" id="cb14-24" title="24"></a>
-<a class="sourceLine" id="cb14-25" title="25"> <span class="kw">write.csv2</span>(ds_IPT2_QPPr, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IPT2_QPPr.csv&quot;</span>))</a>
+<a class="sourceLine" id="cb14-25" title="25"> <span class="kw">write.csv2</span>(ds_IPT2_SPPPr, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IPT2_SPPPr.csv&quot;</span>))</a>
 <a class="sourceLine" id="cb14-26" title="26"></a>
 <a class="sourceLine" id="cb14-27" title="27"><span class="co">#### --------------------------------------------------------------------------------------------</span></a>
 <a class="sourceLine" id="cb14-28" title="28"></a>
 <a class="sourceLine" id="cb14-29" title="29">ds_PT_appprg &lt;-<span class="st"> </span>ds_PT_appprg[<span class="kw">complete.cases</span>(ds_PT_appprg[,<span class="st">&quot;DS_FINALIDADE&quot;</span>]),] <span class="co">## Filtro de produção valida</span></a>
 <a class="sourceLine" id="cb14-30" title="30"></a>
-<a class="sourceLine" id="cb14-31" title="31">ds_IPT3_QPA &lt;-<span class="st"> </span>ds_PT_appprg <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb14-31" title="31">ds_IPT3_SAPP &lt;-<span class="st"> </span>ds_PT_appprg <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb14-32" title="32"><span class="st">  </span><span class="kw">group_by</span>(CD_PROGRAMA_IES) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb14-33" title="33"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">QPA =</span> <span class="kw">n</span>())</a>
+<a class="sourceLine" id="cb14-33" title="33"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">SAPP =</span> <span class="kw">n</span>())</a>
 <a class="sourceLine" id="cb14-34" title="34"></a>
-<a class="sourceLine" id="cb14-35" title="35"> <span class="kw">write.csv2</span>(ds_IPT3_QPA, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IPT3_QPA.csv&quot;</span>))</a>
+<a class="sourceLine" id="cb14-35" title="35"> <span class="kw">write.csv2</span>(ds_IPT3_SAPP, <span class="kw">paste0</span>(v_path_inter, <span class="st">&quot;ds_IPT3_SAPP.csv&quot;</span>))</a>
 <a class="sourceLine" id="cb14-36" title="36"></a>
 <a class="sourceLine" id="cb14-37" title="37"><span class="co">#### --------------------------------------------------------------------------------------------</span></a>
 <a class="sourceLine" id="cb14-38" title="38"></a>
-<a class="sourceLine" id="cb14-39" title="39">ds_IPT &lt;-<span class="st"> </span><span class="kw">merge</span>(ds_IMI1_QPPP, ds_IPT1_SPPAP, <span class="dt">by.x =</span> <span class="st">&quot;cod_programa&quot;</span>, <span class="dt">by.y =</span> <span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="dt">all.x =</span> T) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb14-40" title="40"><span class="st">  </span><span class="kw">select</span>(<span class="dt">CD_PROGRAMA_IES =</span> cod_programa, QPPP, SPPAP) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb14-41" title="41"><span class="st">  </span><span class="kw">merge</span>(., ds_IPT2_QPPr, <span class="dt">by =</span> <span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="dt">all.x =</span> T) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb14-42" title="42"><span class="st">  </span><span class="kw">merge</span>(., ds_IPT3_QPA, <span class="dt">by =</span> <span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="dt">all.x =</span> T)</a>
+<a class="sourceLine" id="cb14-39" title="39">ds_IPT &lt;-<span class="st"> </span><span class="kw">merge</span>(ds_IMI1_QPPP, ds_IPT1_SPPP, <span class="dt">by.x =</span> <span class="st">&quot;cod_programa&quot;</span>, <span class="dt">by.y =</span> <span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="dt">all.x =</span> T) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb14-40" title="40"><span class="st">  </span><span class="kw">select</span>(<span class="dt">CD_PROGRAMA_IES =</span> cod_programa, QPPP, SPPP) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb14-41" title="41"><span class="st">  </span><span class="kw">merge</span>(., ds_IPT2_SPPPr, <span class="dt">by =</span> <span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="dt">all.x =</span> T) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb14-42" title="42"><span class="st">  </span><span class="kw">merge</span>(., ds_IPT3_SAPP, <span class="dt">by =</span> <span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="dt">all.x =</span> T)</a>
 <a class="sourceLine" id="cb14-43" title="43"></a>
 <a class="sourceLine" id="cb14-44" title="44">ds_IPT[<span class="kw">is.na</span>(ds_IPT)] &lt;-<span class="st"> </span><span class="dv">0</span> <span class="co">### Conversão de NA para 0</span></a>
 <a class="sourceLine" id="cb14-45" title="45"></a>
-<a class="sourceLine" id="cb14-46" title="46">ds_IPT <span class="op">%&lt;&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">iQPP =</span> SPPAP<span class="op">/</span>QPPP,</a>
-<a class="sourceLine" id="cb14-47" title="47">                   <span class="dt">iQPPr =</span> QPPr<span class="op">/</span>QPPP,</a>
-<a class="sourceLine" id="cb14-48" title="48">                   <span class="dt">iQPA =</span> QPA<span class="op">/</span>QPPP) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Fórmulas dos indicadores</span></a>
-<a class="sourceLine" id="cb14-49" title="49"><span class="st">  </span><span class="kw">filter</span>(iQPP <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>, iQPPr <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>, iQPA <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Limpeza de ocorrências acima de 1.0</span></a>
-<a class="sourceLine" id="cb14-50" title="50"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">IPT =</span> (iQPP<span class="op">+</span>iQPPr<span class="op">+</span>iQPA)<span class="op">/</span><span class="dv">3</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Fórmula do indice</span></a>
+<a class="sourceLine" id="cb14-46" title="46">ds_IPT <span class="op">%&lt;&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">QPPa =</span> SPPP<span class="op">/</span>QPPP,</a>
+<a class="sourceLine" id="cb14-47" title="47">                   <span class="dt">QPPr =</span> SPPPr<span class="op">/</span>QPPP,</a>
+<a class="sourceLine" id="cb14-48" title="48">                   <span class="dt">QPA =</span> SAPP<span class="op">/</span>QPPP) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Fórmulas dos indicadores</span></a>
+<a class="sourceLine" id="cb14-49" title="49"><span class="st">  </span><span class="kw">filter</span>(QPPa <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>, QPPr <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>, QPA <span class="op">&lt;=</span><span class="st"> </span><span class="dv">1</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Limpeza de ocorrências acima de 1.0</span></a>
+<a class="sourceLine" id="cb14-50" title="50"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">IPT =</span> (QPPa<span class="op">+</span>QPPr<span class="op">+</span>QPA)<span class="op">/</span><span class="dv">3</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">## Fórmula do indice</span></a>
 <a class="sourceLine" id="cb14-51" title="51"><span class="st">  </span><span class="kw">merge</span>(ds_prg, ., <span class="dt">by =</span> <span class="st">&quot;CD_PROGRAMA_IES&quot;</span>, <span class="dt">all.y =</span> T) <span class="co">## Categorias</span></a>
 <a class="sourceLine" id="cb14-52" title="52"></a>
 <a class="sourceLine" id="cb14-53" title="53"> <span class="kw">write.csv2</span>(ds_IPT, <span class="kw">paste0</span>(v_path_o, <span class="st">&quot;IPT.csv&quot;</span>))</a>
@@ -1825,12 +1752,12 @@ Preparação, transformações e calculo de variáveis e indicadores que compõe
 <tr class="header">
 <th align="left">CD_PROGRAMA_IES</th>
 <th align="right">QPPP</th>
-<th align="right">SPPAP</th>
+<th align="right">SPPP</th>
+<th align="right">SPPPr</th>
+<th align="right">SAPP</th>
+<th align="right">QPPa</th>
 <th align="right">QPPr</th>
 <th align="right">QPA</th>
-<th align="right">iQPP</th>
-<th align="right">iQPPr</th>
-<th align="right">iQPA</th>
 <th align="right">IPT</th>
 </tr>
 </thead>
@@ -1996,7 +1923,7 @@ União de indices por programa, filtro de cassos completos, categorização e ca
 <tbody>
 <tr class="odd">
 <td align="left">10001018004P4</td>
-<td align="right">0.6527639</td>
+<td align="right">0.6020779</td>
 <td align="right">0.0444444</td>
 </tr>
 <tr class="even">
@@ -2016,27 +1943,27 @@ União de indices por programa, filtro de cassos completos, categorização e ca
 </tr>
 <tr class="odd">
 <td align="left">12001015001P0</td>
-<td align="right">0.3975651</td>
+<td align="right">0.4128343</td>
 <td align="right">0.0196078</td>
 </tr>
 <tr class="even">
 <td align="left">12001015002P7</td>
-<td align="right">0.3239974</td>
+<td align="right">0.3279657</td>
 <td align="right">0.1309524</td>
 </tr>
 <tr class="odd">
 <td align="left">12001015003P3</td>
-<td align="right">0.4444460</td>
+<td align="right">0.4392376</td>
 <td align="right">0.0222222</td>
 </tr>
 <tr class="even">
 <td align="left">12001015012P2</td>
-<td align="right">0.3653809</td>
+<td align="right">0.3880000</td>
 <td align="right">0.2820513</td>
 </tr>
 <tr class="odd">
 <td align="left">12001015013P9</td>
-<td align="right">0.4422286</td>
+<td align="right">0.4540708</td>
 <td align="right">0.1728395</td>
 </tr>
 <tr class="even">
@@ -2065,8 +1992,8 @@ União de indices por programa, filtro de cassos completos, categorização e ca
 <pre><code>## # A tibble: 2 x 2
 ##      IMI    IPT
 ##    &lt;dbl&gt;  &lt;dbl&gt;
-## 1 1      0.0240
-## 2 0.0240 1</code></pre>
+## 1 1      0.0466
+## 2 0.0466 1</code></pre>
 <hr />
 </div>
 <div id="correlação-por-categoria" class="section level1">
@@ -2129,71 +2056,71 @@ Segmentação de tabela base de indice por cada categoria: Ano, Conceito, Depend
 </tr>
 <tr class="even">
 <td align="left">1964</td>
-<td align="left">-0.126128366581271</td>
+<td align="left">0.0107109954054532</td>
 </tr>
 <tr class="odd">
 <td align="left">1965</td>
-<td align="left">0.557694347504391</td>
+<td align="left">0.5150085519819</td>
 </tr>
 <tr class="even">
 <td align="left">1966</td>
-<td align="left">0.560906687737749</td>
+<td align="left">0.851358944503991</td>
 </tr>
 <tr class="odd">
 <td align="left">1967</td>
-<td align="left">-0.370238378952283</td>
+<td align="left">-0.383547044625258</td>
 </tr>
 <tr class="even">
 <td align="left">1968</td>
-<td align="left">0.573735097543611</td>
+<td align="left">0.549384554424876</td>
 </tr>
 <tr class="odd">
 <td align="left">1969</td>
-<td align="left">-0.274575832125727</td>
+<td align="left">-0.248428787537667</td>
 </tr>
 <tr class="even">
 <td align="left">1970</td>
-<td align="left">0.305231054660162</td>
+<td align="left">0.235283244421499</td>
 </tr>
 <tr class="odd">
 <td align="left">1971</td>
-<td align="left">0.359144281520039</td>
+<td align="left">0.366570443786141</td>
 </tr>
 <tr class="even">
 <td align="left">1972</td>
-<td align="left">-0.162207202696766</td>
+<td align="left">-0.128559027299186</td>
 </tr>
 <tr class="odd">
 <td align="left">1973</td>
-<td align="left">0.179064248041866</td>
+<td align="left">0.196600097179617</td>
 </tr>
 <tr class="even">
 <td align="left">1974</td>
-<td align="left">-0.48957581193893</td>
+<td align="left">-0.495221367331677</td>
 </tr>
 <tr class="odd">
 <td align="left">1975</td>
-<td align="left">0.251551168173386</td>
+<td align="left">0.160777471016261</td>
 </tr>
 <tr class="even">
 <td align="left">1976</td>
-<td align="left">0.023973196413926</td>
+<td align="left">0.0947225026711612</td>
 </tr>
 <tr class="odd">
 <td align="left">1977</td>
-<td align="left">-0.125911773529444</td>
+<td align="left">-0.103426079000588</td>
 </tr>
 <tr class="even">
 <td align="left">1978</td>
-<td align="left">0.237419154448181</td>
+<td align="left">0.30708789548956</td>
 </tr>
 <tr class="odd">
 <td align="left">1979</td>
-<td align="left">-0.539358729926245</td>
+<td align="left">-0.509685231937527</td>
 </tr>
 <tr class="even">
 <td align="left">1980</td>
-<td align="left">-0.283836506886779</td>
+<td align="left">-0.173969400360997</td>
 </tr>
 <tr class="odd">
 <td align="left">1981</td>
@@ -2201,143 +2128,143 @@ Segmentação de tabela base de indice por cada categoria: Ano, Conceito, Depend
 </tr>
 <tr class="even">
 <td align="left">1982</td>
-<td align="left">0.676794728541419</td>
+<td align="left">0.802394392089724</td>
 </tr>
 <tr class="odd">
 <td align="left">1983</td>
-<td align="left">-0.0375561326827499</td>
+<td align="left">0.0683521852698933</td>
 </tr>
 <tr class="even">
 <td align="left">1984</td>
-<td align="left">-0.652731115318994</td>
+<td align="left">-0.286523067730419</td>
 </tr>
 <tr class="odd">
 <td align="left">1985</td>
-<td align="left">-0.668109499241272</td>
+<td align="left">-0.576382503213053</td>
 </tr>
 <tr class="even">
 <td align="left">1986</td>
-<td align="left">-0.0469507795127024</td>
+<td align="left">-0.126786462019566</td>
 </tr>
 <tr class="odd">
 <td align="left">1987</td>
-<td align="left">-0.497058839299423</td>
+<td align="left">-0.556121190799112</td>
 </tr>
 <tr class="even">
 <td align="left">1988</td>
-<td align="left">0.00619084193097827</td>
+<td align="left">-0.0317437678773442</td>
 </tr>
 <tr class="odd">
 <td align="left">1989</td>
-<td align="left">-0.225848163706467</td>
+<td align="left">-0.203143056260817</td>
 </tr>
 <tr class="even">
 <td align="left">1990</td>
-<td align="left">-0.0845675827756972</td>
+<td align="left">-0.135357375276514</td>
 </tr>
 <tr class="odd">
 <td align="left">1991</td>
-<td align="left">-0.00599782676159949</td>
+<td align="left">0.00343611952218628</td>
 </tr>
 <tr class="even">
 <td align="left">1992</td>
-<td align="left">0.498743023365502</td>
+<td align="left">0.527605787970242</td>
 </tr>
 <tr class="odd">
 <td align="left">1993</td>
-<td align="left">0.356558625957458</td>
+<td align="left">0.376165910803014</td>
 </tr>
 <tr class="even">
 <td align="left">1994</td>
-<td align="left">0.188160057460802</td>
+<td align="left">0.160112660861939</td>
 </tr>
 <tr class="odd">
 <td align="left">1995</td>
-<td align="left">0.169331579792008</td>
+<td align="left">0.198751510676715</td>
 </tr>
 <tr class="even">
 <td align="left">1996</td>
-<td align="left">0.0274523031997907</td>
+<td align="left">0.0645079410821636</td>
 </tr>
 <tr class="odd">
 <td align="left">1997</td>
-<td align="left">0.784179493297446</td>
+<td align="left">0.781905134726125</td>
 </tr>
 <tr class="even">
 <td align="left">1998</td>
-<td align="left">0.0376915361338773</td>
+<td align="left">0.0874101526710829</td>
 </tr>
 <tr class="odd">
 <td align="left">1999</td>
-<td align="left">-0.0687159640932119</td>
+<td align="left">-0.0404524440407287</td>
 </tr>
 <tr class="even">
 <td align="left">2000</td>
-<td align="left">-0.298688750337833</td>
+<td align="left">-0.254083031457154</td>
 </tr>
 <tr class="odd">
 <td align="left">2001</td>
-<td align="left">-0.139360972607761</td>
+<td align="left">-0.137215312701044</td>
 </tr>
 <tr class="even">
 <td align="left">2002</td>
-<td align="left">-0.263763968911538</td>
+<td align="left">-0.255440471244747</td>
 </tr>
 <tr class="odd">
 <td align="left">2003</td>
-<td align="left">0.308304156302943</td>
+<td align="left">0.350139173879014</td>
 </tr>
 <tr class="even">
 <td align="left">2004</td>
-<td align="left">0.426051935948067</td>
+<td align="left">0.463134304357307</td>
 </tr>
 <tr class="odd">
 <td align="left">2005</td>
-<td align="left">-0.0429909712130436</td>
+<td align="left">0.00400155854050512</td>
 </tr>
 <tr class="even">
 <td align="left">2006</td>
-<td align="left">0.129752886617683</td>
+<td align="left">0.185124761954065</td>
 </tr>
 <tr class="odd">
 <td align="left">2007</td>
-<td align="left">-0.0348994310531096</td>
+<td align="left">-0.0390435625831461</td>
 </tr>
 <tr class="even">
 <td align="left">2008</td>
-<td align="left">0.244624640946767</td>
+<td align="left">0.208969950252553</td>
 </tr>
 <tr class="odd">
 <td align="left">2009</td>
-<td align="left">0.0115026271750567</td>
+<td align="left">0.194623824603396</td>
 </tr>
 <tr class="even">
 <td align="left">2010</td>
-<td align="left">0.145609400851159</td>
+<td align="left">0.134979226863619</td>
 </tr>
 <tr class="odd">
 <td align="left">2011</td>
-<td align="left">0.0881682061215198</td>
+<td align="left">0.134350613444719</td>
 </tr>
 <tr class="even">
 <td align="left">2012</td>
-<td align="left">0.264531538790042</td>
+<td align="left">0.278402194913798</td>
 </tr>
 <tr class="odd">
 <td align="left">2013</td>
-<td align="left">0.126304424250851</td>
+<td align="left">0.158669761004742</td>
 </tr>
 <tr class="even">
 <td align="left">2014</td>
-<td align="left">-0.268570167625138</td>
+<td align="left">-0.282573939317567</td>
 </tr>
 <tr class="odd">
 <td align="left">2015</td>
-<td align="left">0.0603349069067156</td>
+<td align="left">0.0959013058719286</td>
 </tr>
 <tr class="even">
 <td align="left">2016</td>
-<td align="left">0.00886388879774803</td>
+<td align="left">-0.0334895127122915</td>
 </tr>
 </tbody>
 </table>
@@ -2361,23 +2288,23 @@ Segmentação de tabela base de indice por cada categoria: Ano, Conceito, Depend
 <tbody>
 <tr class="odd">
 <td align="left">3</td>
-<td align="left">0.00219762659874549</td>
+<td align="left">0.0251285015021782</td>
 </tr>
 <tr class="even">
 <td align="left">4</td>
-<td align="left">0.0737466481650124</td>
+<td align="left">0.0970152675496664</td>
 </tr>
 <tr class="odd">
 <td align="left">5</td>
-<td align="left">0.106353051021185</td>
+<td align="left">0.119957523262755</td>
 </tr>
 <tr class="even">
 <td align="left">6</td>
-<td align="left">0.0467618965685604</td>
+<td align="left">0.0766948225001108</td>
 </tr>
 <tr class="odd">
 <td align="left">7</td>
-<td align="left">-0.0456838292602879</td>
+<td align="left">-0.0333079541728779</td>
 </tr>
 </tbody>
 </table>
@@ -2401,11 +2328,11 @@ Segmentação de tabela base de indice por cada categoria: Ano, Conceito, Depend
 <tbody>
 <tr class="odd">
 <td align="left">PRIVADA</td>
-<td align="left">0.0820857111168742</td>
+<td align="left">0.105627132756426</td>
 </tr>
 <tr class="even">
 <td align="left">PÚBLICA</td>
-<td align="left">0.00110756328222927</td>
+<td align="left">0.0197161860161895</td>
 </tr>
 </tbody>
 </table>
@@ -2429,183 +2356,183 @@ Segmentação de tabela base de indice por cada categoria: Ano, Conceito, Depend
 <tbody>
 <tr class="odd">
 <td align="left">ADMINISTRAÇÃO PÚBLICA E DE EMPRESAS, CIÊNCIAS CONTÁBEIS E TURISMO</td>
-<td align="left">0.0357597733085169</td>
+<td align="left">0.050947907585538</td>
 </tr>
 <tr class="even">
 <td align="left">ANTROPOLOGIA / ARQUEOLOGIA</td>
-<td align="left">0.668333658743561</td>
+<td align="left">0.756903428492729</td>
 </tr>
 <tr class="odd">
 <td align="left">ARQUITETURA, URBANISMO E DESIGN</td>
-<td align="left">0.229072612857061</td>
+<td align="left">0.259612076543223</td>
 </tr>
 <tr class="even">
 <td align="left">ARTES / MÚSICA</td>
-<td align="left">-0.224165048239063</td>
+<td align="left">-0.186388850222793</td>
 </tr>
 <tr class="odd">
 <td align="left">ASTRONOMIA / FÍSICA</td>
-<td align="left">0.320309854576949</td>
+<td align="left">0.271321948229188</td>
 </tr>
 <tr class="even">
 <td align="left">BIODIVERSIDADE</td>
-<td align="left">0.0289459303859198</td>
+<td align="left">0.0519118638764299</td>
 </tr>
 <tr class="odd">
 <td align="left">BIOTECNOLOGIA</td>
-<td align="left">-0.250522837124366</td>
+<td align="left">-0.182067636988011</td>
 </tr>
 <tr class="even">
 <td align="left">CIÊNCIA DA COMPUTAÇÃO</td>
-<td align="left">-0.103585796655034</td>
+<td align="left">-0.0659009627585467</td>
 </tr>
 <tr class="odd">
 <td align="left">CIÊNCIA DE ALIMENTOS</td>
-<td align="left">-0.675371725751024</td>
+<td align="left">-0.63818988600231</td>
 </tr>
 <tr class="even">
 <td align="left">CIÊNCIA POLÍTICA E RELAÇÕES INTERNACIONAIS</td>
-<td align="left">0.725375010526276</td>
+<td align="left">0.734920497963989</td>
 </tr>
 <tr class="odd">
 <td align="left">CIÊNCIAS AGRÁRIAS I</td>
-<td align="left">0.0354642990863702</td>
+<td align="left">0.0394509893049911</td>
 </tr>
 <tr class="even">
 <td align="left">CIÊNCIAS AMBIENTAIS</td>
-<td align="left">0.123926649066383</td>
+<td align="left">0.104526710479104</td>
 </tr>
 <tr class="odd">
 <td align="left">CIÊNCIAS BIOLÓGICAS I</td>
-<td align="left">-0.24415905279601</td>
+<td align="left">-0.28480495522687</td>
 </tr>
 <tr class="even">
 <td align="left">CIÊNCIAS BIOLÓGICAS II</td>
-<td align="left">0.147794284910386</td>
+<td align="left">0.0942046344547668</td>
 </tr>
 <tr class="odd">
 <td align="left">CIÊNCIAS BIOLÓGICAS III</td>
-<td align="left">-0.397160324636099</td>
+<td align="left">-0.409710962903234</td>
 </tr>
 <tr class="even">
 <td align="left">COMUNICAÇÃO E INFORMAÇÃO</td>
-<td align="left">0.317130985068191</td>
+<td align="left">0.296820108690995</td>
 </tr>
 <tr class="odd">
 <td align="left">DIREITO</td>
-<td align="left">0.216743387465523</td>
+<td align="left">0.149947574309794</td>
 </tr>
 <tr class="even">
 <td align="left">ECONOMIA</td>
-<td align="left">-0.840776781924182</td>
+<td align="left">-0.822786045692212</td>
 </tr>
 <tr class="odd">
 <td align="left">EDUCAÇÃO</td>
-<td align="left">0.056413307953147</td>
+<td align="left">0.0532606300008154</td>
 </tr>
 <tr class="even">
 <td align="left">EDUCAÇÃO FÍSICA</td>
-<td align="left">0.272207412914484</td>
+<td align="left">0.321843125434938</td>
 </tr>
 <tr class="odd">
 <td align="left">ENFERMAGEM</td>
-<td align="left">0.0303142705562541</td>
+<td align="left">0.0374582043488929</td>
 </tr>
 <tr class="even">
 <td align="left">ENGENHARIAS I</td>
-<td align="left">-0.133569670667626</td>
+<td align="left">-0.131915963526859</td>
 </tr>
 <tr class="odd">
 <td align="left">ENGENHARIAS II</td>
-<td align="left">-0.0448582150453124</td>
+<td align="left">-0.0449749458503576</td>
 </tr>
 <tr class="even">
 <td align="left">ENGENHARIAS III</td>
-<td align="left">0.0150306784190714</td>
+<td align="left">0.0738947666367397</td>
 </tr>
 <tr class="odd">
 <td align="left">ENGENHARIAS IV</td>
-<td align="left">-0.0831445407230967</td>
+<td align="left">-0.075122624767334</td>
 </tr>
 <tr class="even">
 <td align="left">ENSINO</td>
-<td align="left">0.154000489770672</td>
+<td align="left">0.159374130137576</td>
 </tr>
 <tr class="odd">
 <td align="left">FARMÁCIA</td>
-<td align="left">-0.220735605104285</td>
+<td align="left">-0.163548179644325</td>
 </tr>
 <tr class="even">
 <td align="left">FILOSOFIA</td>
-<td align="left">-0.197273711034578</td>
+<td align="left">-0.165625956472126</td>
 </tr>
 <tr class="odd">
 <td align="left">GEOCIÊNCIAS</td>
-<td align="left">0.364273887161025</td>
+<td align="left">0.395018407923024</td>
 </tr>
 <tr class="even">
 <td align="left">GEOGRAFIA</td>
-<td align="left">0.361465578741287</td>
+<td align="left">0.414219774901312</td>
 </tr>
 <tr class="odd">
 <td align="left">HISTÓRIA</td>
-<td align="left">0.756640315333497</td>
+<td align="left">0.746920818053962</td>
 </tr>
 <tr class="even">
 <td align="left">INTERDISCIPLINAR</td>
-<td align="left">0.0875374043744716</td>
+<td align="left">0.0844217653710081</td>
 </tr>
 <tr class="odd">
 <td align="left">LETRAS / LINGUÍSTICA</td>
-<td align="left">0.422764699780992</td>
+<td align="left">0.420056592791664</td>
 </tr>
 <tr class="even">
 <td align="left">MATEMÁTICA / PROBABILIDADE E ESTATÍSTICA</td>
-<td align="left">0.466658618971697</td>
+<td align="left">0.445371794385189</td>
 </tr>
 <tr class="odd">
 <td align="left">MATERIAIS</td>
-<td align="left">-0.491851074919921</td>
+<td align="left">-0.064215600522141</td>
 </tr>
 <tr class="even">
 <td align="left">MEDICINA I</td>
-<td align="left">-0.179172657762378</td>
+<td align="left">-0.189923411202608</td>
 </tr>
 <tr class="odd">
 <td align="left">MEDICINA II</td>
-<td align="left">0.255295085287991</td>
+<td align="left">0.28015631804471</td>
 </tr>
 <tr class="even">
 <td align="left">MEDICINA III</td>
-<td align="left">0.463970572691003</td>
+<td align="left">0.416327981074541</td>
 </tr>
 <tr class="odd">
 <td align="left">MEDICINA VETERINÁRIA</td>
-<td align="left">-0.18008366866404</td>
+<td align="left">-0.166393558174536</td>
 </tr>
 <tr class="even">
 <td align="left">NUTRIÇÃO</td>
-<td align="left">-0.15325095816402</td>
+<td align="left">-0.209719892613458</td>
 </tr>
 <tr class="odd">
 <td align="left">ODONTOLOGIA</td>
-<td align="left">0.0404306571814634</td>
+<td align="left">0.0617303154976631</td>
 </tr>
 <tr class="even">
 <td align="left">PLANEJAMENTO URBANO E REGIONAL / DEMOGRAFIA</td>
-<td align="left">0.0961446327214315</td>
+<td align="left">0.37601607761195</td>
 </tr>
 <tr class="odd">
 <td align="left">PSICOLOGIA</td>
-<td align="left">0.454090869873007</td>
+<td align="left">0.419866702838206</td>
 </tr>
 <tr class="even">
 <td align="left">QUÍMICA</td>
-<td align="left">-0.192966465592571</td>
+<td align="left">-0.181619882084268</td>
 </tr>
 <tr class="odd">
 <td align="left">SAÚDE COLETIVA</td>
-<td align="left">-0.311347645301321</td>
+<td align="left">-0.313002723126141</td>
 </tr>
 <tr class="even">
 <td align="left">SERVIÇO SOCIAL</td>
@@ -2613,11 +2540,11 @@ Segmentação de tabela base de indice por cada categoria: Ano, Conceito, Depend
 </tr>
 <tr class="odd">
 <td align="left">SOCIOLOGIA</td>
-<td align="left">0.772567811068701</td>
+<td align="left">0.477913295093134</td>
 </tr>
 <tr class="even">
 <td align="left">ZOOTECNIA / RECURSOS PESQUEIROS</td>
-<td align="left">-0.0561259554388477</td>
+<td align="left">-0.0487279636606405</td>
 </tr>
 </tbody>
 </table>
@@ -2641,19 +2568,19 @@ Segmentação de tabela base de indice por cada categoria: Ano, Conceito, Depend
 <tbody>
 <tr class="odd">
 <td align="left">ESTADUAL</td>
-<td align="left">0.0504286853874445</td>
+<td align="left">0.0728169584955388</td>
 </tr>
 <tr class="even">
 <td align="left">FEDERAL</td>
-<td align="left">-0.0210167044588608</td>
+<td align="left">-0.00380745155961596</td>
 </tr>
 <tr class="odd">
 <td align="left">MUNICIPAL</td>
-<td align="left">0.649299388297331</td>
+<td align="left">0.644284762611974</td>
 </tr>
 <tr class="even">
 <td align="left">PARTICULAR</td>
-<td align="left">0.0820857111168742</td>
+<td align="left">0.105627132756426</td>
 </tr>
 </tbody>
 </table>
@@ -2677,11 +2604,11 @@ Segmentação de tabela base de indice por cada categoria: Ano, Conceito, Depend
 <tbody>
 <tr class="odd">
 <td align="left">ACADÊMICO</td>
-<td align="left">0.0018438388956569</td>
+<td align="left">0.0239794726246032</td>
 </tr>
 <tr class="even">
 <td align="left">PROFISSIONAL</td>
-<td align="left">0.0606177650333353</td>
+<td align="left">0.0847722647346618</td>
 </tr>
 </tbody>
 </table>

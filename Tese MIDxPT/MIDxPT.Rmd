@@ -217,44 +217,33 @@ ds_IMI1_FCDo <- merge(ds_IMI1_QFDPD, ds_IMI1_QFDPM, by = "cod_programa", all.x =
 ### FCDi - Diversidade na formação dos discentes nos PPG
 
 **Variáveis:** <br>
-**QDDP:**   Quantidade de discentes de doutorado do programa <br>
-**QFMDi:**  Quantidade das formações dos discentes de doutorado no grau de mestrado <br>
-**QFGDi:**  Quantidade das formações dos discentes de doutorado no grau de graduação <br>
-**QDDPm:**  Quantidade de discentes de mestrado do programa <br>
-**QFGDim:** Quantidade das formações dos discentes de mestrado no grau de graduação <br>
+**QFGDi:**  Quantidade das formações dos discentes no grau de graduação <br>
+**QDP:**    Quantidade de discentes do programa <br>
 
 **Indicadores:** <br>
-**DFMDi:**  Diversidade de formação do discente de doutorado pelo grau de mestrado <br>
-**DFGDi:**  Diversidade de formação do discente de doutorado pelo grau de graduação <br>
-**DFGDim:** Diversidade de formação do discente de doutorado pelo grau de graduação <br>
-
-**Constructos:** <br>
-**FCDi**    Diversidade na formação dos discentes de doutorado nos PPG <br>
-**FCDim**   Diversidade na formação dos discentes de mestrado nos PPG <br>
-
-`OBS` *- Ao final das transformações de dados para formações de doutorado e mestrado de discentes, ambos os contructos são unificados em um único dataset, e caso um programa possua indicadores de doutorado e mestrado simultâneamente, apenas os valores de doutorado são considerados.*
+**DFGDi:**  Diversidade de formação do discente  pelo grau de graduação <br>
 
 ```{r Formação discente, message=FALSE, warning=FALSE, paged.print=TRUE}
 
-ds_IMI2_QDDP <- ds_frmdic %>% 
+ds_frmdic_ttl <- rbind(ds_frmdic, ds_frmdic_mestrado) %>% 
+  filter(nivel_formacao == "Graduação") %>% 
+  group_by(cod_programa, 
+           nome_filtro_cvlattes, 
+           doc_ou_disc,
+           nome_curso_formacao) %>%
+  summarise(QT = n()) ## Junção de formações de discentes e filtro de graduação
+
+ write.csv2(ds_frmdic_ttl, paste0(v_path_inter, "ds_frmdic_ttl.csv"))
+
+ds_IMI2_QDP <- ds_frmdic_ttl %>% 
   group_by(cod_programa, nome_filtro_cvlattes) %>% 
   summarise(QT = n()) %>% 
   group_by(cod_programa) %>% 
-  summarise(QDDP = n())
+  summarise(QDP = n())
 
- write.csv2(ds_IMI2_QDDP, paste0(v_path_inter, "ds_IMI2_QDDP.csv"))
+ write.csv2(ds_IMI2_QDP, paste0(v_path_inter, "ds_IMI2_QDP.csv"))
 
-ds_IMI2_QFMDi <- ds_frmdic %>% 
-  filter(nivel_formacao == "Mestrado") %>% 
-  group_by(cod_programa, nome_curso_formacao) %>% 
-  summarise(QT = n()) %>%   
-  group_by(cod_programa) %>% 
-  summarise(QFMDi = n()) 
-
- write.csv2(ds_IMI2_QFMDi, paste0(v_path_inter, "ds_IMI2_QFMDi.csv"))
-
-ds_IMI2_QFGDi <- ds_frmdic %>% 
-  filter(nivel_formacao == "Graduação") %>% 
+ds_IMI2_QFGDi <- ds_frmdic_ttl %>% 
   group_by(cod_programa, nome_curso_formacao) %>% 
   summarise(QT = n()) %>%   
   group_by(cod_programa) %>% 
@@ -262,67 +251,22 @@ ds_IMI2_QFGDi <- ds_frmdic %>%
 
  write.csv2(ds_IMI2_QFGDi, paste0(v_path_inter, "ds_IMI2_QFGDi.csv"))
 
-ds_IMI2_FCDi <- merge(ds_IMI2_QFMDi, ds_IMI2_QFGDi, by = "cod_programa", all.y = T) %>% 
-  merge(., ds_IMI2_QDDP, by = "cod_programa", all.x = T) %>% 
-  mutate(DFMDi = QFMDi/QDDP,
-         DFGDi = QFGDi/QDDP) %>% ## Fórmulas dos indicadores
-  filter(DFMDi <= 1, DFGDi <= 1) %>% ## Limpeza de ocorrências acima de 1.0
-  mutate(FCDi = (DFMDi + DFGDi)/2) ## Fórmula do constructo
-  
-ds_IMI2_QDDPm <- ds_frmdic_mestrado %>% 
-  group_by(cod_programa, nome_filtro_cvlattes) %>% 
-  summarise(QT = n()) %>% 
-  group_by(cod_programa) %>% 
-  summarise(QDDPm = n())
-
- write.csv2(ds_IMI2_QDDPm, paste0(v_path_inter, "ds_IMI2_QDDPm.csv"))
-  
-ds_IMI2_QFGDim <- ds_frmdic_mestrado %>% 
-  filter(nivel_formacao == "Graduação") %>% 
-  group_by(cod_programa, nome_curso_formacao) %>% 
-  summarise(QT = n()) %>%   
-  group_by(cod_programa) %>% 
-  summarise(QFGDim = n())
-
- write.csv2(ds_IMI2_QFGDim, paste0(v_path_inter, "ds_IMI2_QFGDim.csv"))
-
-ds_IMI2_FCDim <- merge(ds_IMI2_QDDPm, ds_IMI2_QFGDim, by = "cod_programa", all = T) %>% 
-  mutate(DFGDim = QFGDim/QDDPm) %>% ## Fórmula do indicador
-  filter(DFGDim <= 1) %>% ## Limpeza de ocorrências acima de 1.0
-  mutate(FCDim = DFGDim) ## Constructo
-
- write.csv2(ds_IMI2_FCDim, paste0(v_path_inter, "ds_IMI2_FCDim.csv"))
-
-#### Unificação de dados para Mestrado e Doutorado ----------------------------------------------
- 
-ds_IMI2_FCDi_inter <- merge(ds_IMI2_FCDim, ds_IMI2_FCDi, by = "cod_programa", all = T)
-
-ds_IMI2_FCDi_inter <- ds_IMI2_FCDi_inter[is.na(ds_IMI2_FCDi_inter$FCDi),] ## Somente programas 
-                                                                          ## de mestrado
-
-ds_IMI2_FCDi_inter %<>% select(cod_programa,
-                               QFMDi,
-                               QFGDi = QFGDim,
-                               QDDP = QDDPm,
-                               DFMDi,
-                               DFGDi = DFGDim,
-                               FCDi = FCDim) ## Seleção de campo para formato do FCDi
-
-ds_IMI2_FCDi %<>% rbind(., ds_IMI2_FCDi_inter) %>% ## União de programas de mestrado e doutorado
+ds_IMI2_FCDi <- merge(ds_IMI2_QFGDi, ds_IMI2_QDP, by = "cod_programa", all.x = T) %>% 
+  mutate(DFGDi = QFGDi/QDP) %>% ## Fórmula do indicador
+  filter(DFGDi <= 1) %>% ## Limpeza de ocorrências acima de 1.0
+  mutate(FCDi = DFGDi) %>%  ## Fórmula do constructo
   merge(ds_prg, ., by.x = "CD_PROGRAMA_IES", by.y = "cod_programa", all.y = T) ## Categorias
 
-#### -------------------------------------------------------------------------------------------- 
-
  write.csv2(ds_IMI2_FCDi, paste0(v_path_o, "FCDi.csv"))
- kable(ds_IMI2_FCDi[1:12, c(1,8:13)]) ## Amostra do arquivo gerado acima, sem as categorias
+ kable(ds_IMI2_FCDi[1:12, c(1,8:11)]) ## Amostra do arquivo gerado acima, sem as categorias
 ```
 
 ## IMI 3 - Instituições participantes e membros de projetos
 ### CC - Colaboração Científica
 
 **Variáveis:** <br>
-**QIP:**    Quantidade de instituições participantes no programa <br>
-**QPV:**    Quantidade de projetos no programa <br>
+**QIP:**    Quantidade de instituições participantes nos projetos <br>
+**QPP:**    Quantidade de projetos no programa <br>
 
 #### Intituições
 ```{r Instituições, message=FALSE, warning=FALSE, paged.print=TRUE}
@@ -340,18 +284,18 @@ ds_IMI3_QIP <- ds_fin %>%
 
  write.csv2(ds_IMI3_QIP, paste0(v_path_inter, "ds_IMI3_QIP.csv"))
 
-ds_IMI3_QPV <- ds_fin %>% 
+ds_IMI3_QPP <- ds_fin %>% 
   group_by(CD_PROGRAMA_IES, ID_PROJETO) %>% 
   summarise(QT = n()) %>% 
   group_by(CD_PROGRAMA_IES) %>% 
-  summarise(QPV = n())
+  summarise(QPP = n())
 
- write.csv2(ds_IMI3_QPV, paste0(v_path_inter, "ds_IMI3_QPV.csv"))
+ write.csv2(ds_IMI3_QPP, paste0(v_path_inter, "ds_IMI3_QPP.csv"))
 ```
 
 **Variáveis:** <br>
-**DFPP:**   Diversidade formações dos participantes (graduação) dos projetos <br>
-**QPP:**    Quantidade de partipantes dos projetos <br>
+**DFPP:**   Diversidade formações dos participantes dos projetos (graduação). <br>
+**QMP:**    Quantidade de membros dos projetos <br>
 
 **Indicadores:** <br>
 **DFCP:**   Diversidade de formações que colaboram por meio de projetos <br>
@@ -386,30 +330,30 @@ ds_IMI3_DFPP <- ds_MbrPrj_grd %>%
 
  write.csv2(ds_IMI3_DFPP, paste0(v_path_inter, "ds_IMI3_DFPP.csv"))
 
-ds_IMI3_QPP <- ds_MbrPrj_grd %>% 
+ds_IMI3_QMP <- ds_MbrPrj_grd %>% 
   group_by(CD_PROGRAMA_IES, ID_PROJETO, NM_MEMBRO_PROJETO) %>% 
   summarise(QT = n()) %>% 
   group_by(CD_PROGRAMA_IES, ID_PROJETO) %>% 
-  summarise(QPP = n()) 
+  summarise(QMP = n()) 
 
- write.csv2(ds_IMI3_QPP, paste0(v_path_inter, "ds_IMI3_QPP.csv"))
+ write.csv2(ds_IMI3_QMP, paste0(v_path_inter, "ds_IMI3_QMP.csv"))
 
 #### Geração de arquivo de colaboração no nível de projetos para conferência de dados -----------
 
-ds_DFCP <- merge(ds_IMI3_DFPP, ds_IMI3_QPP , by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>% 
-  mutate(DFCP = DFPP/QPP) %>% 
+ds_DFCP <- merge(ds_IMI3_DFPP, ds_IMI3_QMP , by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>% 
+  mutate(DFCP = DFPP/QMP) %>% 
   filter(DFCP <= 1)
  
  write.csv2(ds_DFCP, paste0(v_path_o, "DFCP.csv"))
 #### --------------------------------------------------------------------------------------------
 kable(ds_DFCP[1:12, ]) ## Amostra do arquivo gerado acima
 
-ds_IMI3_DFCP <- merge(ds_IMI3_DFPP, ds_IMI3_QPP, by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>% 
-  mutate(DFCP = DFPP/QPP) %>% ## Fórmula do indicador
+ds_IMI3_DFCP <- merge(ds_IMI3_DFPP, ds_IMI3_QMP, by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>% 
+  mutate(DFCP = DFPP/QMP) %>% ## Fórmula do indicador
   filter(DFCP <= 1) %>% ## Limpeza de ocorrências acima de 1.0
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(DFPP = mean(DFPP),
-            QPP = mean(QPP),
+            QMP = mean(QMP),
             DFCP = mean(DFCP)) ## Consolidação de variáveis e indicador
 
  write.csv2(ds_IMI3_DFCP, paste0(v_path_inter, "ds_IMI3_DFCP.csv"))
@@ -421,11 +365,11 @@ ds_IMI3_DFCP <- merge(ds_IMI3_DFPP, ds_IMI3_QPP, by = c("CD_PROGRAMA_IES", "ID_P
 #### Consolidação da Colaboração Científica
 ```{r Constructo completo, message=FALSE, warning=FALSE, paged.print=TRUE}
 
-ds_IMI3_CC <- merge(ds_IMI3_QIP, ds_IMI3_QPV, by = "CD_PROGRAMA_IES", all.x = T) %>% 
+ds_IMI3_CC <- merge(ds_IMI3_QIP, ds_IMI3_QPP, by = "CD_PROGRAMA_IES", all.x = T) %>% 
   merge(., ds_IMI3_DFCP, by = "CD_PROGRAMA_IES", all.x = T) %>% ## Junção com indicador de
                                                                 ## diversidade de formações 
                                                                 ## de colaboradores
-  mutate(DIPP = QIP/QPV) %>% ## Fórmula do indicador
+  mutate(DIPP = QIP/QPP) %>% ## Fórmula do indicador
   filter(DIPP <= 1) %>% ## Limpeza de ocorrências acima de 1.0
   mutate(CC = (DFCP + DIPP)/2) ## Fórmula do constructo
   
@@ -441,46 +385,46 @@ ds_IMI3_CC %<>% merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T) ## Categoria
 ### CP - Contexto Profissional
 
 **Variáveis:** <br>
-**QE:**     Quantidade de áreas informadas <br>
-**DGAD:**   Diversidade de grande áreas de conhecimento que o docente atua <br>
-**DACD:**   Diversidade de áreas do conhecimento que o docente atua <br>
+**QCDI:**   Quantidade de combinações distintas informadas <br>
+**QGAD:**   Quantidade de grande áreas de conhecimento que o docente atua <br>
+**QACD:**   Quantidade de áreas do conhecimento que o docente atua <br>
 
 **Indicadores:** <br>
 **DGAC:**   Diversidade de grande áreas do conhecimento que o docente atua <br>
-**DAC:**    Diversidade de áreas ddo conhecimento que o docente atua <br>
+**DAC:**    Diversidade de áreas do conhecimento que o docente atua <br>
 
 ```{r Contexto Profissional, message=FALSE, warning=FALSE, paged.print=TRUE}
 ds_aratdo <- read_excel(paste0(v_path_i, 'Areas_de_atuacao_docentes_25_06_2019.xlsx'))
 
-ds_IMI4_QE <- ds_aratdo %>% 
+ds_IMI4_QCDI <- ds_aratdo %>% 
   mutate(espec_doc = paste0(grande_area, nome_area, sub_area, especialidade)) %>% 
   group_by(cod_programa, nome_filtro_cvlattes, espec_doc) %>% 
   summarise(QT = n()) %>% 
   group_by(cod_programa, nome_filtro_cvlattes) %>% 
-  summarise(QE = n())
+  summarise(QCDI = n())
 
- write.csv2(ds_IMI4_QE, paste0(v_path_inter, "ds_IMI4_QE.csv"))
+ write.csv2(ds_IMI4_QCDI, paste0(v_path_inter, "ds_IMI4_QCDI.csv"))
 
-ds_IMI4_DGAD <- ds_aratdo %>%
+ds_IMI4_QGAD <- ds_aratdo %>%
   group_by(cod_programa, nome_filtro_cvlattes, grande_area) %>% 
   summarise(QT = n()) %>% 
   group_by(cod_programa, nome_filtro_cvlattes) %>% 
-  summarise(DGAD = n())
+  summarise(QGAD = n())
 
- write.csv2(ds_IMI4_DGAD, paste0(v_path_inter, "ds_IMI4_DGAD.csv"))
+ write.csv2(ds_IMI4_QGAD, paste0(v_path_inter, "ds_IMI4_QGAD.csv"))
 
-ds_IMI4_DACD <- ds_aratdo %>%
+ds_IMI4_QACD <- ds_aratdo %>%
   group_by(cod_programa, nome_filtro_cvlattes, nome_area) %>% 
   summarise(QT = n()) %>% 
   group_by(cod_programa, nome_filtro_cvlattes) %>% 
-  summarise(DACD = n())
+  summarise(QACD = n())
 
- write.csv2(ds_IMI4_DACD, paste0(v_path_inter, "ds_IMI4_DACD.csv"))
+ write.csv2(ds_IMI4_QACD, paste0(v_path_inter, "ds_IMI4_QACD.csv"))
 
-ds_IMI4_CP <- merge(ds_IMI4_DGAD, ds_IMI4_DACD, by = c("cod_programa","nome_filtro_cvlattes"), all.x = T) %>% 
-  merge(., ds_IMI4_QE, by = c("cod_programa","nome_filtro_cvlattes"), all.x = T) %>% 
-  mutate(DGAC = DGAD/QE,
-         DAC = DACD/QE) %>% ## Fórmulas dos indicadores
+ds_IMI4_CP <- merge(ds_IMI4_QGAD, ds_IMI4_QACD, by = c("cod_programa","nome_filtro_cvlattes"), all.x = T) %>% 
+  merge(., ds_IMI4_QCDI, by = c("cod_programa","nome_filtro_cvlattes"), all.x = T) %>% 
+  mutate(DGAC = QGAD/QCDI,
+         DAC = QACD/QCDI) %>% ## Fórmulas dos indicadores
   filter(DGAC <= 1, DAC <= 1) %>% ## Limpeza de ocorrências acima de 1.0
   mutate(CP = (DGAC + DAC)/2) ## Fórmula do constructo
 
@@ -527,15 +471,15 @@ ds_IMI %<>% mutate(IMI = (FCDo + FCDi + CC + CP)/4) %>%
 <p align="justify">Preparação, transformações e calculo de variáveis e indicadores que compõe o IPT - Indice de Produção Tecnologica.</p>
 
 **Variáveis:** <br>
-**SPPAP:**  Soma de patentes produzidos por programa <br>
-**QPPr:**   Soma de produtos produzidos por programa <br>
-**QPA:**    Soma de aplicativos produzidos por programa <br>
+**SPPP:**   Soma de patentes produzidos por programa <br>
+**SPPPr:**  Soma de produtos produzidos por programa <br>
+**SAPP:**   Soma de aplicativos produzidos por programa <br>
 **QPPP:**   Quantidade de professores permanentes do programa <br>
 
 **Indicadores:** <br>
-**iQPP:**   Quantitativo de produção de patentes por Programa <br>
-**iQPPr:**  Quantitativo de produção de produtos por Programa <br>
-**iQPA:**   Quantitativo de produção de aplicativos por Programa <br>
+**QPPa:**  Quantitativo de produção de patentes por Programa <br>
+**QPPr:**  Quantitativo de produção de produtos por Programa <br>
+**QPA:**   Quantitativo de produção de aplicativos por Programa <br>
 
 ```{r IPT, message=FALSE, warning=FALSE, paged.print=TRUE}
 
@@ -549,46 +493,46 @@ ds_PT_prdprg <- read_excel(paste0(v_path_i, "Produtos_tese.xlsx"))
 
 ds_PT_patprg <- ds_PT_patprg[complete.cases(ds_PT_patprg[,"NM_PRODUCAO"]),] ## Filtro de produção valida
 
-ds_IPT1_SPPAP <- ds_PT_patprg %>%
+ds_IPT1_SPPP<- ds_PT_patprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
-  summarise(SPPAP = n())
+  summarise(SPPP = n())
 
- write.csv2(ds_IPT1_SPPAP, paste0(v_path_inter, "ds_IPT1_SPPAP.csv"))
+ write.csv2(ds_IPT1_SPPP, paste0(v_path_inter, "ds_IPT1_SPPP.csv"))
 
 #### --------------------------------------------------------------------------------------------
 
 ds_PT_prdprg <- ds_PT_prdprg[complete.cases(ds_PT_prdprg[,"DSFINALIDADE_TRATADA"]),] ## Filtro de produção valida
 
-ds_IPT2_QPPr <- ds_PT_prdprg %>%
+ds_IPT2_SPPPr <- ds_PT_prdprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
-  summarise(QPPr = n())
+  summarise(SPPPr = n())
 
- write.csv2(ds_IPT2_QPPr, paste0(v_path_inter, "ds_IPT2_QPPr.csv"))
+ write.csv2(ds_IPT2_SPPPr, paste0(v_path_inter, "ds_IPT2_SPPPr.csv"))
 
 #### --------------------------------------------------------------------------------------------
 
 ds_PT_appprg <- ds_PT_appprg[complete.cases(ds_PT_appprg[,"DS_FINALIDADE"]),] ## Filtro de produção valida
 
-ds_IPT3_QPA <- ds_PT_appprg %>%
+ds_IPT3_SAPP <- ds_PT_appprg %>%
   group_by(CD_PROGRAMA_IES) %>% 
-  summarise(QPA = n())
+  summarise(SAPP = n())
 
- write.csv2(ds_IPT3_QPA, paste0(v_path_inter, "ds_IPT3_QPA.csv"))
+ write.csv2(ds_IPT3_SAPP, paste0(v_path_inter, "ds_IPT3_SAPP.csv"))
 
 #### --------------------------------------------------------------------------------------------
 
-ds_IPT <- merge(ds_IMI1_QPPP, ds_IPT1_SPPAP, by.x = "cod_programa", by.y = "CD_PROGRAMA_IES", all.x = T) %>% 
-  select(CD_PROGRAMA_IES = cod_programa, QPPP, SPPAP) %>% 
-  merge(., ds_IPT2_QPPr, by = "CD_PROGRAMA_IES", all.x = T) %>% 
-  merge(., ds_IPT3_QPA, by = "CD_PROGRAMA_IES", all.x = T)
+ds_IPT <- merge(ds_IMI1_QPPP, ds_IPT1_SPPP, by.x = "cod_programa", by.y = "CD_PROGRAMA_IES", all.x = T) %>% 
+  select(CD_PROGRAMA_IES = cod_programa, QPPP, SPPP) %>% 
+  merge(., ds_IPT2_SPPPr, by = "CD_PROGRAMA_IES", all.x = T) %>% 
+  merge(., ds_IPT3_SAPP, by = "CD_PROGRAMA_IES", all.x = T)
 
 ds_IPT[is.na(ds_IPT)] <- 0 ### Conversão de NA para 0
 
-ds_IPT %<>% mutate(iQPP = SPPAP/QPPP,
-                   iQPPr = QPPr/QPPP,
-                   iQPA = QPA/QPPP) %>% ## Fórmulas dos indicadores
-  filter(iQPP <= 1, iQPPr <= 1, iQPA <= 1) %>% ## Limpeza de ocorrências acima de 1.0
-  mutate(IPT = (iQPP+iQPPr+iQPA)/3) %>% ## Fórmula do indice
+ds_IPT %<>% mutate(QPPa = SPPP/QPPP,
+                   QPPr = SPPPr/QPPP,
+                   QPA = SAPP/QPPP) %>% ## Fórmulas dos indicadores
+  filter(QPPa <= 1, QPPr <= 1, QPA <= 1) %>% ## Limpeza de ocorrências acima de 1.0
+  mutate(IPT = (QPPa+QPPr+QPA)/3) %>% ## Fórmula do indice
   merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T) ## Categorias
 
  write.csv2(ds_IPT, paste0(v_path_o, "IPT.csv"))

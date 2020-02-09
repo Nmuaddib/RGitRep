@@ -1,3 +1,106 @@
+## IMI 2 - Formação discente
+### FCDi - Diversidade na formação dos discentes nos PPG
+
+# **Variáveis:** <br>
+#    **QDDP:**   Quantidade de discentes de doutorado do programa <br>
+#    **QFMDi:**  Quantidade das formações dos discentes de doutorado no grau de mestrado <br>
+#    **QFGDi:**  Quantidade das formações dos discentes de doutorado no grau de graduação <br>
+#    **QDDPm:**  Quantidade de discentes de mestrado do programa <br>
+#    **QFGDim:** Quantidade das formações dos discentes de mestrado no grau de graduação <br>
+#    
+#    **Indicadores:** <br>
+#    **DFMDi:**  Diversidade de formação do discente de doutorado pelo grau de mestrado <br>
+#    **DFGDi:**  Diversidade de formação do discente de doutorado pelo grau de graduação <br>
+#    **DFGDim:** Diversidade de formação do discente de mestrado pelo grau de graduação <br>
+#    
+#    **Constructos:** <br>
+#    **FCDi**    Diversidade na formação dos discentes de doutorado nos PPG <br>
+#    **FCDim**   Diversidade na formação dos discentes de mestrado nos PPG <br>
+#    
+#    `OBS` *- Ao final das transformações de dados para formações de doutorado e mestrado de discentes, ambos os contructos são unificados em um único dataset, e caso um programa possua indicadores de doutorado e mestrado simultâneamente, apenas os valores de doutorado são considerados.*
+
+ds_IMI2_QDDP <- ds_frmdic %>% 
+   group_by(cod_programa, nome_filtro_cvlattes) %>% 
+   summarise(QT = n()) %>% 
+   group_by(cod_programa) %>% 
+   summarise(QDDP = n())
+
+write.csv2(ds_IMI2_QDDP, paste0(v_path_inter, "ds_IMI2_QDDP.csv"))
+
+ds_IMI2_QFMDi <- ds_frmdic %>% 
+   filter(nivel_formacao == "Mestrado") %>% 
+   group_by(cod_programa, nome_curso_formacao) %>% 
+   summarise(QT = n()) %>%   
+   group_by(cod_programa) %>% 
+   summarise(QFMDi = n()) 
+
+write.csv2(ds_IMI2_QFMDi, paste0(v_path_inter, "ds_IMI2_QFMDi.csv"))
+
+ds_IMI2_QFGDi <- ds_frmdic %>% 
+   filter(nivel_formacao == "Graduação") %>% 
+   group_by(cod_programa, nome_curso_formacao) %>% 
+   summarise(QT = n()) %>%   
+   group_by(cod_programa) %>% 
+   summarise(QFGDi = n()) 
+
+write.csv2(ds_IMI2_QFGDi, paste0(v_path_inter, "ds_IMI2_QFGDi.csv"))
+
+ds_IMI2_FCDi <- merge(ds_IMI2_QFMDi, ds_IMI2_QFGDi, by = "cod_programa", all.y = T) %>% 
+   merge(., ds_IMI2_QDDP, by = "cod_programa", all.x = T) %>% 
+   mutate(DFMDi = QFMDi/QDDP,
+          DFGDi = QFGDi/QDDP) %>% ## Fórmulas dos indicadores
+   filter(DFMDi <= 1, DFGDi <= 1) %>% ## Limpeza de ocorrências acima de 1.0
+   mutate(FCDi = (DFMDi + DFGDi)/2) ## Fórmula do constructo
+
+ds_IMI2_QDDPm <- ds_frmdic_mestrado %>% 
+   group_by(cod_programa, nome_filtro_cvlattes) %>% 
+   summarise(QT = n()) %>% 
+   group_by(cod_programa) %>% 
+   summarise(QDDPm = n())
+
+write.csv2(ds_IMI2_QDDPm, paste0(v_path_inter, "ds_IMI2_QDDPm.csv"))
+
+ds_IMI2_QFGDim <- ds_frmdic_mestrado %>% 
+   filter(nivel_formacao == "Graduação") %>% 
+   group_by(cod_programa, nome_curso_formacao) %>% 
+   summarise(QT = n()) %>%   
+   group_by(cod_programa) %>% 
+   summarise(QFGDim = n())
+
+write.csv2(ds_IMI2_QFGDim, paste0(v_path_inter, "ds_IMI2_QFGDim.csv"))
+
+ds_IMI2_FCDim <- merge(ds_IMI2_QDDPm, ds_IMI2_QFGDim, by = "cod_programa", all = T) %>% 
+   mutate(DFGDim = QFGDim/QDDPm) %>% ## Fórmula do indicador
+   filter(DFGDim <= 1) %>% ## Limpeza de ocorrências acima de 1.0
+   mutate(FCDim = DFGDim) ## Constructo
+
+write.csv2(ds_IMI2_FCDim, paste0(v_path_inter, "ds_IMI2_FCDim.csv"))
+
+#### Unificação de dados para Mestrado e Doutorado ----------------------------------------------
+
+ds_IMI2_FCDi_inter <- merge(ds_IMI2_FCDim, ds_IMI2_FCDi, by = "cod_programa", all = T)
+
+##ds_IMI2_FCDi_inter <- ds_IMI2_FCDi_inter[complete.cases(ds_IMI2_FCDi_inter),] ## Casos completos
+
+ds_IMI2_FCDi_inter <- ds_IMI2_FCDi_inter[is.na(ds_IMI2_FCDi_inter$FCDi),] ## Somente programas 
+## de mestrado
+
+ds_IMI2_FCDi_inter %<>% select(cod_programa,
+                               QFMDi,
+                               QFGDi = QFGDim,
+                               QDDP = QDDPm,
+                               DFMDi,
+                               DFGDi = DFGDim,
+                               FCDi = FCDim) ## Seleção de campo para formato do FCDi
+
+ds_IMI2_FCDi %<>% rbind(., ds_IMI2_FCDi_inter) %>% ## União de programas de mestrado e doutorado
+   merge(ds_prg, ., by.x = "CD_PROGRAMA_IES", by.y = "cod_programa", all.y = T) ## Categorias
+
+#### -------------------------------------------------------------------------------------------- 
+
+write.csv2(ds_IMI2_FCDi, paste0(v_path_o, "FCDi.csv"))
+kable(ds_IMI2_FCDi[1:12, c(1,8:13)]) ## Amostra do arquivo gerado acima, sem as categorias
+
 
 ## print(paste0(names(df[i]), '|', df[[i]][1,2])) ## Print de linha a linha
 
