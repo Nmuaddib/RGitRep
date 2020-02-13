@@ -597,7 +597,20 @@ ds_COR_ano <- ds_COR %>% select(ANO_INICIO_PROGRAMA,IMI,IPT) %>%
   split(ano_f, drop = T) %>% ## Separação por ano
   map(f.corr) ## Calculo de correlação para cada segmento
 
- ds_COR_ano <- f.print_corr(ds_COR_ano)
+ds_COR_ano <- f.print_corr(ds_COR_ano)
+
+ds_COR_ano <- ds_COR %>% group_by(ANO_INICIO_PROGRAMA) %>% 
+                         summarise(m_IMI = mean(IMI),                #|
+                                   m_IPT = mean(IPT),                #| Média
+                                   v_IMI = var(IMI),                 #|
+                                   v_IPT = var(IPT),                 #| Variancia
+                                   d_IMI = sd(IMI),                  #|
+                                   d_IPT = sd(IPT),                  #| Devio padrão 
+                                   pc_IMI = (d_IMI/m_IMI)*100,       #|
+                                   pc_IPT = (d_IPT/m_IPT)*100) %>%   #| Percentual do desvio padrão sobre valor esperado
+              merge(., ds_COR_ano, by.x = "ANO_INICIO_PROGRAMA", by.y = "cat", all = T) %>% 
+              mutate(ANO_INICIO_PROGRAMA = as.character(ANO_INICIO_PROGRAMA))
+  
  write.csv2(ds_COR_ano, paste0(v_path_o, "COR_ano.csv"))
  kable(ds_COR_ano)
 ##### ---------------------------------------------------------------------------------------
@@ -607,7 +620,20 @@ ds_COR_conceito <- ds_COR %>% select(CD_CONCEITO_PROGRAMA,IMI,IPT) %>%
   split(conceito_f, drop = T) %>% ## Separação por conceito
   map(f.corr) ## Calculo de correlação para cada segmento
 
- ds_COR_conceito <- f.print_corr(ds_COR_conceito)
+ds_COR_conceito <- f.print_corr(ds_COR_conceito)
+
+ds_COR_conceito <- ds_COR %>% group_by(CD_CONCEITO_PROGRAMA) %>% 
+                         summarise(m_IMI = mean(IMI),                #|
+                                   m_IPT = mean(IPT),                #| Média
+                                   v_IMI = var(IMI),                 #|
+                                   v_IPT = var(IPT),                 #| Variancia
+                                   d_IMI = sd(IMI),                  #|
+                                   d_IPT = sd(IPT),                  #| Devio padrão 
+                                   pc_IMI = (d_IMI/m_IMI)*100,       #|
+                                   pc_IPT = (d_IPT/m_IPT)*100) %>%   #| Percentual do desvio padrão sobre valor esperado
+              merge(., ds_COR_conceito, by.x = "CD_CONCEITO_PROGRAMA", by.y = "cat", all = T) %>% 
+              mutate(ANO_INICIO_PROGRAMA = as.character(CD_CONCEITO_PROGRAMA))
+
  write.csv2(ds_COR_conceito, paste0(v_path_o, "COR_conceito.csv"))
  kable(ds_COR_conceito)
 ##### ---------------------------------------------------------------------------------------
@@ -617,7 +643,19 @@ ds_COR_dependencia <- ds_COR %>% select(DS_DEPENDENCIA_ADMINISTRATIVA,IMI,IPT) %
   split(dependencia_f, drop = T) %>% ## Separação por dependencia
   map(f.corr) ## Calculo de correlação para cada segmento
 
- ds_COR_dependencia <- f.print_corr(ds_COR_dependencia)
+ds_COR_dependencia <- f.print_corr(ds_COR_dependencia)
+
+ds_COR_dependencia <- ds_COR %>% group_by(DS_DEPENDENCIA_ADMINISTRATIVA) %>% 
+                         summarise(m_IMI = mean(IMI),                #|
+                                   m_IPT = mean(IPT),                #| Média
+                                   v_IMI = var(IMI),                 #|
+                                   v_IPT = var(IPT),                 #| Variancia
+                                   d_IMI = sd(IMI),                  #|
+                                   d_IPT = sd(IPT),                  #| Devio padrão 
+                                   pc_IMI = (d_IMI/m_IMI)*100,       #|
+                                   pc_IPT = (d_IPT/m_IPT)*100) %>%   #| Percentual do desvio padrão sobre valor esperado
+              merge(., ds_COR_dependencia, by.x = "DS_DEPENDENCIA_ADMINISTRATIVA", by.y = "cat", all = T)
+ 
  write.csv2(ds_COR_dependencia, paste0(v_path_o, "COR_dependencia.csv"))
  kable(ds_COR_dependencia)
 ##### ---------------------------------------------------------------------------------------
@@ -627,7 +665,19 @@ ds_COR_area <- ds_COR %>% select(NM_AREA_AVALIACAO,IMI,IPT) %>%
   split(area_f, drop = T) %>% ## Separação por area
   map(f.corr) ## Calculo de correlação para cada segmento
 
- ds_COR_area <- f.print_corr(ds_COR_area)
+ds_COR_area <- f.print_corr(ds_COR_area)
+
+ds_COR_area <- ds_COR %>% group_by(NM_AREA_AVALIACAO) %>% 
+                         summarise(m_IMI = mean(IMI),                #|
+                                   m_IPT = mean(IPT),                #| Média
+                                   v_IMI = var(IMI),                 #|
+                                   v_IPT = var(IPT),                 #| Variancia
+                                   d_IMI = sd(IMI),                  #|
+                                   d_IPT = sd(IPT),                  #| Devio padrão 
+                                   pc_IMI = (d_IMI/m_IMI)*100,       #|
+                                   pc_IPT = (d_IPT/m_IPT)*100) %>%   #| Percentual do desvio padrão sobre valor esperado
+              merge(., ds_COR_area, by.x = "NM_AREA_AVALIACAO", by.y = "cat", all = T)
+
  write.csv2(ds_COR_area, paste0(v_path_o, "COR_area.csv"))
  kable(ds_COR_area)
 ##### ---------------------------------------------------------------------------------------
@@ -637,7 +687,19 @@ ds_COR_status <- ds_COR %>% select(CS_STATUS_JURIDICO,IMI,IPT) %>%
   split(status_f, drop = T) %>% ## Separação por status
   map(f.corr) ## Calculo de correlação para cada segmento
 
- ds_COR_status <- f.print_corr(ds_COR_status)
+ds_COR_status <- f.print_corr(ds_COR_status)
+
+ds_COR_status <- ds_COR %>% group_by(CS_STATUS_JURIDICO) %>% 
+                         summarise(m_IMI = mean(IMI),                #|
+                                   m_IPT = mean(IPT),                #| Média
+                                   v_IMI = var(IMI),                 #|
+                                   v_IPT = var(IPT),                 #| Variancia
+                                   d_IMI = sd(IMI),                  #|
+                                   d_IPT = sd(IPT),                  #| Devio padrão 
+                                   pc_IMI = (d_IMI/m_IMI)*100,       #|
+                                   pc_IPT = (d_IPT/m_IPT)*100) %>%   #| Percentual do desvio padrão sobre valor esperado
+              merge(., ds_COR_status, by.x = "CS_STATUS_JURIDICO", by.y = "cat", all = T)
+ 
  write.csv2(ds_COR_status, paste0(v_path_o, "COR_status.csv"))
  kable(ds_COR_status)
 ##### ---------------------------------------------------------------------------------------
@@ -647,9 +709,62 @@ ds_COR_modalidade <- ds_COR %>% select(NM_MODALIDADE_PROGRAMA,IMI,IPT) %>%
   split(modalidade_f, drop = T) %>% ## Separação por modalidade
   map(f.corr) ## Calculo de correlação para cada segmento
 
- ds_COR_modalidade <- f.print_corr(ds_COR_modalidade)
+ds_COR_modalidade <- f.print_corr(ds_COR_modalidade)
+
+ds_COR_modalidade <- ds_COR %>% group_by(NM_MODALIDADE_PROGRAMA) %>% 
+                         summarise(m_IMI = mean(IMI),                #|
+                                   m_IPT = mean(IPT),                #| Média
+                                   v_IMI = var(IMI),                 #|
+                                   v_IPT = var(IPT),                 #| Variancia
+                                   d_IMI = sd(IMI),                  #|
+                                   d_IPT = sd(IPT),                  #| Devio padrão 
+                                   pc_IMI = (d_IMI/m_IMI)*100,       #|
+                                   pc_IPT = (d_IPT/m_IPT)*100) %>%   #| Percentual do desvio padrão sobre valor esperado
+              merge(., ds_COR_modalidade, by.x = "NM_MODALIDADE_PROGRAMA", by.y = "cat", all = T)
+
  write.csv2(ds_COR_modalidade, paste0(v_path_o, "COR_modalidade.csv"))
  kable(ds_COR_modalidade)
 ##### ---------------------------------------------------------------------------------------
 ```
 
+
+```{r Graficos, fig.height=7, fig.width=10}
+
+f.mplot <- function(ds, label) {
+#### Base -------------------------------------------
+GGCor <- ggplot(data = ds, aes(x = ds[,1])) + 
+  geom_col(aes(y = (as.double(cor)*100)), 
+           width = 0.9, 
+           alpha=0.4, 
+           #stat = "sum",
+           col = "black", 
+           size = 1) + 
+  # scale_y_discrete(breaks = seq(1, 100, by = 10)) +
+  geom_hline(yintercept = 0, col = 'black', alpha = 0.9) + 
+  geom_hline(yintercept = 30, col = 'blue', alpha = 0.9) + 
+  geom_label(aes(x = 0.5, y = 32, label = 'Correlação média ^'), 
+             col = 'blue', hjust = 'left', alpha = 0.8) + 
+  geom_hline(yintercept = 60, col = 'green', alpha = 0.9) + 
+  geom_label(aes(x = 0.5, y = 62, label = 'Correlação alta ^'), 
+             col = 'green', hjust = 'left', alpha = 0.8) + 
+  geom_point(aes(y = (as.double(cor)*100)), 
+             size=1.8, shape=21, fill="black") + 
+  geom_text(aes(y = (as.double(cor)*100) + ifelse(as.double(cor) > 0, 6, -6), 
+                label = format(as.double(cor), digits = 4)), 
+            size = 2) + 
+  theme_light() + 
+  theme(axis.text.x = element_text(angle = 45, 
+                                 vjust = 1, 
+                                 size = 9, 
+                                 hjust = 1)) + 
+  labs(title = 'Correlação por Categoria', x = paste0('Categoria (_', label, '_)'), y = 'Corr * 100');GGCor 
+}
+
+f.mplot(ds_COR_ano, "Ano")
+f.mplot(ds_COR_area, "Area")
+f.mplot(ds_COR_conceito, "Conceito")
+f.mplot(ds_COR_dependencia, "Dependencia")
+f.mplot(ds_COR_modalidade, "Modalidade")
+f.mplot(ds_COR_status, "Status")
+
+```
