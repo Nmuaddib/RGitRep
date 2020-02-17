@@ -445,3 +445,11 @@ ds_COR_modalidade <- ds_COR %>% select(NM_MODALIDADE_PROGRAMA,IMI,IPT) %>%
 ds_COR_modalidade <- f.print_corr(ds_COR_modalidade)
 write.csv2(ds_COR_modalidade, "~/RGitRep/Tese MIDxPT/Analises/COR_modalidade.csv")
 ##### -------------------------------------------------------------------------------------------
+
+
+############# Juncao do IMI com IPT
+#ds_imi <- read.csv(file="../Analises/IMI.csv", sep=";")
+#ds_ipt <- read.csv(file="../Analises/IPT.csv", sep=";")
+ds_IMI_IPT <- merge(ds_imi, ds_ipt, by = "CD_PROGRAMA_IES", all = TRUE)
+write.csv2(ds_IMI_IPT, "../Analises/IMI_IPT.csv")
+##### -------------------------------------------------------------------------------------------
