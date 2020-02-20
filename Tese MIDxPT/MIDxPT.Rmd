@@ -739,6 +739,7 @@ ds_COR_modalidade <- ds_COR %>% group_by(NM_MODALIDADE_PROGRAMA) %>%
 ##### ---------------------------------------------------------------------------------------
 ```
 
+# Avaliação gráfica geral por categorias
 
 ```{r Graficos, fig.height=7, fig.width=10}
 
@@ -780,3 +781,133 @@ f.mplot(ds_COR_modalidade, "Modalidade")
 f.mplot(ds_COR_status, "Status")
 
 ```
+
+# Histogramas de IPT e IMI por Área de Avaliação
+
+```{r Histogramas Área, fig.height=7, fig.width=10}
+
+f.histo <- function(ds){
+#### Histograma por categoria pelo GGPlot2 -------------
+ GGHis <- ggplot(ds,aes(ds[,2])) +
+   stat_bin(aes(y =..density..,
+                fill = ..count..), 
+            col = "black",
+            binwidth = 0.05, 
+            alpha = 0.8) +
+   geom_density(fill = "red",
+                color = "orange",
+                alpha = 0.11) +
+   scale_x_continuous(breaks = seq(0, 1, by = 0.05)) +
+   scale_y_continuous(labels = NULL) +
+   labs(title = paste0('Histograma de ', v_idx, " - ", v_categ, " - ", ds[1,1]) , x = v_idx, y = 'Contagem') +
+   scale_fill_distiller(name = 'Observações',
+                        palette = v_pal,
+                        direction = 1);GGHis
+}
+
+v_categ <- "Área de Avaliação"
+v_idx <- "IPT"
+v_pal <- 'YlGnBu'
+
+ds_cat_P <- ds_COR %>%  select(NM_AREA_AVALIACAO, IPT) %>% 
+  split(as.factor(.$NM_AREA_AVALIACAO)) %>% 
+  map(f.histo);
+
+v_idx <- "IMI"
+v_pal <- 'YlGn'
+
+ds_cat_D <- ds_COR %>%  select(NM_AREA_AVALIACAO, IMI) %>% 
+  split(as.factor(.$NM_AREA_AVALIACAO)) %>% 
+  map(f.histo);
+
+for(i in seq_along(ds_cat_P)){
+  print(ds_cat_P[[i]])
+  print(ds_cat_D[[i]])
+}
+```
+
+# Histogramas de IPT e IMI para demais categorias (Exceto Ano de início)
+
+```{r Histogramas, fig.height=7, fig.width=10}
+
+v_categ <- "Conceito do Programa"
+v_idx <- "IPT"
+v_pal <- 'YlGnBu'
+
+ds_cat_P <- ds_COR %>%  select(CD_CONCEITO_PROGRAMA, IPT) %>% 
+  split(as.factor(.$CD_CONCEITO_PROGRAMA)) %>% 
+  map(f.histo);
+
+v_idx <- "IMI"
+v_pal <- 'YlGn'
+
+ds_cat_D <- ds_COR %>%  select(CD_CONCEITO_PROGRAMA, IMI) %>% 
+  split(as.factor(.$CD_CONCEITO_PROGRAMA)) %>% 
+  map(f.histo);
+
+for(i in seq_along(ds_cat_P)){
+  print(ds_cat_P[[i]])
+  print(ds_cat_D[[i]])
+}
+#####------------------------------------------------------------------------------------------
+v_categ <- "Status Jurídico"
+v_idx <- "IPT"
+v_pal <- 'YlGnBu'
+
+ds_cat_P <- ds_COR %>%  select(CS_STATUS_JURIDICO, IPT) %>% 
+  split(as.factor(.$CS_STATUS_JURIDICO)) %>% 
+  map(f.histo);
+
+v_idx <- "IMI"
+v_pal <- 'YlGn'
+
+ds_cat_D <- ds_COR %>%  select(CS_STATUS_JURIDICO, IMI) %>% 
+  split(as.factor(.$CS_STATUS_JURIDICO)) %>% 
+  map(f.histo);
+
+for(i in seq_along(ds_cat_P)){
+  print(ds_cat_P[[i]])
+  print(ds_cat_D[[i]])
+}
+#####------------------------------------------------------------------------------------------
+v_categ <- "Dependência Administrativa"
+v_idx <- "IPT"
+v_pal <- 'YlGnBu'
+
+ds_cat_P <- ds_COR %>%  select(DS_DEPENDENCIA_ADMINISTRATIVA, IPT) %>% 
+  split(as.factor(.$DS_DEPENDENCIA_ADMINISTRATIVA)) %>% 
+  map(f.histo);
+
+v_idx <- "IMI"
+v_pal <- 'YlGn'
+
+ds_cat_D <- ds_COR %>%  select(DS_DEPENDENCIA_ADMINISTRATIVA, IMI) %>% 
+  split(as.factor(.$DS_DEPENDENCIA_ADMINISTRATIVA)) %>% 
+  map(f.histo);
+
+for(i in seq_along(ds_cat_P)){
+  print(ds_cat_P[[i]])
+  print(ds_cat_D[[i]])
+}
+#####------------------------------------------------------------------------------------------
+v_categ <- "Modalidade do Programa"
+v_idx <- "IPT"
+v_pal <- 'YlGnBu'
+
+ds_cat_P <- ds_COR %>%  select(NM_MODALIDADE_PROGRAMA, IPT) %>% 
+  split(as.factor(.$NM_MODALIDADE_PROGRAMA)) %>% 
+  map(f.histo);
+
+v_idx <- "IMI"
+v_pal <- 'YlGn'
+
+ds_cat_D <- ds_COR %>%  select(NM_MODALIDADE_PROGRAMA, IMI) %>% 
+  split(as.factor(.$NM_MODALIDADE_PROGRAMA)) %>% 
+  map(f.histo);
+
+for(i in seq_along(ds_cat_P)){
+  print(ds_cat_P[[i]])
+  print(ds_cat_D[[i]])
+}
+```
+
