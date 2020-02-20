@@ -20,15 +20,15 @@ Bibliotecas utilizadas, código abaixo (oculto, utilize o botão a direita para 
 knitr::opts_chunk$set(echo = TRUE)
 options(scipen=999)
 #### --------------------------------------------------------
-library("stringr", lib.loc="~/R/win-library/3.4")
-library("dplyr", lib.loc="~/R/win-library/3.4")
-library("ggplot2", lib.loc="~/R/win-library/3.4")
-library("readr", lib.loc="~/R/win-library/3.4")
-library("tibble", lib.loc="~/R/win-library/3.4")
-library("tidyr", lib.loc="~/R/win-library/3.4")
-library("magrittr", lib.loc="~/R/win-library/3.4")
-library("readxl", lib.loc="~/R/win-library/3.4")
-library("purrr", lib.loc="~/R/win-library/3.4")
+library("stringr", lib.loc="~/R/win-library/3.5")
+library("dplyr", lib.loc="~/R/win-library/3.5")
+library("ggplot2", lib.loc="~/R/win-library/3.5")
+library("readr", lib.loc="~/R/win-library/3.5")
+library("tibble", lib.loc="~/R/win-library/3.5")
+library("tidyr", lib.loc="~/R/win-library/3.5")
+library("magrittr", lib.loc="~/R/win-library/3.5")
+library("readxl", lib.loc="~/R/win-library/3.5")
+library("purrr", lib.loc="~/R/win-library/3.5")
 #### --------------------------------------------------------
 ```
 
@@ -45,14 +45,14 @@ Para separação dos seguintes grupos:
 ```{r processo detalhado, message=FALSE, warning=FALSE}
 ##----------------------------------------------------------------------------
 ##----------------------------------------------------------------------------
-  v.top <- 20
-  v.limite_min <- 35*1000*1000
+  v.top <- 400
+  v.limite_min <- 1
 ##----------------------------------------------------------------------------
 ##----------------------------------------------------------------------------
 
 x_anomes_id <- read_excel('anomes_id.xlsx') %>% mutate(anomes = factor(anomes))
-x_fat_ate_d <- read_excel('Geral2014_17_prestadores_d.xlsx')
-x_geral_d <- read_excel('Geral2014_17_d.xlsx')
+x_fat_ate_d <- read_excel('Geral2014_18_prestadores_lab_d.xls')
+x_geral_d <- read_excel('Geral2014_18_lab_d.xlsx')
 
 print(paste0('Representatividade dos 200 maiores prestadores no faturamento total (2014-2017/07): ', round((((sum(x_fat_ate_d$VA)+sum(x_fat_ate_d$VR))/(sum(x_geral_d$VA)+sum(x_geral_d$VR)))*100), 2), '%   '))
 print(paste0('Parâmetro de seleção de prestadores (top N): ', v.top, '    '))

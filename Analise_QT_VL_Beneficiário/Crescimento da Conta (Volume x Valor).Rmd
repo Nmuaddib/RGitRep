@@ -21,17 +21,17 @@ Bibliotecas utilizadas no trabalho no código abaixo
 knitr::opts_chunk$set(echo = TRUE)
 options(scipen=999)
 # ------------------------------------------------------------------------------------------
-library("stringr", lib.loc="~/R/win-library/3.4")
-library("dplyr", lib.loc="~/R/win-library/3.4")
-library("ggplot2", lib.loc="~/R/win-library/3.4")
-library("readr", lib.loc="~/R/win-library/3.4")
-library("tibble", lib.loc="~/R/win-library/3.4")
-library("tidyr", lib.loc="~/R/win-library/3.4")
-library("magrittr", lib.loc="~/R/win-library/3.4")
-library("readxl", lib.loc="~/R/win-library/3.4")
-library("purrr", lib.loc="~/R/win-library/3.4")
-library("DBI", lib.loc="~/R/win-library/3.4")
-library("ROracle", lib.loc="~/R/win-library/3.4")
+library("stringr")
+library("dplyr")
+library("ggplot2")
+library("readr")
+library("tibble")
+library("tidyr")
+library("magrittr")
+library("readxl")
+library("purrr")
+library("DBI")
+#library("ROracle")
 # ------------------------------------------------------------------------------------------
 ```
 
@@ -46,13 +46,13 @@ x_vv_main_c <- read_excel('VV_extract_sqlbi_AMB_ESP.xlsx')
 
 x_vv_main %<>% 
   mutate(ANOMES = factor(.$ANOMES), ANO = factor(.$ANO)) %>% 
-  as.tibble()
+  as_tibble()
 
 x_vv_main_c %<>%  
   mutate(CLASSE = factor(paste0(.$ANO,'-', .$CLASSE)),
          ANOMES = factor(.$ANOMES), 
          ANO = factor(.$ANO)) %>%
-  as.tibble()
+  as_tibble()
 ```
 
 ### Processo de criação do sumário anual
