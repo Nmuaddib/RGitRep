@@ -46,13 +46,25 @@ v_path_inter <- "~/RGitRep/Tese MIDxPT/Resultados intermediarios/" ## Caminho pa
 
 ds_prgppg <- read_excel(paste0(v_path_i, "Programas PPG 2016.xlsx"))
 ds_prjppg <- read_excel(paste0(v_path_i, "Projetos PPG 2016.xlsx"))
-ds_prg <- ds_prgppg %>% select(CD_PROGRAMA_IES,
+
+ds_siglas <- read_excel(paste0(v_path_i, "Siglas áreas de avaliação.xlsx")) %>% 
+             select(nome = "Nome área de avaliação",
+                    sigla = "Sigla")
+
+ds_prg <- ds_prgppg %>% merge(., ds_siglas, by.x = "NM_AREA_AVALIACAO", by.y = "nome") %>%  # Incluindo sigla
+                        select(CD_PROGRAMA_IES,
                                NM_AREA_AVALIACAO,
+                               SG_AREA_AVALIACAO = sigla,
                                CS_STATUS_JURIDICO,
                                DS_DEPENDENCIA_ADMINISTRATIVA,
                                ANO_INICIO_PROGRAMA,
                                NM_MODALIDADE_PROGRAMA,
-                               CD_CONCEITO_PROGRAMA)
+                               CD_CONCEITO_PROGRAMA,
+                               NM_REGIAO,             # Novas categorias
+                               SG_UF_PROGRAMA,        #
+                               SG_ENTIDADE_ENSINO,    #
+                               NM_PROGRAMA_IES,       #
+                               NM_GRAU_PROGRAMA)
 
  write.csv2(ds_prg, paste0(v_path_inter, "ds_prg.csv"))
 
@@ -205,14 +217,14 @@ ds_IMI1_FCDo <- merge(ds_IMI1_QFDPD, ds_IMI1_QFDPM, by = "cod_programa", all.x =
   mutate(DFDDo = QFDPD/QPPP,
          DFDM = QFDPM/QPPP,
          DFDG = QFDPG/QPPP) %>% ## Fórmulas dos indicadores
-  mutate(DFDDo = ifelse(DFDDo <= 1, DFDDo, 1),  
-         DFDM = ifelse(DFDM <= 1, DFDM, 1), 
-         DFDG = ifelse(DFDG <= 1, DFDG, 1)) %>% ## Limpeza de ocorrências acima de 1.0
+  #mutate(DFDDo = ifelse(DFDDo <= 1, DFDDo, 1),  
+  #       DFDM = ifelse(DFDM <= 1, DFDM, 1), 
+  #       DFDG = ifelse(DFDG <= 1, DFDG, 1)) %>% ## Limpeza de ocorrências acima de 1.0
   mutate(FCDo = (DFDDo + DFDM + DFDG)/3) %>% ## Fórmula do constructo
   merge(ds_prg, ., by.x = "CD_PROGRAMA_IES", by.y = "cod_programa", all.y = T) ## Categorias
 
  write.csv2(ds_IMI1_FCDo, paste0(v_path_o, "FCDo.csv"))
- kable(ds_IMI1_FCDo[1:12, c(1,8:15)]) ## Amostra do arquivo gerado acima, sem as categorias
+ kable(ds_IMI1_FCDo[1:12, ]) #c(1,8:15)]) ## Amostra do arquivo gerado acima, sem as categorias
 ```
 
 ## IMI 2 - Formação discente
@@ -255,12 +267,12 @@ ds_IMI2_QFGDi <- ds_frmdic_ttl %>%
 
 ds_IMI2_FCDi <- merge(ds_IMI2_QFGDi, ds_IMI2_QDP, by = "cod_programa", all.x = T) %>% 
   mutate(DFGDi = QFGDi/QDP) %>% ## Fórmula do indicador
-  mutate(DFGDi = ifelse(DFGDi <= 1, DFGDi, 1)) %>% ## Limpeza de ocorrências acima de 1.0
+  #mutate(DFGDi = ifelse(DFGDi <= 1, DFGDi, 1)) %>% ## Limpeza de ocorrências acima de 1.0
   mutate(FCDi = DFGDi) %>%  ## Fórmula do constructo
   merge(ds_prg, ., by.x = "CD_PROGRAMA_IES", by.y = "cod_programa", all.y = T) ## Categorias
 
  write.csv2(ds_IMI2_FCDi, paste0(v_path_o, "FCDi.csv"))
- kable(ds_IMI2_FCDi[1:12, c(1,8:11)]) ## Amostra do arquivo gerado acima, sem as categorias
+ kable(ds_IMI2_FCDi[1:12, ]) #c(1,8:11)]) ## Amostra do arquivo gerado acima, sem as categorias
 ```
 
 ## IMI 3 - Instituições participantes e membros de projetos
@@ -343,8 +355,8 @@ ds_IMI3_QMP <- ds_MbrPrj_grd %>%
 #### Geração de arquivo de colaboração no nível de projetos para conferência de dados -----------
 
 ds_DFCP <- merge(ds_IMI3_DFPP, ds_IMI3_QMP , by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>% 
-  mutate(DFCP = DFPP/QMP) %>% 
-  mutate(DFCP = ifelse(DFCP <= 1, DFCP, 1))
+  mutate(DFCP = DFPP/QMP)# %>% 
+  #mutate(DFCP = ifelse(DFCP <= 1, DFCP, 1)) ## Limpeza de ocorrências acima de 1.0
  
  write.csv2(ds_DFCP, paste0(v_path_o, "DFCP.csv"))
 #### --------------------------------------------------------------------------------------------
@@ -352,7 +364,7 @@ kable(ds_DFCP[1:12, ]) ## Amostra do arquivo gerado acima
 
 ds_IMI3_DFCP <- merge(ds_IMI3_DFPP, ds_IMI3_QMP, by = c("CD_PROGRAMA_IES", "ID_PROJETO")) %>% 
   mutate(DFCP = DFPP/QMP) %>% ## Fórmula do indicador
-  mutate(DFCP = ifelse(DFCP <= 1, DFCP, 1)) %>% ## Limpeza de ocorrências acima de 1.0
+  #mutate(DFCP = ifelse(DFCP <= 1, DFCP, 1)) %>% ## Limpeza de ocorrências acima de 1.0
   group_by(CD_PROGRAMA_IES) %>% 
   summarise(DFPP = mean(DFPP),
             QMP = mean(QMP),
@@ -372,7 +384,7 @@ ds_IMI3_CC <- merge(ds_IMI3_QIP, ds_IMI3_QPP, by = "CD_PROGRAMA_IES", all.x = T)
                                                                 ## diversidade de formações 
                                                                 ## de colaboradores
   mutate(DIPP = QIP/QPP) %>% ## Fórmula do indicador
-  mutate(DIPP = ifelse(DIPP <= 1, DIPP, 1)) %>% ## Limpeza de ocorrências acima de 1.0
+  #mutate(DIPP = ifelse(DIPP <= 1, DIPP, 1)) %>% ## Limpeza de ocorrências acima de 1.0
   mutate(CC = (DFCP + DIPP)/2) ## Fórmula do constructo
   
 ds_IMI3_CC <-  ds_IMI3_CC[,c(1:3, 7, 4:6, 8)] ## Reordenação de campos
@@ -380,7 +392,7 @@ ds_IMI3_CC <-  ds_IMI3_CC[,c(1:3, 7, 4:6, 8)] ## Reordenação de campos
 ds_IMI3_CC %<>% merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T) ## Categorias
 
  write.csv2(ds_IMI3_CC, paste0(v_path_o, "CC.csv"))
- kable(ds_IMI3_CC[1:12, c(1,8:14)]) ## Amostra do arquivo gerado acima, sem as categorias
+ kable(ds_IMI3_CC[1:12, ]) #c(1,8:14)]) ## Amostra do arquivo gerado acima, sem as categorias
 ```
 
 ## IMI 4 - Áreas de atuação de docentes
@@ -427,8 +439,8 @@ ds_IMI4_CP <- merge(ds_IMI4_QGAD, ds_IMI4_QACD, by = c("cod_programa","nome_filt
   merge(., ds_IMI4_QCDI, by = c("cod_programa","nome_filtro_cvlattes"), all.x = T) %>% 
   mutate(DGAC = QGAD/QCDI,
          DAC = QACD/QCDI) %>% ## Fórmulas dos indicadores
-  mutate(DGAC = ifelse(DGAC <= 1, DGAC, 1),
-         DAC = ifelse(DAC <= 1, DAC, 1)) %>% ## Limpeza de ocorrências acima de 1.0
+  #mutate(DGAC = ifelse(DGAC <= 1, DGAC, 1),
+  #       DAC = ifelse(DAC <= 1, DAC, 1)) %>% ## Limpeza de ocorrências acima de 1.0
   mutate(CP = (DGAC + DAC)/2) ## Fórmula do constructo
 
  write.csv2(ds_IMI4_CP, paste0(v_path_o, "CP_docente.csv"))
@@ -440,7 +452,7 @@ ds_IMI4_CP_pgr <- ds_IMI4_CP %>%
   merge(ds_prg, ., by.x = "CD_PROGRAMA_IES", by.y = "cod_programa", all.y = T) ## Categorias
 
  write.csv2(ds_IMI4_CP_pgr, paste0(v_path_o, "CP_programa.csv"))
- kable(ds_IMI4_CP_pgr[1:12, c(1,8)]) ## Amostra do arquivo gerado acima, sem as categorias
+ kable(ds_IMI4_CP_pgr[1:12, ]) #c(1,8)]) ## Amostra do arquivo gerado acima, sem as categorias
 ```
 
 ## Consolidação final do IMI
@@ -462,7 +474,7 @@ ds_IMI %<>% mutate(IMI = (FCDo + FCDi + CC + CP)/4) %>%
   merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T) ## Categorias
 
  write.csv2(ds_IMI, paste0(v_path_o, "IMI.csv"))
- kable(ds_IMI[1:12, c(1,8:12)]) ## Amostra do arquivo gerado acima, sem as categorias
+ kable(ds_IMI[1:12, ]) #c(1,8:12)]) ## Amostra do arquivo gerado acima, sem as categorias
 ```
 
 
@@ -531,17 +543,26 @@ ds_IPT <- merge(ds_IMI1_QPPP, ds_IPT1_SPPP, by.x = "cod_programa", by.y = "CD_PR
 
 ds_IPT[is.na(ds_IPT)] <- 0 ### Conversão de NA para 0
 
-ds_IPT %<>% mutate(QPPa = SPPP/QPPP,
-                   QPPr = SPPPr/QPPP,
-                   QPA = SAPP/QPPP) %>% ## Fórmulas dos indicadores
-  mutate(QPPa = ifelse(QPPa <= 1, QPPa, 1),
-         QPPr = ifelse(QPPr <= 1, QPPr, 1),
-         QPA = ifelse(QPA <= 1, QPA, 1)) %>% ## Limpeza de ocorrências acima de 1.0
-  mutate(IPT = (QPPa+QPPr+QPA)/3) %>% ## Fórmula do indice
+# ds_IPT %<>% mutate(QPPa = SPPP/QPPP,
+#                    QPPr = SPPPr/QPPP,
+#                    QPA = SAPP/QPPP) %>% ## Fórmulas dos indicadores
+#   #mutate(QPPa = ifelse(QPPa <= 1, QPPa, 1),
+#   #       QPPr = ifelse(QPPr <= 1, QPPr, 1),
+#   #       QPA = ifelse(QPA <= 1, QPA, 1)) %>% ## Limpeza de ocorrências acima de 1.0
+#   mutate(IPT = (QPPa+QPPr+QPA)/3) %>% ## Fórmula do indice
+#   merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T) ## Categorias
+
+ds_IPT %<>% mutate(QPPa = SPPP,
+                   QPPr = SPPPr,
+                   QPA = SAPP) %>% ## Fórmulas dos indicadores
+  #mutate(QPPa = ifelse(QPPa <= 1, QPPa, 1),
+  #       QPPr = ifelse(QPPr <= 1, QPPr, 1),
+  #       QPA = ifelse(QPA <= 1, QPA, 1)) %>% ## Limpeza de ocorrências acima de 1.0
+  mutate(IPT = (QPPa+QPPr+QPA)/QPPP) %>% ## Fórmula do indice
   merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T) ## Categorias
 
  write.csv2(ds_IPT, paste0(v_path_o, "IPT.csv"))
- kable(ds_IPT[1:12, c(1,8:15)]) ## Amostra do arquivo gerado acima, sem as categorias
+ kable(ds_IPT[1:12, ]) #c(1,8:15)]) ## Amostra do arquivo gerado acima, sem as categorias
 ```
 
 
@@ -553,7 +574,7 @@ ds_IPT %<>% mutate(QPPa = SPPP/QPPP,
 <p align="justify">União de indices por programa, filtro de cassos completos, categorização e calculo de correlação geral.</p>
 
 ```{r Base de correlações e correlação geral, message=FALSE, warning=FALSE, paged.print=TRUE}
-ds_COR <- merge(ds_IMI[,c(1,12)], ds_IPT[,c(1,15)], by = "CD_PROGRAMA_IES", all = T) ## União de indices
+ds_COR <- merge(ds_IMI[,c(1,18)], ds_IPT[,c(1,21)], by = "CD_PROGRAMA_IES", all = T) ## União de indices
 
 ds_COR <- ds_COR[complete.cases(ds_COR),] ## Filtro de casos completos
 
@@ -561,7 +582,7 @@ ds_COR %<>% filter(IPT > 0)%>% ## Filtro de projetos com produção tecnologica
   merge(ds_prg, ., by = "CD_PROGRAMA_IES", all.y = T) ## Categorias
 
  write.csv2(ds_COR, paste0(v_path_o, "COR.csv"))
- kable(ds_COR[1:12, c(1,8:9)]) ## Amostra do arquivo gerado acima, sem as categorias
+ kable(ds_COR[1:12, ]) #c(1,8:9)]) ## Amostra do arquivo gerado acima, sem as categorias
  
 ds_COR_p <- ds_COR %>% 
   select(IMI, IPT) %>% 
@@ -607,6 +628,8 @@ ds_COR_ano <- f.print_corr(ds_COR_ano)
 ds_COR_ano <- ds_COR %>% group_by(ANO_INICIO_PROGRAMA) %>% 
                          summarise(m_IMI = mean(IMI),                #|
                                    m_IPT = mean(IPT),                #| Média
+                                   md_IMI = median(IMI),             #|
+                                   md_IPT = median(IPT),             #| Mediana                                   
                                    v_IMI = var(IMI),                 #|
                                    v_IPT = var(IPT),                 #| Variancia
                                    d_IMI = sd(IMI),                  #|
@@ -630,6 +653,8 @@ ds_COR_conceito <- f.print_corr(ds_COR_conceito)
 ds_COR_conceito <- ds_COR %>% group_by(CD_CONCEITO_PROGRAMA) %>% 
                          summarise(m_IMI = mean(IMI),                #|
                                    m_IPT = mean(IPT),                #| Média
+                                   md_IMI = median(IMI),             #|
+                                   md_IPT = median(IPT),             #| Mediana       
                                    v_IMI = var(IMI),                 #|
                                    v_IPT = var(IPT),                 #| Variancia
                                    d_IMI = sd(IMI),                  #|
@@ -653,6 +678,8 @@ ds_COR_dependencia <- f.print_corr(ds_COR_dependencia)
 ds_COR_dependencia <- ds_COR %>% group_by(DS_DEPENDENCIA_ADMINISTRATIVA) %>% 
                          summarise(m_IMI = mean(IMI),                #|
                                    m_IPT = mean(IPT),                #| Média
+                                   md_IMI = median(IMI),             #|
+                                   md_IPT = median(IPT),             #| Mediana       
                                    v_IMI = var(IMI),                 #|
                                    v_IPT = var(IPT),                 #| Variancia
                                    d_IMI = sd(IMI),                  #|
@@ -670,15 +697,13 @@ ds_COR_area <- ds_COR %>% select(NM_AREA_AVALIACAO,IMI,IPT) %>%
   split(area_f, drop = T) %>% ## Separação por area
   map(f.corr) ## Calculo de correlação para cada segmento
 
-ds_siglas <- read_excel(paste0(v_path_i, "Siglas áreas de avaliação.xlsx")) %>% 
-             select(nome = "Nome área de avaliação",
-                    sigla = "Sigla")
-
 ds_COR_area <- f.print_corr(ds_COR_area)
 
 ds_COR_area <- ds_COR %>% group_by(NM_AREA_AVALIACAO) %>% 
                          summarise(m_IMI = mean(IMI),                #|
                                    m_IPT = mean(IPT),                #| Média
+                                   md_IMI = median(IMI),             #|
+                                   md_IPT = median(IPT),             #| Mediana       
                                    v_IMI = var(IMI),                 #|
                                    v_IPT = var(IPT),                 #| Variancia
                                    d_IMI = sd(IMI),                  #|
@@ -688,7 +713,7 @@ ds_COR_area <- ds_COR %>% group_by(NM_AREA_AVALIACAO) %>%
               merge(., ds_COR_area, by.x = "NM_AREA_AVALIACAO", by.y = "cat", all = T) %>% 
               merge(., ds_siglas, by.x = "NM_AREA_AVALIACAO", by.y = "nome")
 
- ds_COR_area <- ds_COR_area[,c(11,1:10)]
+ ds_COR_area <- ds_COR_area[,c(13,1:12)]
 
  write.csv2(ds_COR_area, paste0(v_path_o, "COR_area.csv"))
  kable(ds_COR_area)
@@ -704,6 +729,8 @@ ds_COR_status <- f.print_corr(ds_COR_status)
 ds_COR_status <- ds_COR %>% group_by(CS_STATUS_JURIDICO) %>% 
                          summarise(m_IMI = mean(IMI),                #|
                                    m_IPT = mean(IPT),                #| Média
+                                   md_IMI = median(IMI),             #|
+                                   md_IPT = median(IPT),             #| Mediana       
                                    v_IMI = var(IMI),                 #|
                                    v_IPT = var(IPT),                 #| Variancia
                                    d_IMI = sd(IMI),                  #|
@@ -726,6 +753,8 @@ ds_COR_modalidade <- f.print_corr(ds_COR_modalidade)
 ds_COR_modalidade <- ds_COR %>% group_by(NM_MODALIDADE_PROGRAMA) %>% 
                          summarise(m_IMI = mean(IMI),                #|
                                    m_IPT = mean(IPT),                #| Média
+                                   md_IMI = median(IMI),             #|
+                                   md_IPT = median(IPT),             #| Mediana       
                                    v_IMI = var(IMI),                 #|
                                    v_IPT = var(IPT),                 #| Variancia
                                    d_IMI = sd(IMI),                  #|
