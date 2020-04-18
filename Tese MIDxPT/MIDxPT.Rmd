@@ -766,6 +766,126 @@ ds_COR_modalidade <- ds_COR %>% group_by(NM_MODALIDADE_PROGRAMA) %>%
  write.csv2(ds_COR_modalidade, paste0(v_path_o, "COR_modalidade.csv"))
  kable(ds_COR_modalidade)
 ##### ---------------------------------------------------------------------------------------
+regiao_f <- factor(ds_COR$NM_REGIAO) ## Fator para split de categoria
+
+ds_COR_regiao <- ds_COR %>% select(NM_REGIAO,IMI,IPT) %>% 
+  split(regiao_f, drop = T) %>% ## Separação por região
+  map(f.corr) ## Calculo de correlação para cada segmento
+
+ds_COR_regiao <- f.print_corr(ds_COR_regiao)
+
+ds_COR_regiao <- ds_COR %>% group_by(NM_REGIAO) %>% 
+                         summarise(m_IMI = mean(IMI),                #|
+                                   m_IPT = mean(IPT),                #| Média
+                                   md_IMI = median(IMI),             #|
+                                   md_IPT = median(IPT),             #| Mediana       
+                                   v_IMI = var(IMI),                 #|
+                                   v_IPT = var(IPT),                 #| Variancia
+                                   d_IMI = sd(IMI),                  #|
+                                   d_IPT = sd(IPT),                  #| Devio padrão 
+                                   pc_IMI = (d_IMI/m_IMI)*100,       #|
+                                   pc_IPT = (d_IPT/m_IPT)*100) %>%   #| Percentual do desvio padrão sobre valor esperado
+              merge(., ds_COR_regiao, by.x = "NM_REGIAO", by.y = "cat", all = T)
+
+ write.csv2(ds_COR_regiao, paste0(v_path_o, "COR_regiao.csv"))
+ kable(ds_COR_regiao)
+ ##### ---------------------------------------------------------------------------------------
+estado_f <- factor(ds_COR$SG_UF_PROGRAMA) ## Fator para split de categoria
+
+ds_COR_estado <- ds_COR %>% select(SG_UF_PROGRAMA,IMI,IPT) %>% 
+  split(estado_f, drop = T) %>% ## Separação por UF
+  map(f.corr) ## Calculo de correlação para cada segmento
+
+ds_COR_estado <- f.print_corr(ds_COR_estado)
+
+ds_COR_estado <- ds_COR %>% group_by(SG_UF_PROGRAMA) %>% 
+                         summarise(m_IMI = mean(IMI),                #|
+                                   m_IPT = mean(IPT),                #| Média
+                                   md_IMI = median(IMI),             #|
+                                   md_IPT = median(IPT),             #| Mediana       
+                                   v_IMI = var(IMI),                 #|
+                                   v_IPT = var(IPT),                 #| Variancia
+                                   d_IMI = sd(IMI),                  #|
+                                   d_IPT = sd(IPT),                  #| Devio padrão 
+                                   pc_IMI = (d_IMI/m_IMI)*100,       #|
+                                   pc_IPT = (d_IPT/m_IPT)*100) %>%   #| Percentual do desvio padrão sobre valor esperado
+              merge(., ds_COR_estado, by.x = "SG_UF_PROGRAMA", by.y = "cat", all = T)
+
+ write.csv2(ds_COR_estado, paste0(v_path_o, "COR_estado.csv"))
+ kable(ds_COR_estado)
+##### ---------------------------------------------------------------------------------------
+sigla_ies_f <- factor(ds_COR$SG_ENTIDADE_ENSINO) ## Fator para split de categoria
+
+ds_COR_sigla_ies <- ds_COR %>% select(SG_ENTIDADE_ENSINO,IMI,IPT) %>% 
+  split(sigla_ies_f, drop = T) %>% ## Separação por sigla da instituição
+  map(f.corr) ## Calculo de correlação para cada segmento
+
+ds_COR_sigla_ies <- f.print_corr(ds_COR_sigla_ies)
+
+ds_COR_sigla_ies <- ds_COR %>% group_by(SG_ENTIDADE_ENSINO) %>% 
+                         summarise(m_IMI = mean(IMI),                #|
+                                   m_IPT = mean(IPT),                #| Média
+                                   md_IMI = median(IMI),             #|
+                                   md_IPT = median(IPT),             #| Mediana       
+                                   v_IMI = var(IMI),                 #|
+                                   v_IPT = var(IPT),                 #| Variancia
+                                   d_IMI = sd(IMI),                  #|
+                                   d_IPT = sd(IPT),                  #| Devio padrão 
+                                   pc_IMI = (d_IMI/m_IMI)*100,       #|
+                                   pc_IPT = (d_IPT/m_IPT)*100) %>%   #| Percentual do desvio padrão sobre valor esperado
+              merge(., ds_COR_sigla_ies, by.x = "SG_ENTIDADE_ENSINO", by.y = "cat", all = T)
+
+ write.csv2(ds_COR_sigla_ies, paste0(v_path_o, "COR_sigla_ies.csv"))
+ kable(ds_COR_sigla_ies)
+##### ---------------------------------------------------------------------------------------
+programa_f <- factor(ds_COR$NM_PROGRAMA_IES) ## Fator para split de categoria
+
+ds_COR_programa <- ds_COR %>% select(NM_PROGRAMA_IES,IMI,IPT) %>% 
+  split(programa_f, drop = T) %>% ## Separação por nome do programa
+  map(f.corr) ## Calculo de correlação para cada segmento
+
+ds_COR_programa <- f.print_corr(ds_COR_programa)
+
+ds_COR_programa <- ds_COR %>% group_by(NM_PROGRAMA_IES) %>% 
+                         summarise(m_IMI = mean(IMI),                #|
+                                   m_IPT = mean(IPT),                #| Média
+                                   md_IMI = median(IMI),             #|
+                                   md_IPT = median(IPT),             #| Mediana       
+                                   v_IMI = var(IMI),                 #|
+                                   v_IPT = var(IPT),                 #| Variancia
+                                   d_IMI = sd(IMI),                  #|
+                                   d_IPT = sd(IPT),                  #| Devio padrão 
+                                   pc_IMI = (d_IMI/m_IMI)*100,       #|
+                                   pc_IPT = (d_IPT/m_IPT)*100) %>%   #| Percentual do desvio padrão sobre valor esperado
+              merge(., ds_COR_programa, by.x = "NM_PROGRAMA_IES", by.y = "cat", all = T)
+
+ write.csv2(ds_COR_programa, paste0(v_path_o, "COR_programa.csv"))
+ kable(ds_COR_programa)
+##### ---------------------------------------------------------------------------------------
+grau_f <- factor(ds_COR$NM_GRAU_PROGRAMA) ## Fator para split de categoria
+
+ds_COR_grau <- ds_COR %>% select(NM_GRAU_PROGRAMA,IMI,IPT) %>% 
+  split(grau_f, drop = T) %>% ## Separação por grau do programa
+  map(f.corr) ## Calculo de correlação para cada segmento
+
+ds_COR_grau <- f.print_corr(ds_COR_grau)
+
+ds_COR_grau <- ds_COR %>% group_by(NM_GRAU_PROGRAMA) %>% 
+                         summarise(m_IMI = mean(IMI),                #|
+                                   m_IPT = mean(IPT),                #| Média
+                                   md_IMI = median(IMI),             #|
+                                   md_IPT = median(IPT),             #| Mediana       
+                                   v_IMI = var(IMI),                 #|
+                                   v_IPT = var(IPT),                 #| Variancia
+                                   d_IMI = sd(IMI),                  #|
+                                   d_IPT = sd(IPT),                  #| Devio padrão 
+                                   pc_IMI = (d_IMI/m_IMI)*100,       #|
+                                   pc_IPT = (d_IPT/m_IPT)*100) %>%   #| Percentual do desvio padrão sobre valor esperado
+              merge(., ds_COR_grau, by.x = "NM_GRAU_PROGRAMA", by.y = "cat", all = T)
+
+ write.csv2(ds_COR_grau, paste0(v_path_o, "COR_grau.csv"))
+ kable(ds_COR_grau)
+ ##### ---------------------------------------------------------------------------------------
 ```
 
 
