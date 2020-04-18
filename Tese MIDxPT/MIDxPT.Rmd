@@ -969,11 +969,17 @@ print(f.mplot(ds_COR_area[21:30,], "Area"))
 print(f.mplot(ds_COR_area[31:40,], "Area"))
 print(f.mplot(ds_COR_area[41:48,], "Area"))
 
+ds_COR_estado %<>% arrange(desc(cor))           # Novo
+                                                #
+print(f.mplot(ds_COR_estado[1:10,], "Estado"))  #
+print(f.mplot(ds_COR_estado[11:20,], "Estado")) #
+print(f.mplot(ds_COR_estado[21:25,], "Estado")) #
 
 print(f.mplot(ds_COR_conceito, "Conceito"))
 print(f.mplot(ds_COR_dependencia, "Dependencia"))
 print(f.mplot(ds_COR_modalidade, "Modalidade"))
-print(f.mplot(ds_COR_status, "Status"))
+print(f.mplot(ds_COR_grau, "Grau"))     # Novo
+print(f.mplot(ds_COR_regiao, "Regiao")) #
 
 ```
 
@@ -1110,5 +1116,69 @@ for(i in seq_along(ds_cat_P)){
   print(ds_cat_P[[i]])
   print(ds_cat_D[[i]])
 }
+#####------------------------------------------------------------------------------------------
+# Novo
+v_categ <- "Estado-UF do Programa"
+v_idx <- "IPT"
+v_pal <- 'YlGnBu'
+
+ds_cat_P <- ds_COR %>%  select(SG_UF_PROGRAMA, IPT) %>% 
+  split(as.factor(.$SG_UF_PROGRAMA)) %>% 
+  map(f.histo);
+
+v_idx <- "IMI"
+v_pal <- 'YlGn'
+
+ds_cat_D <- ds_COR %>%  select(SG_UF_PROGRAMA, IMI) %>% 
+  split(as.factor(.$SG_UF_PROGRAMA)) %>% 
+  map(f.histo);
+
+for(i in seq_along(ds_cat_P)){
+  print(ds_cat_P[[i]])
+  print(ds_cat_D[[i]])
+}
+#####------------------------------------------------------------------------------------------
+# Novo
+v_categ <- "Região do Programa"
+v_idx <- "IPT"
+v_pal <- 'YlGnBu'
+
+ds_cat_P <- ds_COR %>%  select(NM_REGIAO, IPT) %>% 
+  split(as.factor(.$NM_REGIAO)) %>% 
+  map(f.histo);
+
+v_idx <- "IMI"
+v_pal <- 'YlGn'
+
+ds_cat_D <- ds_COR %>%  select(NM_REGIAO, IMI) %>% 
+  split(as.factor(.$NM_REGIAO)) %>% 
+  map(f.histo);
+
+for(i in seq_along(ds_cat_P)){
+  print(ds_cat_P[[i]])
+  print(ds_cat_D[[i]])
+}
+#####------------------------------------------------------------------------------------------
+# Novo
+v_categ <- "Grau do Programa"
+v_idx <- "IPT"
+v_pal <- 'YlGnBu'
+
+ds_cat_P <- ds_COR %>%  select(NM_GRAU_PROGRAMA, IPT) %>% 
+  split(as.factor(.$NM_GRAU_PROGRAMA)) %>% 
+  map(f.histo);
+
+v_idx <- "IMI"
+v_pal <- 'YlGn'
+
+ds_cat_D <- ds_COR %>%  select(NM_GRAU_PROGRAMA, IMI) %>% 
+  split(as.factor(.$NM_GRAU_PROGRAMA)) %>% 
+  map(f.histo);
+
+for(i in seq_along(ds_cat_P)){
+  print(ds_cat_P[[i]])
+  print(ds_cat_D[[i]])
+}
+
 ```
 
