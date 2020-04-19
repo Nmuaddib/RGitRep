@@ -563,6 +563,11 @@ ds_IPT %<>% mutate(QPPa = SPPP,
 
  write.csv2(ds_IPT, paste0(v_path_o, "IPT.csv"))
  kable(ds_IPT[1:12, ]) #c(1,8:15)]) ## Amostra do arquivo gerado acima, sem as categorias
+ 
+ 
+ # [,c(1,14:21)] Seleção de campos, obsoleto
+ ds_IMI_IPT <- merge(ds_IMI, ds_IPT, by = "CD_PROGRAMA_IES", all = T) ## Novo DS para avaliação de IMI x IPT
+ write.csv2(ds_IMI_IPT, paste0(v_path_o, "IMI_IPT.csv"))              ##
 ```
 
 
@@ -609,7 +614,7 @@ f.corr <- function(df, mtd = "pearson"){
 } ## Função para aplicação de correlação em cada sessão do split por categoria
 
 f.print_corr <- function(df){
-  dfo <- tibble(cat = as.character(), cor = as.double())
+  dfo <- data.frame(cat = as.character(), cor = as.double()) ## Mudança de objeto pois "tibble 3.0" apresentou erro
   for (i in seq_along(df)) {
     dfo[i,] <- c(names(df[i]), df[[i]][1,2])
   }
