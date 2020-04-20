@@ -614,9 +614,9 @@ f.corr <- function(df, mtd = "pearson"){
 } ## Função para aplicação de correlação em cada sessão do split por categoria
 
 f.print_corr <- function(df){
-  dfo <- data.frame(cat = as.character(), cor = as.double()) ## Mudança de objeto pois "tibble 3.0" apresentou erro
+  dfo <- tibble(cat = as.character(), cor = as.double()) ## Mudança de objeto pois "tibble 3.0" apresentou erro
   for (i in seq_along(df)) {
-    dfo[i,] <- c(names(df[i]), df[[i]][1,2])
+    dfo[i,] <- list(names(df[i]), df[[i]][1,2])
   }
   return(dfo)
 } ## Função para criação de dataset com correlação por item de categoria
@@ -628,7 +628,7 @@ ds_COR_ano <- ds_COR %>% select(ANO_INICIO_PROGRAMA,IMI,IPT) %>%
   split(ano_f, drop = T) %>% ## Separação por ano
   map(f.corr) ## Calculo de correlação para cada segmento
 
-ds_COR_ano <- f.print_corr(ds_COR_ano)
+ds_COR_ano <- as.tibble(f.print_corr(ds_COR_ano))
 
 ds_COR_ano <- ds_COR %>% group_by(ANO_INICIO_PROGRAMA) %>% 
                          summarise(m_IMI = mean(IMI),                #|
