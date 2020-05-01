@@ -19,6 +19,15 @@
 #    
 #    `OBS` *- Ao final das transformações de dados para formações de doutorado e mestrado de discentes, ambos os contructos são unificados em um único dataset, e caso um programa possua indicadores de doutorado e mestrado simultâneamente, apenas os valores de doutorado são considerados.*
 
+ds_cat_P <- ds_COR %>%  select(sigla, IPT) %>% 
+   split(as.factor(.$sigla)) %>% 
+   map(f.histo);
+
+ds_cat_P2 <- ds_COR %>%  select(sigla, IPT) %>% 
+   filter(sigla == "31")
+
+print(f.histo(ds_cat_P2))
+
 ds_IMI2_QDDP <- ds_frmdic %>% 
    group_by(cod_programa, nome_filtro_cvlattes) %>% 
    summarise(QT = n()) %>% 
