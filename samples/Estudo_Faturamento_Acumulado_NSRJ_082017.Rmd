@@ -1,0 +1,584 @@
+---
+author: "Nelson Simões - CTI/Planserv"
+date: "16 de agosto de 2017"
+output:
+  html_document:
+    code_folding: hide
+    theme: cerulean
+    highlight: pygments
+---
+
+## Estudo sobre Faturamento x Atendimento por Prestador
+
+---
+
+#### Preparação do ambiente
+
+Bibliotecas utilizadas, código abaixo (oculto, utilize o botão a direita para expor).
+```{r setup, message = FALSE, warning = FALSE}
+## Opções iniciais de configuração do ambiente --------------
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+#### --------------------------------------------------------
+library("stringr", lib.loc="~/R/win-library/3.5")
+library("dplyr", lib.loc="~/R/win-library/3.5")
+library("ggplot2", lib.loc="~/R/win-library/3.5")
+library("readr", lib.loc="~/R/win-library/3.5")
+library("tibble", lib.loc="~/R/win-library/3.5")
+library("tidyr", lib.loc="~/R/win-library/3.5")
+library("magrittr", lib.loc="~/R/win-library/3.5")
+library("readxl", lib.loc="~/R/win-library/3.5")
+library("purrr", lib.loc="~/R/win-library/3.5")
+#### --------------------------------------------------------
+```
+
+### Processo de cálculo automatizado de indicadores
+
+Para separação dos seguintes grupos:
+
+**FTT - Valor/Qt de Faturamento total** (Soma de linhas de faturamento para referência)  
+**FCR - Valor/Qt de Faturamento corrente** (Referencia de faturamento = Referência de atendimento)  
+**FAC - Valor/Qt de Faturamento acumulado** (Referência de faturamento <> Referência de atendimento)  
+**FMA - Valor/Qt de Faturamento do mês anterior** (Referência do faturamento = Referência do mês anterior de atendimento)  
+**ATE - Valor/Qt de Atendimento total** (Soma de linhas de atendimento para referência)  
+  
+```{r processo detalhado, message=FALSE, warning=FALSE}
+##----------------------------------------------------------------------------
+##----------------------------------------------------------------------------
+  v.top <- 400
+  v.limite_min <- 1
+##----------------------------------------------------------------------------
+##----------------------------------------------------------------------------
+
+x_anomes_id <- read_excel('anomes_id.xlsx') %>% mutate(anomes = factor(anomes))
+x_fat_ate_d <- read_excel('Geral2014_18_prestadores_lab_d.xls')
+x_geral_d <- read_excel('Geral2014_18_lab_d.xlsx')
+
+print(paste0('Representatividade dos 200 maiores prestadores no faturamento total (2014-2017/07): ', round((((sum(x_fat_ate_d$VA)+sum(x_fat_ate_d$VR))/(sum(x_geral_d$VA)+sum(x_geral_d$VR)))*100), 2), '%   '))
+print(paste0('Parâmetro de seleção de prestadores (top N): ', v.top, '    '))
+print(paste0('Parâmetro de Valor mínimo de faturamento acumulado total: ', v.limite_min, '    '))
+
+##----------------------------------------------------------------------------
+## Por prestador
+##----------------------------------------------------------------------------
+
+x_fat_ate_d %<>%
+  merge(.,x_anomes_id, by.x = 'ANOMES_FT', by.y = 'anomes') %>% 
+  merge(.,x_anomes_id, by.x = 'ANOMES_AT', by.y = 'anomes') %>% 
+  arrange(CODIGO, id.x, id.y) %>% 
+  mutate(DELTA_ANM = id.x-id.y, CT = 1) %>%   
+  select(CODIGO, PRESTADOR,
+         ANOMES_FT, 
+         DELTA_ANM,
+         ID_FT = id.x, 
+         ANOMES_AT, 
+         ID_AT = id.y, 
+         QP, VA, VR, CT)  
+
+
+f.shuffle_p <- function(df, FT_AT = df$ANOMES_FT, mrge = 'N') {
+  df %<>% group_by(CODIGO, PRESTADOR, ANOMES = FT_AT) %>% 
+    dplyr::summarise(sum(QP, na.rm = T), 
+                     sum(VA, na.rm = T),
+                     sum(VR, na.rm = T), 
+                     sum(CT, na.rm = T))
+  
+  if (mrge == 'A') {
+    df %<>% merge(FA.df_base, ., by = c('CODIGO', 'PRESTADOR', 'ANOMES'), all = T)
+  } else if (mrge == 'X') {
+    df %<>% merge(FA.df_base, ., by = c('CODIGO', 'PRESTADOR', 'ANOMES'), all.x = T)
+  }
+  
+  return(df)
+}
+
+FA.df_base <- x_fat_ate_d %>% 
+  f.shuffle_p() %>% 
+  as.data.frame()
+
+FA.df_base <- x_fat_ate_d %>% 
+  filter(DELTA_ANM == 0) %>%  
+  f.shuffle_p(mrge = 'A')
+
+FA.df_base <- x_fat_ate_d %>% 
+  filter(DELTA_ANM != 0) %>% 
+  f.shuffle_p(mrge = 'A')
+
+FA.df_base <- x_fat_ate_d %>% 
+  filter(DELTA_ANM == 1) %>%     
+  f.shuffle_p(mrge = 'A')
+
+FA.df_base <- x_fat_ate_d %>% 
+  f.shuffle_p(FT_AT = .$ANOMES_AT, mrge = 'X')
+
+FA.df_base[is.na(FA.df_base)] <- 0
+
+names(FA.df_base) <- c('CODIGO', 'PRESTADOR', 'ANOMES',
+                       'QTA_FTT', 'VA_FTT', 'VR_FTT', 'C_FTT',
+                       'QTA_FCR', 'VA_FCR', 'VR_FCR', 'C_FCR',
+                       'QTA_FAC', 'VA_FAC', 'VR_FAC', 'C_FAC',
+                       'QTA_FMA', 'VA_FMA', 'VR_FMA', 'C_FMA',                       
+                       'QTA_ATE', 'VA_ATE', 'VR_ATE', 'C_ATE')
+
+FA.df_base %<>% select(CODIGO, PRESTADOR, ANOMES, 
+                       VA_FTT, VA_ATE, VA_FCR, VA_FAC, VA_FMA,
+                       # QTA_FTT, QTA_ATE, QTA_FCR, QTA_FAC, QTA_FMA,
+                       VR_FTT, VR_ATE, VR_FCR, VR_FAC, VR_FMA,
+                       C_FTT, C_ATE #, C_FCR, C_FAC, C_FMA
+                       ) %>% 
+  mutate(P_FCR = VA_FCR/VA_FTT, 
+         P_FMA = VA_FMA/VA_FTT, 
+         DIF = VA_FTT-VA_ATE, 
+         ANOMES = factor(ANOMES),
+         ANO = str_sub(ANOMES, 1, 4))
+
+##----------------------------------------------------------------------------
+## Geral
+##----------------------------------------------------------------------------
+
+x_geral_d %<>%
+  merge(.,x_anomes_id, by.x = 'ANOMES_FT', by.y = 'anomes') %>% 
+  merge(.,x_anomes_id, by.x = 'ANOMES_AT', by.y = 'anomes') %>% 
+  arrange(id.x, id.y) %>% 
+  mutate(DELTA_ANM = id.x-id.y, CT = 1) %>%   
+  select(ANOMES_FT, 
+         DELTA_ANM,
+         ID_FT = id.x, 
+         ANOMES_AT, 
+         ID_AT = id.y, 
+         QP, VA, VR, CT)  
+
+f.shuffle <- function(df, FT_AT = df$ANOMES_FT, mrge = 'N')  {
+  df %<>% group_by(ANOMES = FT_AT) %>% 
+    dplyr::summarise(sum(QP, na.rm = T), 
+                     sum(VA, na.rm = T),
+                     sum(VR, na.rm = T), 
+                     sum(CT, na.rm = T))
+  
+  if (mrge == 'A') {
+    df %<>% merge(FA.df_base_geral, ., by = 'ANOMES', all = T)
+  } else if (mrge == 'X') {
+    df %<>% merge(FA.df_base_geral, ., by = 'ANOMES', all.x = T)
+  }
+  
+  return(df)
+}
+
+FA.df_base_geral <- x_geral_d %>% 
+  f.shuffle() %>% 
+  as.data.frame()
+
+FA.df_base_geral <- x_geral_d %>% 
+  filter(DELTA_ANM == 0) %>%  
+  f.shuffle(mrge = 'A')
+
+FA.df_base_geral <- x_geral_d %>% 
+  filter(DELTA_ANM != 0) %>% 
+  f.shuffle(mrge = 'A')
+
+FA.df_base_geral <- x_geral_d %>% 
+  filter(DELTA_ANM == 1) %>%     
+  f.shuffle(mrge = 'A')
+
+FA.df_base_geral <- x_geral_d %>% 
+  f.shuffle(FT_AT = .$ANOMES_AT, mrge = 'X')
+
+FA.df_base_geral[is.na(FA.df_base_geral)] <- 0
+
+names(FA.df_base_geral) <- c('ANOMES',
+                       'QTA_FTT', 'VA_FTT', 'VR_FTT', 'C_FTT',
+                       'QTA_FCR', 'VA_FCR', 'VR_FCR', 'C_FCR',
+                       'QTA_FAC', 'VA_FAC', 'VR_FAC', 'C_FAC',
+                       'QTA_FMA', 'VA_FMA', 'VR_FMA', 'C_FMA',                       
+                       'QTA_ATE', 'VA_ATE', 'VR_ATE', 'C_ATE')
+
+FA.df_base_geral %<>% select(ANOMES, 
+                             VA_FTT, VA_ATE, VA_FCR, VA_FAC, VA_FMA,
+                             # QTA_FTT, QTA_ATE, QTA_FCR, QTA_FAC, QTA_FMA,
+                             VR_FTT, VR_ATE, VR_FCR, VR_FAC, VR_FMA,
+                             C_FTT, C_ATE #, C_FCR, C_FAC, C_FMA
+                             ) %>% 
+  mutate(P_FCR = VA_FCR/VA_FTT, 
+         P_FMA = VA_FMA/VA_FTT, 
+         DIF = VA_FTT-VA_ATE, 
+         ANOMES = factor(ANOMES),
+         ANO = str_sub(ANOMES, 1, 4))
+
+```
+
+### Cálculo de dados padronizados
+
+Planilha original importada e resultado final com dados padronizados, por prestador.
+```{r padronização}
+sf <- factor(FA.df_base$CODIGO)
+
+FA.df_base %<>%
+  split(sf, drop = T) %>% 
+  map(~cbind(., escala = scale(.$DIF, F, T))) %>% 
+  unsplit(sf)
+  
+FA.df_base_geral %<>% cbind(.,escala_geral = scale(.$DIF, F, T))
+
+FA.df_base %<>%  add_column(., escala_geral = FA.df_base_geral[match(.$ANOMES, FA.df_base_geral$ANOMES), 18])
+
+##----------------------------------------------------------------------------
+write.csv2(FA.df_base, 'Prestador_FT_AT_Anomes_d.csv')
+##----------------------------------------------------------------------------
+write.csv2(FA.df_base_geral, 'Geral_FT_AT_Anomes_d.csv')
+##----------------------------------------------------------------------------
+```
+
+### Calculo de saldo anual de valor atentdido
+
+```{r saldo de valor atendido}
+
+FA.saldo_ate <-  FA.df_base %>%
+  group_by(CODIGO, PRESTADOR, ANO) %>% 
+  summarise(SALDO = sum(DIF*(-1), na.rm = T),
+            FATURAMENTO = sum(VA_FTT, na.rm = T),
+            P_SF = round(((sum(DIF*(-1), na.rm = T))/sum(VA_FTT, na.rm = T))*100, 2)) %>%
+  as.data.frame()
+
+```
+
+### Geração de rankings
+
+Conteúdo do arquivo gerado:
+
+| Coluna  | Descrição  |
+|---|----------------------------------------------------------|
+| **prestador**  | Código do Prestador  |
+| **nome**  | Nome do Prestador  |
+| **faturado.r**  | Ranking de faturamento  |
+| **dma.r**  | Valor total de faturamento entre 2014 e o ano corrente  |
+| **dma**  | Ranking de desvio médio absoluto  |
+| **dma.c.r**  | Desvio médio absoluto, avalia a oscilação do prestador em relação ao valor faturado e atendido  |
+| **dma.c**  | Ranking de desvio médio absoluto calculado  |
+| **fcr.r**  | Desvio médio absoluto calculado, formula modificada que leva em consideração a média dos valores absolutos e não a mediana  |
+| **fcr**  | Ranking de faturamento corrente  |
+| **isa.r**  | Indice do saldo de atendimento, percentual em relação ao faturamento do ano  |
+| **isa**  | Indice do saldo de atendimento, percentual em relação ao faturamento do ano   corrente, que está pendente para o valor de atendimento (Ex: 10.000 de faturamento anual, 9.000 de atendimento, ISA = -10%)  |
+
+```{r ranking}
+f.sum_rank <- function(df) {
+  res <- vector()
+  res[1] <- sum(df$VA_FTT, na.rm = T) + sum(df$VR_FTT, na.rm = T) 
+  res[2] <- mad(df$escala, na.rm = T)
+  res[3] <- mean(abs(df$escala), na.rm = T)
+  res[4] <- mean(df$P_FCR, na.rm = T)
+  names(res) <- c('VT', 'DM', 'VM', 'FC')
+  return(res)
+}
+
+FA.lst_rank <- FA.df_base %>%
+  split(.$CODIGO, drop = T) %>% 
+  map(f.sum_rank)
+
+FA.df_rank <- tibble(prestador = character(),
+                     nome = character(),
+                     faturado.r = integer(),
+                     faturado = double(), 
+                     dma.r = integer(),                      
+                     dma = double(), 
+                     dma.c.r = integer(),                    
+                     dma.c = double(),
+                     fcr.r = integer(),
+                     fcr = integer(),
+                     isa.r = double(),
+                     isa = double())
+
+for (i in seq_along(FA.lst_rank)) {
+  FA.df_rank[i,] <- c(names(FA.lst_rank)[[i]],
+                      '-',
+                      0,
+                      FA.lst_rank[[i]]['VT'],
+                      0,
+                      FA.lst_rank[[i]]['DM'],
+                      0,
+                      FA.lst_rank[[i]]['VM'],
+                      0,
+                      FA.lst_rank[[i]]['FC'],                      
+                      0,
+                      0)
+}
+
+FA.df_rank %<>% mutate(faturado = as.double(faturado),
+                      dma = round(as.double(dma), 2), 
+                      dma.c = as.double(dma.c),
+                      fcr = round(as.double(fcr)*100, 2),
+                      nome = FA.df_base[match(.$prestador,FA.df_base$CODIGO), 2],
+                      isa = FA.saldo_ate[match(paste0(.$prestador,'2017'), 
+                                               paste0(FA.saldo_ate$CODIGO,
+                                                      FA.saldo_ate$ANO)), 6]) %>% 
+  arrange(desc(faturado)) %>% 
+  mutate(faturado.r = 1:dim(FA.df_rank)[1]) %>% 
+  arrange(desc(dma)) %>% 
+  mutate(dma.r = 1:dim(FA.df_rank)[1]) %>%
+  arrange(desc(dma.c)) %>% 
+  mutate(dma.c.r = 1:dim(FA.df_rank)[1]) %>% 
+  arrange(fcr) %>% 
+  mutate(fcr.r = 1:dim(FA.df_rank)[1]) %>%   
+  arrange(isa) %>% 
+  mutate(isa.r = 1:dim(FA.df_rank)[1])
+
+##----------------------------------------------------------------------------
+write.csv2(FA.df_rank, 'Prestador_ranking.csv')
+##----------------------------------------------------------------------------
+##FA.df_rank
+```
+
+### Preparação de tabela resumo e gráficos
+
+Para dados padronizados Planserv x Prestador, código oculto abaixo.
+```{r gráficos}
+FA.lst_prestador <- FA.df_base %>% 
+  split(.$CODIGO)
+
+v.meses <- FA.df_base_geral %>% 
+  filter(ANO == max(ANO)) %>% 
+  tally() %>% 
+  '[['(1) %>% 
+  as.integer()
+
+f.tb_param <- function(nm, i) {
+  print(FA.lst_prestador[[nm]][[1,'PRESTADOR']])
+  print('------------------------------------------------------------------')  
+  print(paste0('Raking da seleção                : ',
+               str_pad(i, width = 3, side="left", pad = ' '), '    '))
+##----------------------------------------------------------------------------  
+  print(paste0('Raking de faturamento            : ', 
+               str_pad(FA.df_rank[FA.df_rank$prestador == FA.lst_prestador[[nm]][[1,'CODIGO']],'faturado.r'], 
+               width = 3, side="left", pad = ' '), '    '))
+##----------------------------------------------------------------------------  
+  print(paste0('Raking de desvio médio absoluto  : ', 
+               str_pad(FA.df_rank[FA.df_rank$prestador == FA.lst_prestador[[nm]][[1,'CODIGO']],'dma.r'], 
+               width = 3, side="left", pad = ' '), '    '))
+##----------------------------------------------------------------------------
+  print(paste0('Raking de % médio de f. corrente : ', 
+               str_pad(FA.df_rank[FA.df_rank$prestador == FA.lst_prestador[[nm]][[1,'CODIGO']],'fcr.r'], 
+               width = 3, side="left", pad = ' '), '    '))    
+##----------------------------------------------------------------------------
+  print(paste0('Raking de % saldo de atendimento : ', 
+               str_pad(FA.df_rank[FA.df_rank$prestador == FA.lst_prestador[[nm]][[1,'CODIGO']],'isa.r'], 
+               width = 3, side="left", pad = ' '), '    '))
+  print('------------------------------------------------------------------')  
+  print(paste0('Faturamento total                : ', 
+               str_pad(FA.df_rank[FA.df_rank$prestador == FA.lst_prestador[[nm]][[1,'CODIGO']],'faturado'], 
+               width = 20, side="right", pad = ' ')))
+##----------------------------------------------------------------------------
+  print(paste0('Desvio médio absoluto            : ', 
+               str_pad(FA.df_rank[FA.df_rank$prestador == FA.lst_prestador[[nm]][[1,'CODIGO']],'dma'], 
+               width = 20, side="right", pad = ' ')))
+##----------------------------------------------------------------------------
+  print(paste0(' % Médio de faturamento corrente : ', 
+               str_pad(FA.df_rank[FA.df_rank$prestador == FA.lst_prestador[[nm]][[1,'CODIGO']],'fcr'], 
+               width = 20, side="right", pad = ' ')))
+##----------------------------------------------------------------------------  
+  print(paste0(' % Limite de acumulado 2017      : ',
+               str_pad(round((1/v.meses)*(100-FA.df_rank[FA.df_rank$prestador == FA.lst_prestador[[nm]][[1,'CODIGO']],'fcr']), 2),  
+               width = 20, side="right", pad = ' ')))
+  print('------------------------------------------------------------------')
+  
+  tsld <- FA.saldo_ate %>% 
+    filter(CODIGO == nm) %>% 
+    arrange(desc(ANO)) %>% 
+    select('|Ano|' = ANO, 
+           '|Saldo|' = SALDO, 
+           '|Faturamento Anual|' = FATURAMENTO,
+           '|% Saldo sobre Faturamento|' = P_SF) %>% 
+    print()
+  print('------------------------------------------------------------------')  
+  
+  tbp <- FA.lst_prestador[[nm]] %>% 
+    mutate(VA_FTT = round(VA_FTT, 0),
+           VA_ATE = round(VA_ATE, 0),
+           P_FCR = round((P_FCR*100), 2)) %>% 
+    select ('|Ano e mês|' = ANOMES,
+            '|V. Faturado|' = VA_FTT,
+            '|V. Atendido|' = VA_ATE,
+            '|% F.Corrente|' = P_FCR,
+            '|Qt.Rf.Fat.|' = C_FTT) %>% 
+    as.data.frame()
+  
+  #print(tbp)
+}
+
+f.gg_param <- function(nm) {
+
+  v.gt <- which(FA.lst_prestador[[nm]][,'ANOMES'] == '201705')
+  
+  ggp <- ggplot(data = FA.lst_prestador[[nm]], aes(x = ANOMES, y = escala_geral)) +
+    geom_linerange(aes(ymax = ifelse(escala > escala_geral, escala, escala_geral),
+                       ymin = ifelse(escala <= escala_geral, escala, escala_geral),
+                       col = (escala_geral-escala)),
+                   size = 1.2, alpha = 0.3) +
+    geom_point(aes(y = escala, col = (escala_geral-escala)), 
+               size = 4, alpha = 1) + 
+    geom_point(col = 'red', size = 1.7, alpha = 0.5, shape = 15) +
+    geom_line(aes(y = (P_FCR)+4), col = 'blue', size = 0.8, alpha = 0.4, group = 1) +
+    geom_hline(yintercept = 0, col = 'black', alpha = 0.4) + 
+    geom_hline(yintercept = 5, col = 'green', alpha = 0.7) +
+    geom_hline(yintercept = 4.5, col = 'black', alpha = 0.7) +    
+    geom_hline(yintercept = 4, col = 'red', alpha = 0.7) +  
+    geom_label(aes(x = 1, y = 5.3, label = '% Faturamento Corrente'), 
+               col = 'blue', hjust = 'left', alpha = 0.8) +     
+    geom_vline(xintercept = v.gt, col = 'red', size = 1, alpha = 0.6) +
+    geom_label(aes(x = v.gt-0.2, y = 3, label = 'Gestão de teto >'), 
+               col = 'red', hjust = 'right', alpha = 0.8) +
+    scale_y_continuous(breaks = seq(-7, 7, by = 0.5)) +
+    scale_colour_gradient2(name='Delta para\nEscala Geral', 
+                           high = 'dark green', 
+                           mid = 'light blue',
+                           low = 'red',
+                           midpoint = 0) +
+    labs(title = paste0('Proporção do Delta Faturamento x Atendimento Padronizada\n',
+                        FA.lst_prestador[[nm]][[1,'PRESTADOR']]),
+         x = 'Ano e Mês', 
+         y = 'Desvios Padrão') +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, 
+                                     vjust = 1, 
+                                     size = 9, 
+                                     hjust = 1))
+  
+  plot(ggp)
+}
+
+f.gg_fa <- function(nm) {
+  
+  v.gt <- which(FA.lst_prestador[[nm]][,'ANOMES'] == '201705')
+  
+  df <- FA.lst_prestador[[nm]] %>%
+    select(ANOMES,
+          PRESTADOR,
+          'Valor Faturado' = VA_FTT,
+          'Valor Atendido' = VA_ATE) %>% 
+    gather(-ANOMES,
+          -PRESTADOR,
+          key = 'Indicador', value = 'Valor')  
+
+  ggp <- ggplot(data = df, aes(x = ANOMES)) +
+    geom_line(aes(y = (Valor)/1000, col = Indicador, group = Indicador), 
+              size = 0.9, alpha = 0.9) +
+    geom_vline(xintercept = v.gt, col = 'dark green', size = 1, alpha = 0.6) +
+    geom_label(aes(x = v.gt-0.2, y = 0, label = 'Gestão de teto >'), 
+               col = 'dark green', hjust = 'right', alpha = 0.8) +
+    scale_y_continuous(breaks = seq(0, 100000, by = 500)) +
+    scale_colour_manual(values = c("#CC3300", "#660099")) +
+    labs(title = paste0('Valores de Faturamento e Atendimento\n',
+                        df[[1,'PRESTADOR']]),
+         x = 'Ano e Mês', 
+         y = 'Valores em Milhares') +
+    theme_linedraw() +
+    theme(axis.text.x = element_text(angle = 45, 
+                                     vjust = 1, 
+                                     size = 9, 
+                                     hjust = 1))
+  
+  plot(ggp)
+  
+  df <- FA.lst_prestador[[nm]] %>% 
+    mutate(VA_FOM = VA_FTT-(VA_FCR+VA_FMA)) %>% 
+    select(ANOMES,
+          PRESTADOR,
+          '3-Corrente' = VA_FCR,
+          '2-Ref. Anterior' = VA_FMA,
+          '1-Outras refs.' = VA_FOM) %>% 
+    gather(-ANOMES,
+          -PRESTADOR,
+          key = 'Indicador', value = 'Valor')  
+  
+  ggb <- ggplot(data = df, aes(x = ANOMES)) +
+    geom_bar(aes(y = (Valor), group = Indicador, fill = Indicador), 
+            width = 0.9, alpha = 0.85, 
+            stat = 'identity',
+            position = 'fill') +
+    geom_vline(xintercept = v.gt, col = 'black', size = 1, alpha = 0.6) +
+    geom_label(aes(x = v.gt-0.2, y = 0, label = 'Gestão de teto >'), 
+              col = 'black', hjust = 'right', alpha = 0.8) +
+    scale_y_continuous(breaks = seq(0, 1, by = 0.1)) +
+    scale_fill_brewer(palette = 'Set1',
+                      direction = 1) +
+    labs(title = paste0('Proporção de faturamento\n',
+                        df[[1,'PRESTADOR']]),
+        x = 'Ano e Mês', 
+        y = 'Percentual') +
+    theme_gray() +
+    theme(axis.text.x = element_text(angle = 45, 
+                                    vjust = 1, 
+                                    size = 9, 
+                                    hjust = 1))
+  
+  plot(ggb)
+  
+}
+```
+
+### Plotagem - Como utilizar as ferramentas abaixo?
+
+#### Indicadores da tabela resumo  
+
+- **Raking da seleção                :** Ordem de emissão dos prestadores  
+- **Raking de faturamento            :** Posição entre 200 maiores prestadores  
+- **Raking de desvio médio absoluto  :** Posição entre 200 maiores, pela dispersão entre faturamento e atendimentos (menor ranking = maior dispersão)  
+- **Raking de % médio de f. corrente :** Posição entre 200 maiores, pelo percentual de faturamento corrente (menor ranking = maior acumulo de faturamento)  
+- **Raking de % saldo de atendimento :** Posição entre 200 maiores, pelo percentual do saldo de valor atendido, relativo ao faturamento do ano corrente (menor ranking = maior déficit de atendimento em relação ao valor faturado)
+
+- **Faturamento total                :** Faturamento total entre 2014 e ano corrente
+- **Desvio médio absoluto            :** Medida de dispersão, avalia a oscilação entre meses que possuem mais faturamento que atendimento, e meses que possuem mais atendimento que faturamento (menor = melhor)
+- **% Médio de faturamento corrente  :** Proporção média do valor faturado que é referente à atendimentos na mesma referência (maior = melhor)
+- **% Limite de acumulado 2017       :** Valor calculado para determinar percentual aceitável no saldo negativo de atendimentos para o ano corrente. Seu valor deve ser superior ao valor absoluto da primeira linha, coluna **"% Saldo sobre Faturamento"** da tabela seguinte no resumo. <b>Formula = (1 / "Quantidade de meses faturados") x (1 - " % Médio de faturamento corrente")</b>
+
+#### Gráfico padronizado para diferença entre valores de faturamento e atendimento
+
+**Para o primeiro gráfico:**
+
+- Esferas são a diferença entre Valor de Faturamento e Valor de Atendimento, transformada em número de desvios padrão, para o prestador, em cada referência.
+- Quadrados vermelhos são a diferença padronizada para o Planserv como um todo, para cada referência.
+- Desvios positivos definem Faturamento maior que Atendimento para a Referência, desvios negativos definem Atendimento maior que Faturamento, zero define que o valor faturado foi idêntico ao atendido.
+- Linhas verticais mostram a diferença em desvios padrão entre o prestador e o Planserv consolidado para cada referência.
+- A cor das linhas e esferas reflete se a diferença entre prestador e planserv é positiva (escala de vermelho, o prestador apresentou proporção de faturamento maior em comparação com a métrica do Planserv) ou negativa (escala de verde, o prestador apresentou proporção de atendimento maior (ou faturamento menor) em comparação com a métrica do Planserv).
+- A diferença entre Planserv e prestador independe da proporção entre faturamento e atendimento, podendo ambas estarem acima de zero (ambos possuem proporção de faturamento maior que atendimento) ou abaixo de zero (ambos possuem proporção de atendimento maior que faturamento).
+- Um comportamento ideal para a gestão de contas do prestador é indicado quando seus valores permanecem constantemente próximos de zero, ou pelo menos mais próximos de zero em relação ao valor geral do Planserv, e a avaliação dos pontos adjacentes no tempo é importante para verificar se houve descontrole (ex: valores extremos de atendimento maior que faturamento em um mês compensados com a proporção inversa nos meses seguintes, também de modo extremo).
+
+---
+
+- A parte superior (entre 4 e 5 no eixo vertical, representando 0% a 100%) apresenta linha da variação percentual para o valor faturado no mês de referência que foi atendido no mesmo mês. Se a linha azul está sempre próxima à vermelha, o prestador tem a maior parcela de cada faturamento referente à meses anteriores. A linha descendente demonstra um período de acumulo de contas.
+
+---
+
+- **O segundo gráfico** demonstra linhas no tempo, mês a mês , para o valor total faturado e valor total atendido. O objetivo deste gráfico é avaliar descolamento artificial entre os valores, que devem estar sempre próximos, exceto na última referência, pois grande parte do valor atendido ainda não foi faturado.
+
+---
+
+- **O terceiro gráfico** avalia a proporção de faturamento corrente (referência de atendimento igual a de faturamento), faturamento do mês anterior (faturamento de atendimentos da referência imediatamente antecedente) e outras referências (soma de faturamento de atendimentos em referências de dois ou mais meses antecedentes).
+
+
+```{r plotagem, fig.height=7, fig.width=10, message=FALSE, warning=FALSE}
+
+FA.plot_rank <- FA.df_rank %>%
+  filter(faturado > v.limite_min)
+
+v.top <- ifelse(dim(FA.plot_rank)[1] < v.top, dim(FA.plot_rank)[1], v.top) 
+
+##----------------------------------------------------------------------------
+# v.rank:
+#   faturado.r
+#   dma.r
+#   dma.c.r
+#   isa.r  
+##----------------------------------------------------------------------------
+
+FA.plot_rank %<>% 
+  arrange(isa.r) %>%
+  select(prestador) %>% 
+  '['(1:v.top,) %>% 
+  '[['(1)
+
+for (i in seq_along(FA.plot_rank)) {
+  f.tb_param(FA.plot_rank[i], i)  
+  f.gg_param(FA.plot_rank[i])
+  f.gg_fa(FA.plot_rank[i])
+}
+```
+
