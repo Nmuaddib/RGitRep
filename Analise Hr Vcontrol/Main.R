@@ -213,6 +213,16 @@ plot(g_NB_all)
 
 ds_marg <- c(ds_b$Resource.Name,ds_b$Marg)
 
+ds_fatura <- as_tibble(ds_hrvctr_nb_csv) %>%
+  filter(Year == 2023) %>%
+  group_by(Company, Resource.Name, YM) %>%
+  summarise(Horas = sum(Time.Actual, na.rm = T),
+            Cost = sum(Cost, na.rm = T),
+            Rev = sum(Rev, na.rm = T)) %>%
+  arrange(Company, Resource.Name, YM) %>% 
+  mutate(Delta = as.character(format(Rev - Cost, trim = T, nsmall = 2, big.mark = ".", big.interval = 3L, decimal.mark = ",")))
+  
+
 # Tech
 # 24h Apoio a farming e hunting de novas oportunidades, incluindo QAD Tec - Parpinelli
 # 4h  Apoio a outras áreas (VPN, .net) (pequenos volumes)                 - Todos
