@@ -1,0 +1,293 @@
+{
+  "_inputSettings": {
+    "_defaultCameraSensitivitySettings": {
+      "Horizontal": {
+        "_minValue": 0.01,
+        "_maxValue": 4.0,
+        "_step": 0.0,
+        "Value": 1.4
+      },
+      "Vertical": {
+        "_minValue": 0.01,
+        "_maxValue": 4.0,
+        "_step": 0.0,
+        "Value": 1.4
+      },
+      "Magnification": 1
+    },
+    "_thirdPersonAimingCameraSensitivitySettings": {
+      "Horizontal": {
+        "_minValue": 0.01,
+        "_maxValue": 4.0,
+        "_step": 0.0,
+        "Value": 1.4
+      },
+      "Vertical": {
+        "_minValue": 0.01,
+        "_maxValue": 4.0,
+        "_step": 0.0,
+        "Value": 1.4
+      },
+      "Magnification": 1
+    },
+    "_thirdPersonAimDownSightCameraSensitivitySettings": {
+      "Horizontal": {
+        "_minValue": 0.01,
+        "_maxValue": 4.0,
+        "_step": 0.0,
+        "Value": 0.8
+      },
+      "Vertical": {
+        "_minValue": 0.01,
+        "_maxValue": 4.0,
+        "_step": 0.0,
+        "Value": 0.8
+      },
+      "Magnification": 1
+    },
+    "_firstPersonAimingCameraSensitivitySettings": {
+      "Horizontal": {
+        "_minValue": 0.01,
+        "_maxValue": 4.0,
+        "_step": 0.0,
+        "Value": 0.8
+      },
+      "Vertical": {
+        "_minValue": 0.01,
+        "_maxValue": 4.0,
+        "_step": 0.0,
+        "Value": 0.8
+      },
+      "Magnification": 1
+    },
+    "_aimDownSightCameraSensitivitySettings": [
+      {
+        "Horizontal": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.8
+        },
+        "Vertical": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.8
+        },
+        "Magnification": 1
+      },
+      {
+        "Horizontal": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.55
+        },
+        "Vertical": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.55
+        },
+        "Magnification": 2
+      },
+      {
+        "Horizontal": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.4
+        },
+        "Vertical": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.4
+        },
+        "Magnification": 3
+      },
+      {
+        "Horizontal": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.35
+        },
+        "Vertical": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.35
+        },
+        "Magnification": 4
+      },
+      {
+        "Horizontal": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.3
+        },
+        "Vertical": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.3
+        },
+        "Magnification": 5
+      },
+      {
+        "Horizontal": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.2
+        },
+        "Vertical": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.2
+        },
+        "Magnification": 6
+      },
+      {
+        "Horizontal": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.15
+        },
+        "Vertical": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.15
+        },
+        "Magnification": 7
+      },
+      {
+        "Horizontal": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.1
+        },
+        "Vertical": {
+          "_minValue": 0.01,
+          "_maxValue": 4.0,
+          "_step": 0.0,
+          "Value": 0.1
+        },
+        "Magnification": 8
+      }
+    ],
+    "_inverseVerticalAxis": {
+      "Value": false
+    },
+    "_inputBindingOverrides": {
+      "Value": "",
+      "IsEmpty": true
+    },
+    "InverseVerticalAxis": {
+      "Value": false
+    }
+  },
+  "_graphicsQualitySettings": {
+    "FrameRateModeNew": {
+      "Value": 1
+    },
+    "FullScreenModeNew": {
+      "Value": 1
+    },
+    "_screenResolution": {
+      "Value": "",
+      "IsEmpty": true
+    },
+    "RenderScaleModeNew": {
+      "Value": 0
+    },
+    "RenderScale": {
+      "_minValue": 0.1,
+      "_maxValue": 2.0,
+      "_step": 0.0,
+      "Value": 1.0
+    },
+    "ShadowDistance": {
+      "_minValue": 0.0,
+      "_maxValue": 80.0,
+      "_step": 1.0,
+      "Value": 40.0
+    },
+    "_vSyncEnabled": {
+      "Value": true
+    },
+    "_frameRateLimit": {
+      "_minValue": 30.0,
+      "_maxValue": 240.0,
+      "_step": 1.0,
+      "Value": 60.0
+    },
+    "_disableFrameRateLimit": {
+      "Value": false
+    }
+  },
+  "_gameplaySettings": {
+    "_displayDebugInfo": {
+      "Value": true
+    },
+    "_autoShoot": {
+      "Value": false
+    },
+    "_autoShootLimitRangeInHipFire": {
+      "Value": false
+    },
+    "_aimOnRightFireButton": {
+      "Value": false
+    },
+    "_sprintStopsAiming": {
+      "Value": true
+    },
+    "_aimAssist": {
+      "Value": false
+    }
+  },
+  "_soundSettings": {
+    "_musicVolume": {
+      "_minValue": 0.0,
+      "_maxValue": 1.0,
+      "_step": 0.0,
+      "Value": 0.8
+    },
+    "_soundsVolume": {
+      "_minValue": 0.0,
+      "_maxValue": 1.0,
+      "_step": 0.0,
+      "Value": 0.8
+    },
+    "_ambientVolume": {
+      "_minValue": 0.0,
+      "_maxValue": 1.0,
+      "_step": 0.0,
+      "Value": 0.8
+    }
+  },
+  "_languageSettings": {
+    "_selectedLanguageValue": {
+      "Value": 0
+    },
+    "SelectedLanguageValue": {
+      "Value": 0
+    }
+  },
+  "_debugSettings": {
+    "_debugOverlayEnabled": {
+      "Value": false
+    }
+  },
+  "_layoutSettings": {
+    "Id": "00000000-0000-0000-0000-000000000000",
+    "Name": "",
+    "Elements": []
+  }
+}
