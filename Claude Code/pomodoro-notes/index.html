@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pomodoro + Notas</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <h1>🍅 Pomodoro + Notas</h1>
+
+    <div class="mode-tabs">
+      <button class="mode-btn active" data-mode="work">Foco (25min)</button>
+      <button class="mode-btn" data-mode="short">Pausa curta (5min)</button>
+      <button class="mode-btn" data-mode="long">Pausa longa (15min)</button>
+    </div>
+
+    <div class="timer-circle">
+      <svg viewBox="0 0 200 200">
+        <circle class="ring-bg" cx="100" cy="100" r="90"></circle>
+        <circle class="ring-progress" cx="100" cy="100" r="90"></circle>
+      </svg>
+      <div class="timer-display" id="timerDisplay">25:00</div>
+    </div>
+
+    <div class="controls">
+      <button id="startBtn">Iniciar</button>
+      <button id="pauseBtn" disabled>Pausar</button>
+      <button id="resetBtn">Reiniciar</button>
+    </div>
+
+    <div class="cycle-count">Ciclos de foco completos hoje: <span id="cycleCount">0</span></div>
+
+    <div class="notes-section">
+      <label for="noteInput">O que você fez neste ciclo?</label>
+      <textarea id="noteInput" placeholder="Anote aqui o que você trabalhou ou aprendeu neste ciclo..." rows="3"></textarea>
+      <button id="saveNoteBtn">Salvar nota</button>
+    </div>
+
+    <div class="history-section">
+      <div class="history-header">
+        <h2>Histórico</h2>
+        <button id="clearHistoryBtn" title="Limpar histórico">Limpar tudo</button>
+      </div>
+      <ul id="historyList"></ul>
+    </div>
+  </div>
+
+  <audio id="dingSound" preload="auto">
+    <source src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ==" type="audio/wav">
+  </audio>
+
+  <script src="app.js"></script>
+</body>
+</html>
